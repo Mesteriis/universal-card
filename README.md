@@ -6,18 +6,12 @@
 
 <p align="center">
   <!-- Version & Compatibility -->
-  <a href="https://github.com/Mesteriis/universal-card/releases">
-    <img src="https://img.shields.io/github/v/release/Mesteriis/universal-card?style=flat-square&color=blue" alt="Release"/>
-  </a>
   <a href="https://github.com/Mesteriis/universal-card">
     <img src="https://img.shields.io/badge/Home%20Assistant-2024.1+-brightgreen?style=flat-square" alt="HA version"/>
   </a>
   <a href="https://github.com/hacs/integration">
     <img src="https://img.shields.io/badge/HACS-Custom-orange?style=flat-square" alt="HACS"/>
   </a>
-</p>
-
-<p align="center">
   <!-- GitHub Stats -->
   <a href="https://github.com/Mesteriis/universal-card/stargazers">
     <img src="https://img.shields.io/github/stars/Mesteriis/universal-card?style=flat-square&color=yellow" alt="Stars"/>
