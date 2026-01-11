@@ -66,10 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Animation Presets (30+ animations, categories, stagger)
 - [x] WebSocket Optimization (throttling, batching, visibility)
 
-### TODO - Phase 6: Complex Features
-- [ ] Card Linking (master/slave)
-- [ ] Entity Auto-grouping
-- [ ] Compact Mode
+### TODO - Phase 6: Complex Features ✅
+- [x] Card Linking (master/slave synchronization, events, groups)
+- [x] Entity Auto-grouping (7 strategies: domain, area, device, floor, label, state, custom)
+- [x] Compact Mode (5 levels, auto-trigger, responsive)
 
 ### TODO - Phase 7: Themes & Effects
 - [ ] Glassmorphism Theme
