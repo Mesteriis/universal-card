@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Card — Продвинутая карточка для Home Assistant</title>
+    <meta name="description" content="Мощная Lovelace карточка с 7 режимами отображения, CSS Grid, 21 темой и визуальным редактором">
+    <meta name="keywords" content="Home Assistant, Lovelace, Custom Card, HACS, Smart Home">
+    <meta property="og:title" content="Universal Card">
+    <meta property="og:description" content="Продвинутая карточка Lovelace для Home Assistant">
+    <meta property="og:image" content="img/body-modes-demo.gif">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Highlight.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --accent: #58a6ff;
+            --accent-secondary: #7ee787;
+            --accent-tertiary: #f78166;
+            --accent-purple: #a371f7;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-hero: linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(163, 113, 247, 0.15) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .nav-logo span {
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #79b8ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 2rem 4rem;
+            background: var(--gradient-hero);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(88, 166, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(163, 113, 247, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-badges img {
+            height: 24px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        .hero-demo {
+            position: relative;
+        }
+
+        .hero-demo img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 
+                0 0 0 1px var(--border),
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(88, 166, 255, 0.1);
+        }
+
+        /* Features */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .section-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(88, 166, 255, 0.1);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon.blue { background: rgba(88, 166, 255, 0.15); }
+        .feature-icon.green { background: rgba(126, 231, 135, 0.15); }
+        .feature-icon.orange { background: rgba(247, 129, 102, 0.15); }
+        .feature-icon.purple { background: rgba(163, 113, 247, 0.15); }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Body Modes */
+        .modes {
+            padding: 6rem 2rem;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        .mode-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .mode-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mode-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Themes Gallery */
+        .themes {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .themes-image {
+            margin-top: 3rem;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .themes-image img {
+            width: 100%;
+            display: block;
+        }
+
+        /* Code Examples */
+        .examples {
+            padding: 6rem 2rem;
+        }
+
+        .example-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .example-tab {
+            padding: 0.6rem 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .example-tab:hover,
+        .example-tab.active {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-header span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--bg-primary);
+            color: var(--accent);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Gallery */
+        .gallery {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .gallery-item {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .gallery-item:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .gallery-item figcaption {
+            padding: 1rem;
+            background: var(--bg-primary);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Installation */
+        .installation {
+            padding: 6rem 2rem;
+        }
+
+        .install-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .install-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .install-card.recommended {
+            border-color: var(--accent);
+            position: relative;
+        }
+
+        .install-card.recommended::before {
+            content: 'Рекомендуется';
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .install-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .install-steps {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .install-steps li {
+            counter-increment: step;
+            padding: 0.75rem 0;
+            padding-left: 3rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .install-steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 24px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 2rem 2rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            max-width: 300px;
+        }
+
+        .footer-links h4 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            transition: color 0.2s;
+        }
+
+        .footer-social a:hover {
+            color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-badges {
+                justify-content: center;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .install-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-brand p {
+                margin: 0 auto;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span>🎴</span>
+                Universal Card
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Возможности</a></li>
+                <li><a href="#modes">Режимы</a></li>
+                <li><a href="#themes">Темы</a></li>
+                <li><a href="#examples">Примеры</a></li>
+                <li><a href="#installation">Установка</a></li>
+            </ul>
+            <div class="nav-cta">
+                <a href="https://github.com/Mesteriis/universal-card" class="btn btn-secondary" target="_blank">
+                    ⭐ GitHub
+                </a>
+                <a href="#installation" class="btn btn-primary">
+                    Установить
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Universal Card для Home Assistant</h1>
+                <p>Мощная Lovelace карточка с 7 режимами отображения, CSS Grid layout, 21 темой и визуальным редактором.</p>
+                
+                <div class="hero-badges">
+                    <img src="https://img.shields.io/github/v/release/Mesteriis/universal-card?style=flat-square&color=blue" alt="Release">
+                    <img src="https://img.shields.io/github/stars/Mesteriis/universal-card?style=flat-square&color=yellow" alt="Stars">
+                    <img src="https://img.shields.io/github/downloads/Mesteriis/universal-card/total?style=flat-square&color=brightgreen" alt="Downloads">
+                    <img src="https://img.shields.io/badge/HACS-Custom-orange?style=flat-square" alt="HACS">
+                </div>
+                
+                <div class="hero-buttons">
+                    <a href="#installation" class="btn btn-primary btn-large">
+                        📦 Установить через HACS
+                    </a>
+                    <a href="https://github.com/Mesteriis/universal-card" class="btn btn-secondary btn-large" target="_blank">
+                        📖 Документация
+                    </a>
+                </div>
+            </div>
+            <div class="hero-demo">
+                <img src="img/body-modes-demo.gif" alt="Universal Card Demo">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>✨ Возможности</h2>
+                <p>Всё что нужно для создания идеального dashboard</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon blue">🎭</div>
+                    <h3>7 режимов Body</h3>
+                    <p>Expand, Modal, Fullscreen, Tabs, Carousel, Subview и None — выберите идеальный способ отображения контента.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon green">📐</div>
+                    <h3>CSS Grid Layout</h3>
+                    <p>Гибкая сетка с colspan/rowspan, кастомными колонками и responsive breakpoints.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon purple">🎨</div>
+                    <h3>21 тема</h3>
+                    <p>От минимализма до киберпанка — готовые темы на любой вкус с возможностью кастомизации.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon orange">⚡</div>
+                    <h3>Lazy Loading</h3>
+                    <p>Контент загружается только при необходимости — никаких лагов даже со множеством карточек.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon blue">👁️</div>
+                    <h3>Visibility Conditions</h3>
+                    <p>Показывайте карточки по условиям: состояние entity, пользователь, время, размер экрана.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon green">🪆</div>
+                    <h3>Nested Cards</h3>
+                    <p>Неограниченная вложенность карточек с наследованием тем.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon purple">👆</div>
+                    <h3>Actions</h3>
+                    <p>Tap, Hold, Double Tap — настройте действия для любого взаимодействия.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon orange">🎨</div>
+                    <h3>Визуальный редактор</h3>
+                    <p>Полноценный GUI редактор прямо в Lovelace — без необходимости писать YAML.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Body Modes -->
+    <section class="modes" id="modes">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>🎭 Body Modes</h2>
+                <p>7 способов отображения контента на любой случай</p>
+            </div>
+            
+            <div class="modes-grid">
+                <div class="mode-card">
+                    <div class="icon">📂</div>
+                    <h4>Expand</h4>
+                    <p>Плавное раскрытие</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">🪟</div>
+                    <h4>Modal</h4>
+                    <p>Всплывающее окно</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">📺</div>
+                    <h4>Fullscreen</h4>
+                    <p>На весь экран</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">📑</div>
+                    <h4>Tabs</h4>
+                    <p>Вкладки</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">🎠</div>
+                    <h4>Carousel</h4>
+                    <p>Карусель</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">📄</div>
+                    <h4>Subview</h4>
+                    <p>Встроенный view</p>
+                </div>
+                <div class="mode-card">
+                    <div class="icon">🏷️</div>
+                    <h4>None</h4>
+                    <p>Только header</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Themes -->
+    <section class="themes" id="themes">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>🎨 21 тема оформления</h2>
+                <p>Выберите стиль, который подходит вашему dashboard</p>
+            </div>
+            
+            <figure class="themes-image">
+                <img src="img/themes.png" alt="Universal Card Themes">
+            </figure>
+        </div>
+    </section>
+
+    <!-- Code Examples -->
+    <section class="examples" id="examples">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>💻 Примеры кода</h2>
+                <p>Начните использовать за минуту</p>
+            </div>
+            
+            <div class="example-tabs">
+                <button class="example-tab active" data-tab="basic">Базовый</button>
+                <button class="example-tab" data-tab="grid">Grid Layout</button>
+                <button class="example-tab" data-tab="tabs">Tabs</button>
+                <button class="example-tab" data-tab="modal">Modal</button>
+                <button class="example-tab" data-tab="theme">С темой</button>
+            </div>
+            
+            <div class="code-block" id="code-basic">
+                <div class="code-header">
+                    <span>configuration.yaml</span>
+                    <button class="copy-btn" onclick="copyCode('basic')">📋 Copy</button>
+                </div>
+                <pre><code class="language-yaml">type: custom:universal-card
+title: Освещение
+subtitle: Гостиная
+icon: mdi:lightbulb-group
+entity: light.living_room
+body:
+  cards:
+    - type: light
+      entity: light.living_room
+    - type: light
+      entity: light.bedroom</code></pre>
+            </div>
+
+            <div class="code-block" id="code-grid" style="display: none;">
+                <div class="code-header">
+                    <span>Grid Layout</span>
+                    <button class="copy-btn" onclick="copyCode('grid')">📋 Copy</button>
+                </div>
+                <pre><code class="language-yaml">type: custom:universal-card
+title: Dashboard
+grid:
+  columns: 3
+  gap: 16px
+body:
+  cards:
+    - type: sensor
+      entity: sensor.temperature
+      colspan: 2
+    - type: sensor
+      entity: sensor.humidity
+    - type: gauge
+      entity: sensor.power
+      rowspan: 2</code></pre>
+            </div>
+
+            <div class="code-block" id="code-tabs" style="display: none;">
+                <div class="code-header">
+                    <span>Tabs Mode</span>
+                    <button class="copy-btn" onclick="copyCode('tabs')">📋 Copy</button>
+                </div>
+                <pre><code class="language-yaml">type: custom:universal-card
+title: Умный дом
+body_mode: tabs
+tabs:
+  - label: Свет
+    icon: mdi:lightbulb
+    cards:
+      - type: light
+        entity: light.room
+  - label: Климат
+    icon: mdi:thermometer
+    cards:
+      - type: thermostat
+        entity: climate.ac</code></pre>
+            </div>
+
+            <div class="code-block" id="code-modal" style="display: none;">
+                <div class="code-header">
+                    <span>Modal Mode</span>
+                    <button class="copy-btn" onclick="copyCode('modal')">📋 Copy</button>
+                </div>
+                <pre><code class="language-yaml">type: custom:universal-card
+title: Настройки
+icon: mdi:cog
+body_mode: modal
+modal:
+  width: 500px
+  backdrop_blur: true
+body:
+  cards:
+    - type: entities
+      entities:
+        - input_boolean.setting_1
+        - input_number.setting_2</code></pre>
+            </div>
+
+            <div class="code-block" id="code-theme" style="display: none;">
+                <div class="code-header">
+                    <span>С темой</span>
+                    <button class="copy-btn" onclick="copyCode('theme')">📋 Copy</button>
+                </div>
+                <pre><code class="language-yaml">type: custom:universal-card
+title: Неоновая карточка
+theme: neon
+expanded: true
+body:
+  cards:
+    - type: entities
+      entities:
+        - light.room
+        - switch.fan
+        - sensor.temperature</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="gallery" id="gallery">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>📸 Галерея</h2>
+                <p>Скриншоты возможностей</p>
+            </div>
+            
+            <div class="gallery-grid">
+                <figure class="gallery-item">
+                    <img src="img/grid-layout-1.png" alt="Grid Layout">
+                    <figcaption>Grid Layout с colspan/rowspan</figcaption>
+                </figure>
+                <figure class="gallery-item">
+                    <img src="img/header-options.png" alt="Header Options">
+                    <figcaption>Варианты заголовков</figcaption>
+                </figure>
+                <figure class="gallery-item">
+                    <img src="img/actions.png" alt="Actions">
+                    <figcaption>Actions — tap, hold, double-tap</figcaption>
+                </figure>
+                <figure class="gallery-item">
+                    <img src="img/nested-cards.png" alt="Nested Cards">
+                    <figcaption>Вложенные карточки</figcaption>
+                </figure>
+                <figure class="gallery-item">
+                    <img src="img/visibility.png" alt="Visibility">
+                    <figcaption>Условия видимости</figcaption>
+                </figure>
+                <figure class="gallery-item">
+                    <img src="img/debug-view.png" alt="Debug Mode">
+                    <figcaption>Debug режим</figcaption>
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation -->
+    <section class="installation" id="installation">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>📦 Установка</h2>
+                <p>Выберите удобный способ установки</p>
+            </div>
+            
+            <div class="install-methods">
+                <div class="install-card recommended">
+                    <h3>🎨 HACS</h3>
+                    <ol class="install-steps">
+                        <li>Откройте <strong>HACS</strong> → <strong>Frontend</strong></li>
+                        <li>Нажмите <strong>"+"</strong> → найдите <strong>"Universal Card"</strong></li>
+                        <li>Нажмите <strong>"Установить"</strong></li>
+                        <li>Перезагрузите Home Assistant</li>
+                    </ol>
+                </div>
+                
+                <div class="install-card">
+                    <h3>📁 Ручная установка</h3>
+                    <ol class="install-steps">
+                        <li>Скачайте последний релиз с <a href="https://github.com/Mesteriis/universal-card/releases" target="_blank">GitHub Releases</a></li>
+                        <li>Скопируйте папку <code>universal_card</code> в <code>/config/custom_components/</code></li>
+                        <li>Добавьте в <code>configuration.yaml</code>:<br><code>universal_card:</code></li>
+                        <li>Перезагрузите Home Assistant</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <h3><span>🎴</span> Universal Card</h3>
+                    <p>Продвинутая карточка Lovelace для создания красивых и функциональных dashboard в Home Assistant.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Документация</h4>
+                    <ul>
+                        <li><a href="https://github.com/Mesteriis/universal-card#readme">README</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/blob/main/CHANGELOG.md">Changelog</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card#-faq">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Ресурсы</h4>
+                    <ul>
+                        <li><a href="https://github.com/Mesteriis/universal-card/issues">Issues</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/discussions">Discussions</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/pulls">Pull Requests</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Ссылки</h4>
+                    <ul>
+                        <li><a href="https://www.home-assistant.io/">Home Assistant</a></li>
+                        <li><a href="https://hacs.xyz/">HACS</a></li>
+                        <li><a href="https://github.com/Mesteriis">@Mesteriis</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <span>© 2024-2026 Universal Card. MIT License.</span>
+                <div class="footer-social">
+                    <a href="https://github.com/Mesteriis/universal-card" target="_blank" title="GitHub">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Highlight.js init
+        hljs.highlightAll();
+
+        // Tab switching
+        document.querySelectorAll('.example-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabId = tab.dataset.tab;
+                document.querySelectorAll('.code-block').forEach(block => {
+                    block.style.display = block.id === `code-${tabId}` ? 'block' : 'none';
+                });
+            });
+        });
+
+        // Copy code
+        function copyCode(tabId) {
+            const codeBlock = document.querySelector(`#code-${tabId} code`);
+            navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                const btn = document.querySelector(`#code-${tabId} .copy-btn`);
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy', 2000);
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

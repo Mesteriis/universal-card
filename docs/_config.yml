@@ -1,0 +1,14 @@
+# GitHub Pages configuration
+title: Universal Card
+description: Продвинутая карточка Lovelace для Home Assistant
+url: https://mesteriis.github.io
+baseurl: /universal-card
+
+# Theme (not used, we have custom HTML)
+theme: null
+
+# Exclude files
+exclude:
+  - README.md
+  - CHANGELOG.md
+  - LICENSE
