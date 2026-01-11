@@ -91,10 +91,10 @@ export class NumberInput extends EditorComponent {
       ${this._config.label ? `<label class="uc-editor-label">${this._config.label}</label>` : ''}
       <input type="number" 
              class="uc-editor-input"
-             min="${this._config.min ?? ''}"
-             max="${this._config.max ?? ''}"
-             step="${this._config.step ?? 1}"
-             value="${this._config.value ?? ''}"
+             min="${this._config.min != null ? this._config.min : ''}"
+             max="${this._config.max != null ? this._config.max : ''}"
+             step="${this._config.step != null ? this._config.step : 1}"
+             value="${this._config.value != null ? this._config.value : ''}"
              ${this._config.required ? 'required' : ''} />
       ${this._config.helper ? `<span class="uc-editor-helper">${this._config.helper}</span>` : ''}
     `;
@@ -114,7 +114,7 @@ export class NumberInput extends EditorComponent {
 
   setValue(value) {
     if (this._input) {
-      this._input.value = value ?? '';
+      this._input.value = value != null ? value : '';
     }
   }
 }

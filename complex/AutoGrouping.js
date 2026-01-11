@@ -565,7 +565,7 @@ export class AutoGrouping {
         name: groupConfig.name || groupId,
         icon: groupConfig.icon || 'mdi:folder',
         entities: [],
-        collapsed: groupConfig.collapsed ?? this._config.collapsed_by_default
+        collapsed: groupConfig.collapsed != null ? groupConfig.collapsed : this._config.collapsed_by_default
       });
     }
 

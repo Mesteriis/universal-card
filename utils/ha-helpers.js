@@ -199,7 +199,7 @@ export function getEntityState(hass, entityId) {
  */
 export function getStateValue(hass, entityId, defaultValue = 'unavailable') {
   const state = getEntityState(hass, entityId);
-  return state?.state ?? defaultValue;
+  return (state && state.state !== undefined) ? state.state : defaultValue;
 }
 
 /**
@@ -213,7 +213,8 @@ export function getStateValue(hass, entityId, defaultValue = 'unavailable') {
  */
 export function getAttributeValue(hass, entityId, attribute, defaultValue) {
   const state = getEntityState(hass, entityId);
-  return state?.attributes?.[attribute] ?? defaultValue;
+  var attr = state && state.attributes ? state.attributes[attribute] : undefined;
+  return attr !== undefined ? attr : defaultValue;
 }
 
 /**

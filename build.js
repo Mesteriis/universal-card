@@ -25,11 +25,11 @@ const config = {
   bundle: true,
   outfile: 'universal-card.js',
   format: 'iife',
-  target: ['chrome80', 'firefox78', 'safari13'],
+  target: ['es2018'],
   supported: {
-    // Отключаем фичи которые могут вызвать проблемы
-    'for-of': true,
-    'const-and-let': true,
+    // Отключаем фичи которые Safari 13 не поддерживает
+    'optional-chain': false,
+    'nullish-coalescing': false,
   },
   minify: !isDev,
   sourcemap: isDev,

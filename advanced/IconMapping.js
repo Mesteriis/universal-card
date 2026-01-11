@@ -360,8 +360,8 @@ export class IconMapping {
       if (rule.above !== undefined || rule.below !== undefined) {
         if (!mapping._ranges) mapping._ranges = [];
         mapping._ranges.push({
-          min: rule.above ?? -Infinity,
-          max: rule.below ?? Infinity,
+          min: rule.above != null ? rule.above : -Infinity,
+          max: rule.below != null ? rule.below : Infinity,
           icon: rule.icon,
           color: rule.color
         });

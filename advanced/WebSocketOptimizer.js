@@ -88,9 +88,9 @@ class WebSocketOptimizerClass {
   subscribe(entityId, callback, options = {}) {
     const subscription = {
       callback,
-      priority: options.priority ?? UPDATE_PRIORITY.NORMAL,
+      priority: options.priority != null ? options.priority : UPDATE_PRIORITY.NORMAL,
       element: options.element,
-      strategy: options.strategy ?? this._config.strategy
+      strategy: options.strategy != null ? options.strategy : this._config.strategy
     };
 
     if (!this._subscribers.has(entityId)) {
@@ -221,7 +221,7 @@ class WebSocketOptimizerClass {
         }
       }
 
-      const throttleTime = this._config.priorityThrottles[minPriority] ?? this._config.throttleMs;
+      const throttleTime = this._config.priorityThrottles[minPriority] != null ? this._config.priorityThrottles[minPriority] : this._config.throttleMs;
       const lastUpdate = this._lastUpdateTime.get(entityId) || 0;
 
       if (now - lastUpdate >= throttleTime) {

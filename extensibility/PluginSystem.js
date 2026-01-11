@@ -158,7 +158,7 @@ export class PluginSystem {
       const hookHandler = {
         pluginId,
         handler: typeof handler === 'function' ? handler : handler.handler,
-        priority: typeof handler === 'object' ? (handler.priority ?? PLUGIN_PRIORITY.NORMAL) : PLUGIN_PRIORITY.NORMAL
+        priority: typeof handler === 'object' && handler.priority != null ? handler.priority : PLUGIN_PRIORITY.NORMAL
       };
 
       this._hooks.get(hookName).push(hookHandler);

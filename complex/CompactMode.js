@@ -373,7 +373,7 @@ export class CompactMode {
    */
   getGridColumns(defaultColumns = 2) {
     const settings = this.getCurrentSettings();
-    return settings.gridColumns ?? defaultColumns;
+    return settings.gridColumns != null ? settings.gridColumns : defaultColumns;
   }
 
   /**
