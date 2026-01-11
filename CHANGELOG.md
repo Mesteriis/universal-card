@@ -22,14 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ README with full documentation
 - ✅ LICENSE (MIT)
 
-### TODO - Phase 1: Core
-- [ ] Entry point (universal-card.js)
-- [ ] Base UniversalCard class
-- [ ] Config manager
-- [ ] Skeleton loader
-- [ ] Lazy loader (Intersection Observer)
-- [ ] Error boundaries with popup
-- [ ] Debug mode
+### TODO - Phase 1: Core ✅
+- [x] Entry point (universal-card.js)
+- [x] Base UniversalCard class
+- [x] Config manager with validation
+- [x] Skeleton loader
+- [x] Lazy loader (Intersection Observer)
+- [x] Error boundaries with popup (in BaseMode)
+- [ ] Debug mode (deferred to Phase 10)
 
 ### TODO - Phase 2: Header/Footer ✅
 - [x] Flexible Header with slots (header_left, header_right, header.cards)
@@ -49,13 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Carousel mode with swipe & autoplay
 - [ ] Subview mode (deferred)
 
-### TODO - Phase 4: Features
-- [ ] Visibility Conditions
-- [ ] State-based theming
-- [ ] Responsive breakpoints
-- [ ] Swipe gestures
-- [ ] Context Menu
-- [ ] Radial Menu
+### TODO - Phase 4: Features ✅
+- [x] Visibility Conditions (state, numeric, user, time, screen, and/or/not)
+- [x] State-based theming (colors, backgrounds, thresholds)
+- [x] Responsive breakpoints (media queries, container queries)
+- [x] Swipe gestures (horizontal, vertical, configurable threshold)
+- [x] Context Menu (right-click, icons, separators)
+- [x] Radial Menu (long press, circular layout)
 
 ### TODO - Phase 5: Advanced Features
 - [ ] Entity Preview (hover sparkline)
