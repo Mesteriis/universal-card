@@ -1,0 +1,20 @@
+{
+  "name": "universal-card",
+  "version": "1.0.0",
+  "description": "Advanced Lovelace card for Home Assistant",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch",
+    "dev": "node build.js --dev"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mesteriis/universal-card.git"
+  },
+  "author": "Mesteriis",
+  "license": "MIT"
+}
