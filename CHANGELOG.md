@@ -81,11 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Micro-interactions (ripple, confetti, checkmark, shake)
 - [x] Color Schemes (15 schemes: light, dark, neon, cyberpunk)
 
-### TODO - Phase 8: Widgets & Integration
-- [ ] REST API Widget
-- [ ] Image Entity
-- [ ] Media Player Mini
-- [ ] Notification Center
+### TODO - Phase 8: Widgets & Integration ✅
+- [x] REST API Widget (GET/POST, caching, transforms, auto-refresh)
+- [x] Image Entity (camera, image, person, lazy loading, fullscreen)
+- [x] Media Player Mini (controls, progress, volume, sources)
+- [x] Notification Center (persistent notifications, grouping, dismiss)
 
 ### TODO - Phase 9: Editor
 - [ ] Visual Editor
