@@ -30,6 +30,10 @@ on:
       - master
   workflow_dispatch:
 
+# Права для GitHub Actions
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
