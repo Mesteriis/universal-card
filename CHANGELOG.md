@@ -57,14 +57,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Context Menu (right-click, icons, separators)
 - [x] Radial Menu (long press, circular layout)
 
-### TODO - Phase 5: Advanced Features
-- [ ] Entity Preview (hover sparkline)
-- [ ] Alerts/Thresholds
-- [ ] Quick Actions
-- [ ] Timer/Countdown
-- [ ] Custom Icon Mapping
-- [ ] Animation Presets
-- [ ] WebSocket Optimization
+### TODO - Phase 5: Advanced Features ✅
+- [x] Entity Preview (hover sparkline with history)
+- [x] Alerts/Thresholds system (notifications, sounds, services)
+- [x] Quick Actions (toggle, service calls, navigation, etc.)
+- [x] Timer/Countdown (multiple modes, formats, controls)
+- [x] Custom Icon Mapping (presets for all domains)
+- [x] Animation Presets (30+ animations, categories, stagger)
+- [x] WebSocket Optimization (throttling, batching, visibility)
 
 ### TODO - Phase 6: Complex Features
 - [ ] Card Linking (master/slave)
