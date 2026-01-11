@@ -146,7 +146,7 @@ class UniversalCard extends HTMLElement {
     
     // Header
     const headerHTML = `
-      <div class="uc-header" @click="${this._onHeaderClick}">
+      <div class="uc-header">
         <div class="uc-header-left">
           ${config.icon ? `<ha-icon class="uc-icon" icon="${config.icon}"></ha-icon>` : ''}
           <div class="uc-titles">
