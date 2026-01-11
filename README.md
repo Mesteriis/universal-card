@@ -1,7 +1,7 @@
 # 🎴 Universal Card
 
 <p align="center">
-  <img src="docs/img/hero-demo.gif" alt="Universal Card Demo" width="600"/>
+  <img src="docs/img/body-modes-demo.gif" alt="Universal Card Demo" width="800"/>
 </p>
 
 <p align="center">
