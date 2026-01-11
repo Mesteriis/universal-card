@@ -1,20 +1,33 @@
 # Universal Card - Development TODO
 
-## Current Sprint: Phase 1 - Core
+## Current Sprint: Phase 3 - Body Modes
 
-### 🔄 In Progress
+### ✅ Completed - Phase 1: Core
 - [x] Project structure
 - [x] HACS integration files
 - [x] Git repository setup
-- [ ] Entry point (universal-card.js)
-- [ ] Base UniversalCard class
+- [x] Entry point (universal-card.js)
+- [x] Base UniversalCard class
+- [x] Config manager with validation
+- [x] Skeleton loader component
+- [x] Lazy loader with Intersection Observer
 
-### 📋 Next Up
-- [ ] Config manager with validation
-- [ ] Skeleton loader component
-- [ ] Lazy loader with Intersection Observer
-- [ ] Error boundary with popup details
-- [ ] Debug mode utilities
+### ✅ Completed - Phase 2: Header/Footer
+- [x] Header component with slots
+- [x] Footer component
+- [x] Badges component
+- [x] Header/Footer actions (tap, hold, double-tap)
+- [x] Sticky header
+- [x] Header/Footer styles
+
+### 🔄 In Progress - Phase 3: Body Modes
+- [ ] Expand mode (basic done)
+- [ ] Modal mode
+- [ ] Fullscreen mode
+- [ ] Tabs mode
+- [ ] Carousel mode
+- [ ] Subview mode
+- [ ] Grid layout improvements
 
 ---
 

@@ -34,6 +34,14 @@ import {
   executeAction 
 } from '../utils/ha-helpers.js';
 
+// UI Components
+import { Header } from '../ui/Header.js';
+import { Footer } from '../ui/Footer.js';
+import { Badges } from '../ui/Badges.js';
+
+// Styles
+import { HEADER_FOOTER_STYLES } from '../styles/header-footer.js';
+
 // =============================================================================
 // UNIVERSAL CARD CLASS
 // =============================================================================
@@ -126,6 +134,19 @@ export class UniversalCard extends HTMLElement {
     
     /** @type {Object|null} Pending hass object before init */
     this._pendingHass = null;
+    
+    // ===========================================
+    // COMPONENTS
+    // ===========================================
+    
+    /** @type {Header|null} Header component instance */
+    this._header = null;
+    
+    /** @type {Footer|null} Footer component instance */
+    this._footer = null;
+    
+    /** @type {Badges|null} Badges component instance */
+    this._badges = null;
     
     // ===========================================
     // CARDS
@@ -256,6 +277,11 @@ export class UniversalCard extends HTMLElement {
       return;
     }
     
+    // Update components
+    if (this._header) this._header.hass = hass;
+    if (this._footer) this._footer.hass = hass;
+    if (this._badges) this._badges.hass = hass;
+    
     // Update child cards
     this._updateChildCardsHass(hass);
     
@@ -321,12 +347,25 @@ export class UniversalCard extends HTMLElement {
       // Restore state if configured
       this._restoreState();
       
+      // Create Header component
+      this._createHeaderComponent();
+      
+      // Create Footer component if configured
+      if (this._config.footer) {
+        this._createFooterComponent();
+      }
+      
       // Perform initial render
       await this._render();
       
-      // Create header cards immediately
-      if (this._config.header?.cards) {
-        await this._createHeaderCards();
+      // Load header cards asynchronously
+      if (this._header) {
+        await this._header.loadCards();
+      }
+      
+      // Load footer cards asynchronously
+      if (this._footer) {
+        await this._footer.loadCards();
       }
       
       // Setup lazy loading or load body cards
@@ -352,6 +391,46 @@ export class UniversalCard extends HTMLElement {
       console.error('[UniversalCard] Initialization failed:', error);
       this._renderError(error);
     }
+  }
+  
+  /**
+   * Create Header component instance
+   * 
+   * @private
+   */
+  _createHeaderComponent() {
+    const headerConfig = {
+      ...this._config,
+      ...this._config.header,
+      // Pass through relevant config
+      title: this._config.title,
+      subtitle: this._config.subtitle,
+      icon: this._config.icon,
+      entity: this._config.entity,
+      show_state: this._config.show_state,
+      show_expand_icon: this._config.show_expand_icon,
+      expand_icon: this._config.expand_icon,
+      body_mode: this._config.body_mode,
+      sticky_header: this._config.sticky_header,
+      badges: this._config.badges,
+      tap_action: this._config.tap_action,
+      hold_action: this._config.hold_action,
+      double_tap_action: this._config.double_tap_action,
+      context_menu: this._config.context_menu
+    };
+    
+    this._header = new Header(headerConfig);
+    if (this._hass) this._header.hass = this._hass;
+  }
+  
+  /**
+   * Create Footer component instance
+   * 
+   * @private
+   */
+  _createFooterComponent() {
+    this._footer = new Footer(this._config.footer);
+    if (this._hass) this._footer.hass = this._hass;
   }
   
   /**
@@ -407,8 +486,6 @@ export class UniversalCard extends HTMLElement {
     const startTime = performance.now();
     
     const styles = this._generateStyles();
-    const headerHtml = this._renderHeader();
-    const bodyHtml = this._renderBody();
     
     // Build card classes
     const cardClasses = ['universal-card'];
@@ -416,111 +493,74 @@ export class UniversalCard extends HTMLElement {
       cardClasses.push(`theme-${this._config.theme}`);
     }
     
-    // Render to shadow DOM
-    this.shadowRoot.innerHTML = `
-      <style>${styles}</style>
-      <div class="${cardClasses.join(' ')}" 
-           data-card-id="${this._config.card_id}">
-        ${headerHtml}
-        ${bodyHtml}
-      </div>
-    `;
+    // Create card container
+    const cardContainer = document.createElement('div');
+    cardContainer.className = cardClasses.join(' ');
+    cardContainer.dataset.cardId = this._config.card_id;
+    
+    // Render Header using component
+    if (this._header) {
+      this._header.expanded = this._expanded;
+      const headerElement = this._header.render();
+      cardContainer.appendChild(headerElement);
+    }
+    
+    // Render Body
+    const bodyElement = this._renderBodyElement();
+    if (bodyElement) {
+      cardContainer.appendChild(bodyElement);
+    }
+    
+    // Render Footer using component
+    if (this._footer) {
+      const footerElement = this._footer.render();
+      cardContainer.appendChild(footerElement);
+    }
+    
+    // Clear and append to shadow DOM
+    this.shadowRoot.innerHTML = `<style>${styles}</style>`;
+    this.shadowRoot.appendChild(cardContainer);
     
     this._debug.renderCount++;
     this._debug.lastRenderTime = performance.now() - startTime;
   }
   
   /**
-   * Render header section
+   * Render body as DOM element
    * 
    * @private
-   * @returns {string} Header HTML
+   * @returns {HTMLElement|null} Body element or null
    */
-  _renderHeader() {
-    const config = this._config;
-    
-    // Header classes
-    const headerClasses = ['header'];
-    if (this._expanded) headerClasses.push('expanded');
-    if (config.sticky_header) headerClasses.push('sticky');
-    
-    // Build header content
-    let iconHtml = '';
-    if (config.icon) {
-      iconHtml = `<ha-icon class="header-icon" icon="${config.icon}"></ha-icon>`;
-    }
-    
-    let titleHtml = '';
-    if (config.title) {
-      titleHtml = `<div class="title">${config.title}</div>`;
-    }
-    
-    let subtitleHtml = '';
-    if (config.subtitle) {
-      subtitleHtml = `<div class="subtitle">${config.subtitle}</div>`;
-    }
-    
-    let expandIconHtml = '';
-    if (config.show_expand_icon && config.body_mode !== BODY_MODES.NONE) {
-      const expandClass = this._expanded ? 'expand-icon expanded' : 'expand-icon';
-      expandIconHtml = `
-        <ha-icon class="${expandClass}" icon="${config.expand_icon}"></ha-icon>
-      `;
-    }
-    
-    return `
-      <div class="${headerClasses.join(' ')}" 
-           role="button" 
-           tabindex="0"
-           aria-expanded="${this._expanded}">
-        <div class="header-left">
-          ${iconHtml}
-        </div>
-        <div class="header-content">
-          ${titleHtml}
-          ${subtitleHtml}
-          <div class="header-cards-container"></div>
-        </div>
-        <div class="header-right">
-          ${expandIconHtml}
-        </div>
-      </div>
-    `;
-  }
-  
-  /**
-   * Render body section
-   * 
-   * @private
-   * @returns {string} Body HTML
-   */
-  _renderBody() {
+  _renderBodyElement() {
     const config = this._config;
     
     // No body for 'none' mode
     if (config.body_mode === BODY_MODES.NONE) {
-      return '';
+      return null;
     }
     
-    const bodyState = this._expanded ? 'expanded' : 'collapsed';
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.dataset.state = this._expanded ? 'expanded' : 'collapsed';
     
-    // Skeleton loader while loading
-    let contentHtml = '';
-    if (!this._bodyCardsLoaded && this._expanded) {
-      contentHtml = this._renderSkeleton();
-    }
+    const content = document.createElement('div');
+    content.className = 'body-content';
     
-    // Grid styles
+    // Apply grid styles
     const gridStyles = this._getGridStyles();
+    if (gridStyles) {
+      content.style.cssText = gridStyles;
+    }
     
-    return `
-      <div class="body" data-state="${bodyState}">
-        <div class="body-content" style="${gridStyles}">
-          ${contentHtml}
-        </div>
-      </div>
-    `;
+    // Add skeleton if loading
+    if (!this._bodyCardsLoaded && this._expanded) {
+      content.innerHTML = this._renderSkeleton();
+    }
+    
+    body.appendChild(content);
+    return body;
   }
+  
   
   /**
    * Render skeleton loader
@@ -572,27 +612,6 @@ export class UniversalCard extends HTMLElement {
   // ===========================================================================
   // CARD CREATION
   // ===========================================================================
-  
-  /**
-   * Create header cards
-   * 
-   * @private
-   * @returns {Promise<void>}
-   */
-  async _createHeaderCards() {
-    const configs = this._config.header?.cards || [];
-    if (configs.length === 0) return;
-    
-    this._headerCards = await createCardElements(configs);
-    
-    const container = this.shadowRoot.querySelector('.header-cards-container');
-    if (container) {
-      this._headerCards.forEach(card => {
-        if (this._hass) card.hass = this._hass;
-        container.appendChild(card);
-      });
-    }
-  }
   
   /**
    * Load body cards (lazy loaded)
@@ -687,6 +706,22 @@ export class UniversalCard extends HTMLElement {
    * @private
    */
   _destroyChildCards() {
+    // Destroy components
+    if (this._header) {
+      this._header.destroy();
+      this._header = null;
+    }
+    
+    if (this._footer) {
+      this._footer.destroy();
+      this._footer = null;
+    }
+    
+    if (this._badges) {
+      this._badges.destroy();
+      this._badges = null;
+    }
+    
     this._headerCards = [];
     this._bodyCards = [];
     this._tabCards = {};
@@ -728,86 +763,10 @@ export class UniversalCard extends HTMLElement {
       }
       
       /* ============================= */
-      /* HEADER */
+      /* HEADER & FOOTER STYLES */
       /* ============================= */
       
-      .header {
-        display: flex;
-        align-items: center;
-        padding: var(--uc-padding);
-        cursor: pointer;
-        user-select: none;
-        transition: background-color 0.2s ease;
-      }
-      
-      .header:hover {
-        background: rgba(0, 0, 0, 0.04);
-      }
-      
-      .header:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: -2px;
-      }
-      
-      .header.sticky {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: var(--ha-card-background, var(--card-background-color, white));
-      }
-      
-      .header-left {
-        flex-shrink: 0;
-        margin-right: 12px;
-      }
-      
-      .header-icon {
-        --mdc-icon-size: 24px;
-        color: var(--primary-color);
-      }
-      
-      .header-content {
-        flex: 1;
-        min-width: 0;
-      }
-      
-      .title {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--primary-text-color);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      
-      .subtitle {
-        font-size: 14px;
-        color: var(--secondary-text-color);
-        margin-top: 2px;
-      }
-      
-      .header-right {
-        flex-shrink: 0;
-        margin-left: 12px;
-      }
-      
-      .expand-icon {
-        --mdc-icon-size: 24px;
-        color: var(--secondary-text-color);
-        transition: transform var(--uc-transition-duration) ease;
-      }
-      
-      .expand-icon.expanded {
-        transform: rotate(180deg);
-      }
-      
-      .header-cards-container {
-        margin-top: 8px;
-      }
-      
-      .header-cards-container:empty {
-        display: none;
-      }
+      ${HEADER_FOOTER_STYLES}
       
       /* ============================= */
       /* BODY */
@@ -929,32 +888,23 @@ export class UniversalCard extends HTMLElement {
     const header = this.shadowRoot.querySelector('.header');
     
     if (header) {
-      // Click to toggle
-      header.addEventListener('click', (e) => this._onHeaderClick(e));
-      
-      // Keyboard support
-      header.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this._toggle();
-        }
-      });
+      // Listen for custom events from Header component
+      header.addEventListener('uc-toggle', () => this._toggle());
+      header.addEventListener('uc-expand', () => this._expand());
+      header.addEventListener('uc-collapse', () => this._collapse());
+      header.addEventListener('uc-context-menu', (e) => this._handleContextMenu(e));
     }
   }
   
   /**
-   * Handle header click
+   * Handle context menu event from header
    * 
    * @private
-   * @param {Event} event - Click event
+   * @param {CustomEvent} event - Context menu event
    */
-  _onHeaderClick(event) {
-    // Ignore clicks on interactive elements
-    if (event.target.closest('ha-icon-button, button, a')) {
-      return;
-    }
-    
-    this._toggle();
+  _handleContextMenu(event) {
+    // Will be implemented in Phase 4: Context Menu feature
+    console.debug('[UniversalCard] Context menu:', event.detail);
   }
   
   /**
@@ -1063,21 +1013,15 @@ export class UniversalCard extends HTMLElement {
    * @private
    */
   _updateExpandedUI() {
-    const header = this.shadowRoot.querySelector('.header');
-    const body = this.shadowRoot.querySelector('.body');
-    const expandIcon = this.shadowRoot.querySelector('.expand-icon');
-    
-    if (header) {
-      header.classList.toggle('expanded', this._expanded);
-      header.setAttribute('aria-expanded', String(this._expanded));
+    // Update Header component
+    if (this._header) {
+      this._header.expanded = this._expanded;
     }
     
+    // Update body state
+    const body = this.shadowRoot.querySelector('.body');
     if (body) {
       body.dataset.state = this._expanded ? 'expanded' : 'collapsed';
-    }
-    
-    if (expandIcon) {
-      expandIcon.classList.toggle('expanded', this._expanded);
     }
   }
   

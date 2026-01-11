@@ -8,9 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project structure
-- HACS integration (manifest.json, hacs.json, __init__.py)
-- Git repository setup
+- ✅ Initial project structure
+- ✅ HACS integration (manifest.json, hacs.json, __init__.py)
+- ✅ Git repository setup
+- ✅ Entry point (universal-card.js)
+- ✅ Core: UniversalCard class with Shadow DOM
+- ✅ Core: UniversalCardEditor (visual editor)
+- ✅ Core: ConfigManager with validation
+- ✅ Core: Constants (body modes, themes, actions, etc.)
+- ✅ Utils: helpers (deep merge, fire event, etc.)
+- ✅ Utils: performance (debounce, throttle, RAF)
+- ✅ Utils: ha-helpers (card creation, state access)
+- ✅ README with full documentation
+- ✅ LICENSE (MIT)
 
 ### TODO - Phase 1: Core
 - [ ] Entry point (universal-card.js)
@@ -21,12 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] Error boundaries with popup
 - [ ] Debug mode
 
-### TODO - Phase 2: Header/Footer
-- [ ] Flexible Header with slots
-- [ ] Optional Footer
-- [ ] Header/Footer actions (tap, hold, double-tap)
-- [ ] Badges in header
-- [ ] Sticky header
+### TODO - Phase 2: Header/Footer ✅
+- [x] Flexible Header with slots (header_left, header_right, header.cards)
+- [x] Optional Footer component
+- [x] Header/Footer actions (tap, hold, double-tap)
+- [x] Badges component with entity states, counters, thresholds
+- [x] Sticky header
+- [x] Header/Footer styles
 
 ### TODO - Phase 3: Body Modes
 - [ ] CSS animations (GPU-accelerated)
