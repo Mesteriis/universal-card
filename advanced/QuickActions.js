@@ -8,7 +8,6 @@
  */
 
 import { fireEvent } from '../utils/helpers.js';
-import { createCard } from '../utils/ha-helpers.js';
 
 /**
  * Типы быстрых действий

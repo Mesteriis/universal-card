@@ -25,7 +25,12 @@ const config = {
   bundle: true,
   outfile: 'universal-card.js',
   format: 'iife',
-  target: ['es2020', 'safari14'],
+  target: ['chrome80', 'firefox78', 'safari13'],
+  supported: {
+    // Отключаем фичи которые могут вызвать проблемы
+    'for-of': true,
+    'const-and-let': true,
+  },
   minify: !isDev,
   sourcemap: isDev,
   banner: {
