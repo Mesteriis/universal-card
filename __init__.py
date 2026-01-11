@@ -19,7 +19,7 @@ from typing import Final
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.components.frontend import async_register_built_in_panel
+from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,8 +28,7 @@ DOMAIN: Final = "universal_card"
 VERSION: Final = "1.0.0"
 
 # Пути к статическим файлам
-CARD_PATH: Final = "/universal-card"
-CARD_URL: Final = f"{CARD_PATH}/universal-card.js"
+URL_BASE: Final = "/universal_card_static"
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -39,24 +38,19 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     component_path = Path(__file__).parent
     
     # Регистрируем статический путь для JS файлов
-    # cache_headers=False для режима разработки (изменения видны сразу)
-    await hass.http.async_register_static_paths([
-        StaticPathConfig(
-            url_path=CARD_PATH,
-            path=str(component_path),
-            cache_headers=False  # Отключаем кеш для разработки
-        )
-    ])
-    
-    # Добавляем ресурс в Lovelace
-    hass.data.setdefault("lovelace_resources", set()).add(
-        f"{CARD_URL}?v={VERSION}"
+    hass.http.register_static_path(
+        URL_BASE,
+        str(component_path),
+        cache_headers=False  # Отключаем кеш для разработки
     )
     
+    # Добавляем JS ресурс в frontend
+    add_extra_js_url(hass, f"{URL_BASE}/universal-card.js?v={VERSION}")
+    
     _LOGGER.info(
-        "Universal Card v%s loaded. Resource: %s",
+        "Universal Card v%s loaded. Resource: %s/universal-card.js",
         VERSION,
-        CARD_URL
+        URL_BASE
     )
     
     return True
