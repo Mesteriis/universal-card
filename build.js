@@ -25,7 +25,7 @@ const config = {
   bundle: true,
   outfile: 'universal-card.js',
   format: 'iife',
-  target: ['es2017', 'safari12'],
+  target: ['es2020', 'safari14'],
   minify: !isDev,
   sourcemap: isDev,
   banner: {
