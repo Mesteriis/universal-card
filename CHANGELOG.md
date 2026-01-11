@@ -39,15 +39,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Sticky header
 - [x] Header/Footer styles
 
-### TODO - Phase 3: Body Modes
-- [ ] CSS animations (GPU-accelerated)
-- [ ] Expand mode
-- [ ] CSS Grid with colspan/rowspan
-- [ ] Modal mode
-- [ ] Fullscreen mode
-- [ ] Tabs mode
-- [ ] Carousel mode
-- [ ] Subview mode
+### TODO - Phase 3: Body Modes ✅
+- [x] CSS animations (GPU-accelerated)
+- [x] Expand mode with staggered card animations
+- [x] CSS Grid with colspan/rowspan
+- [x] Modal mode with backdrop blur
+- [x] Fullscreen mode with slide-up animation
+- [x] Tabs mode with indicator
+- [x] Carousel mode with swipe & autoplay
+- [ ] Subview mode (deferred)
 
 ### TODO - Phase 4: Features
 - [ ] Visibility Conditions
