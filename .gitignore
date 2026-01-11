@@ -33,4 +33,4 @@ build/
 
 # Node (if using build tools)
 node_modules/
-package-lock.json
+# package-lock.json is needed for reproducible builds in CI
