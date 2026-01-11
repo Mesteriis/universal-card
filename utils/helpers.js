@@ -8,6 +8,57 @@
  */
 
 // =============================================================================
+// DEBUG LOGGING
+// =============================================================================
+
+/** @type {boolean} Debug mode flag */
+let _debugEnabled = false;
+
+/**
+ * Enable or disable debug mode
+ * @param {boolean} enabled - Enable debug logging
+ */
+export function setDebugMode(enabled) {
+  _debugEnabled = enabled;
+}
+
+/**
+ * Check if debug mode is enabled
+ * @returns {boolean}
+ */
+export function isDebugMode() {
+  return _debugEnabled;
+}
+
+/**
+ * Debug log - only outputs when debug mode is enabled
+ * @param {...any} args - Arguments to log
+ */
+export function debug(...args) {
+  if (_debugEnabled) {
+    console.log(...args);
+  }
+}
+
+/**
+ * Debug warn - only outputs when debug mode is enabled
+ * @param {...any} args - Arguments to log
+ */
+export function debugWarn(...args) {
+  if (_debugEnabled) {
+    console.warn(...args);
+  }
+}
+
+/**
+ * Debug error - always outputs (errors are important)
+ * @param {...any} args - Arguments to log
+ */
+export function debugError(...args) {
+  console.error(...args);
+}
+
+// =============================================================================
 // ID GENERATION
 // =============================================================================
 

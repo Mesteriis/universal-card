@@ -23,7 +23,7 @@ import {
 } from './constants.js';
 
 import { ConfigManager } from './config.js';
-import { generateId, fireEvent, deepClone } from '../utils/helpers.js';
+import { generateId, fireEvent, deepClone, debug } from '../utils/helpers.js';
 import { debounce, throttle, rafDouble } from '../utils/performance.js';
 import { 
   getCardHelpers, 
@@ -116,11 +116,11 @@ export class UniversalCard extends HTMLElement {
    */
   constructor() {
     super();
-    console.log('[UC] constructor() called');
+    debug('[UC] constructor() called');
     
     // Attach shadow DOM
     this.attachShadow({ mode: 'open' });
-    console.log('[UC] shadowRoot attached');
+    debug('[UC] shadowRoot attached');
     
     // ===========================================
     // STATE
@@ -247,7 +247,7 @@ export class UniversalCard extends HTMLElement {
    * Called when element is added to DOM
    */
   connectedCallback() {
-    console.log('[UC] connectedCallback()');
+    debug('[UC] connectedCallback()');
     // Register event listeners
     window.addEventListener(EVENTS.CARD_CONTROL, this._boundControlHandler);
     window.addEventListener('resize', this._resizeHandler);
@@ -260,14 +260,14 @@ export class UniversalCard extends HTMLElement {
     if (this._footer && this._footer.attach) this._footer.attach();
     if (this._mode && this._mode.attach) this._mode.attach();
     
-    console.log('[UC] connectedCallback() done');
+    debug('[UC] connectedCallback() done');
   }
   
   /**
    * Called when element is removed from DOM
    */
   disconnectedCallback() {
-    console.log('[UC] disconnectedCallback()');
+    debug('[UC] disconnectedCallback()');
     
     // Cleanup event listeners
     window.removeEventListener(EVENTS.CARD_CONTROL, this._boundControlHandler);
@@ -285,7 +285,7 @@ export class UniversalCard extends HTMLElement {
     this._destroyIntersectionObserver();
     
     // Note: don't destroy child cards - they might be reused
-    console.log('[UC] disconnectedCallback() done');
+    debug('[UC] disconnectedCallback() done');
   }
   
   // ===========================================================================
@@ -344,13 +344,13 @@ export class UniversalCard extends HTMLElement {
    * @throws {Error} If configuration is invalid
    */
   setConfig(config) {
-    console.log('[UC] setConfig() called', config);
+    debug('[UC] setConfig() called', config);
     const startTime = performance.now();
     
     // Validate and normalize configuration
     try {
       this._config = ConfigManager.normalize(config);
-      console.log('[UC] config normalized');
+      debug('[UC] config normalized');
     } catch(e) {
       console.error('[UC] config normalize error:', e);
       throw e;
@@ -381,67 +381,67 @@ export class UniversalCard extends HTMLElement {
    * @private
    */
   async _initializeCard() {
-    console.log('[UC] _initializeCard() start');
+    debug('[UC] _initializeCard() start');
     try {
       // Load card helpers
-      console.log('[UC] getting card helpers...');
+      debug('[UC] getting card helpers...');
       this._helpers = await getCardHelpers();
-      console.log('[UC] card helpers loaded');
+      debug('[UC] card helpers loaded');
       
       // Restore state if configured
       this._restoreState();
-      console.log('[UC] state restored');
+      debug('[UC] state restored');
       
       // Create Header component
       this._createHeaderComponent();
-      console.log('[UC] header created');
+      debug('[UC] header created');
       
       // Create Footer component if configured
       if (this._config.footer) {
         this._createFooterComponent();
-        console.log('[UC] footer created');
+        debug('[UC] footer created');
       }
       
       // Create body mode instance
       this._createModeInstance();
-      console.log('[UC] mode created:', this._config.body_mode);
+      debug('[UC] mode created:', this._config.body_mode);
       
       // Perform initial render
-      console.log('[UC] starting render...');
+      debug('[UC] starting render...');
       await this._render();
-      console.log('[UC] render done');
+      debug('[UC] render done');
       
       // Load header cards asynchronously
       if (this._header) {
-        console.log('[UC] loading header cards...');
+        debug('[UC] loading header cards...');
         await this._header.loadCards();
-        console.log('[UC] header cards loaded');
+        debug('[UC] header cards loaded');
       }
       
       // Load footer cards asynchronously
       if (this._footer) {
-        console.log('[UC] loading footer cards...');
+        debug('[UC] loading footer cards...');
         await this._footer.loadCards();
-        console.log('[UC] footer cards loaded');
+        debug('[UC] footer cards loaded');
       }
       
       // Setup lazy loading or load body cards
       if (this._config.lazy_load) {
         this._observeForLazyLoad();
-        console.log('[UC] lazy load setup');
+        debug('[UC] lazy load setup');
       } else if (this._expanded) {
-        console.log('[UC] loading body cards...');
+        debug('[UC] loading body cards...');
         await this._loadBodyCards();
-        console.log('[UC] body cards loaded');
+        debug('[UC] body cards loaded');
       }
       
       // Bind events
       this._bindEvents();
-      console.log('[UC] events bound');
+      debug('[UC] events bound');
       
       // Mark as initialized
       this._initialized = true;
-      console.log('[UC] initialization complete!');
+      debug('[UC] initialization complete!');
       
       // Apply pending hass
       if (this._pendingHass) {
@@ -1037,18 +1037,18 @@ export class UniversalCard extends HTMLElement {
     const header = this.shadowRoot.querySelector('.header');
     
     if (header) {
-      console.log('[UC] binding header events');
+      debug('[UC] binding header events');
       // Listen for custom events from Header component
       header.addEventListener('uc-toggle', () => {
-        console.log('[UC] uc-toggle received!');
+        debug('[UC] uc-toggle received!');
         this._toggle();
       });
       header.addEventListener('uc-expand', () => {
-        console.log('[UC] uc-expand received!');
+        debug('[UC] uc-expand received!');
         this._expand();
       });
       header.addEventListener('uc-collapse', () => {
-        console.log('[UC] uc-collapse received!');
+        debug('[UC] uc-collapse received!');
         this._collapse();
       });
       header.addEventListener('uc-context-menu', (e) => this._handleContextMenu(e));

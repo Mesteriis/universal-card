@@ -9,7 +9,7 @@
  * @module ui/Header
  */
 
-import { fireEvent, generateId } from '../utils/helpers.js';
+import { fireEvent, generateId, debug } from '../utils/helpers.js';
 import { createCardElements, executeAction, getStateValue } from '../utils/ha-helpers.js';
 import { ACTION_TYPES } from '../core/constants.js';
 
@@ -457,17 +457,17 @@ export class Header {
    * @param {Event} event - Click event
    */
   _handleClick(event) {
-    console.log('[UC-Header] click!', event.target);
+    debug('[UC-Header] click!', event.target);
     
     // Ignore if clicking on interactive elements
     if (this._isInteractiveElement(event.target)) {
-      console.log('[UC-Header] ignored - interactive element');
+      debug('[UC-Header] ignored - interactive element');
       return;
     }
     
     // Ignore if was holding
     if (this._isHolding) {
-      console.log('[UC-Header] ignored - was holding');
+      debug('[UC-Header] ignored - was holding');
       this._isHolding = false;
       return;
     }
@@ -479,7 +479,7 @@ export class Header {
     
     if (timeSinceLastTap < this._doubleTapThreshold) {
       // Double-tap detected
-      console.log('[UC-Header] double-tap detected');
+      debug('[UC-Header] double-tap detected');
       event.preventDefault();
       this._executeAction('double_tap_action');
       return;
@@ -635,7 +635,7 @@ export class Header {
       let el = target;
       while (el && el !== this._element) {
         if (el.matches && el.matches(interactiveSelectors.join(', '))) {
-          console.log('[UC-Header] blocked interactive:', el.tagName);
+          debug('[UC-Header] blocked interactive:', el.tagName);
           return true;
         }
         el = el.parentElement;
@@ -652,43 +652,43 @@ export class Header {
    * @param {string} actionKey - Action config key
    */
   _executeAction(actionKey) {
-    console.log('[UC-Header] _executeAction:', actionKey);
+    debug('[UC-Header] _executeAction:', actionKey);
     const actionConfig = this._config[actionKey];
-    console.log('[UC-Header] actionConfig:', actionConfig);
+    debug('[UC-Header] actionConfig:', actionConfig);
     
     // Default tap action is toggle
     if (!actionConfig && actionKey === 'tap_action') {
-      console.log('[UC-Header] firing uc-toggle (default)');
+      debug('[UC-Header] firing uc-toggle (default)');
       fireEvent(this._element, 'uc-toggle');
       return;
     }
     
     if (!actionConfig || actionConfig.action === ACTION_TYPES.NONE) {
-      console.log('[UC-Header] no action config or action=none');
+      debug('[UC-Header] no action config or action=none');
       return;
     }
     
     // Handle expand/collapse actions
     if (actionConfig.action === ACTION_TYPES.EXPAND) {
-      console.log('[UC-Header] firing uc-expand');
+      debug('[UC-Header] firing uc-expand');
       fireEvent(this._element, 'uc-expand');
       return;
     }
     
     if (actionConfig.action === ACTION_TYPES.COLLAPSE) {
-      console.log('[UC-Header] firing uc-collapse');
+      debug('[UC-Header] firing uc-collapse');
       fireEvent(this._element, 'uc-collapse');
       return;
     }
     
     if (actionConfig.action === 'toggle') {
-      console.log('[UC-Header] firing uc-toggle');
+      debug('[UC-Header] firing uc-toggle');
       fireEvent(this._element, 'uc-toggle');
       return;
     }
     
     // Execute HA action
-    console.log('[UC-Header] executing HA action');
+    debug('[UC-Header] executing HA action');
     executeAction(this._hass, this._element, actionConfig);
   }
   

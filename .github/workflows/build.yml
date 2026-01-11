@@ -1,0 +1,145 @@
+name: Build Universal Card
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'core/**'
+      - 'modes/**'
+      - 'features/**'
+      - 'ui/**'
+      - 'advanced/**'
+      - 'complex/**'
+      - 'themes/**'
+      - 'widgets/**'
+      - 'editor/**'
+      - 'devtools/**'
+      - 'extensibility/**'
+      - 'styles/**'
+      - 'utils/**'
+      - 'build.js'
+      - 'package.json'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -f universal-card.js ]; then
+            echo "Build failed: universal-card.js not found"
+            exit 1
+          fi
+          echo "✅ Build successful!"
+          echo "📦 File size: $(wc -c < universal-card.js | tr -d ' ') bytes"
+          echo "📝 Lines: $(wc -l < universal-card.js | tr -d ' ')"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet universal-card.js 2>/dev/null; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit built file
+        if: github.event_name == 'push' && steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add universal-card.js
+          git commit -m "🔨 Auto-build: universal-card.js [skip ci]"
+          git push
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal-card-js
+          path: universal-card.js
+          retention-days: 30
+
+  # Создание релиза при пуше тега
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Universal Card v${{ steps.get_version.outputs.VERSION }}
+            
+            ### 📦 Установка через HACS
+            1. Добавьте репозиторий в HACS как custom repository
+            2. Категория: Integration
+            3. Установите Universal Card
+            4. Перезапустите Home Assistant
+            5. Добавьте в `configuration.yaml`:
+               ```yaml
+               universal_card:
+               ```
+            
+            ### 🔧 Ручная установка
+            1. Скопируйте папку `custom_components/universal_card` в свой `config/custom_components/`
+            2. Перезапустите Home Assistant
+            3. Добавьте в `configuration.yaml`:
+               ```yaml
+               universal_card:
+               ```
+            
+            ### 📋 Изменения
+            См. [CHANGELOG.md](CHANGELOG.md)
+          files: |
+            universal-card.js
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
