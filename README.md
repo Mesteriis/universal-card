@@ -5,10 +5,58 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="version"/>
-  <img src="https://img.shields.io/badge/HACS-Custom-orange.svg" alt="HACS"/>
-  <img src="https://img.shields.io/badge/Home%20Assistant-2024.1+-brightgreen.svg" alt="HA version"/>
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="license"/>
+  <!-- Version & Compatibility -->
+  <a href="https://github.com/Mesteriis/universal-card/releases">
+    <img src="https://img.shields.io/github/v/release/Mesteriis/universal-card?style=flat-square&color=blue" alt="Release"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card">
+    <img src="https://img.shields.io/badge/Home%20Assistant-2024.1+-brightgreen?style=flat-square" alt="HA version"/>
+  </a>
+  <a href="https://github.com/hacs/integration">
+    <img src="https://img.shields.io/badge/HACS-Custom-orange?style=flat-square" alt="HACS"/>
+  </a>
+</p>
+
+<p align="center">
+  <!-- GitHub Stats -->
+  <a href="https://github.com/Mesteriis/universal-card/stargazers">
+    <img src="https://img.shields.io/github/stars/Mesteriis/universal-card?style=flat-square&color=yellow" alt="Stars"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/network/members">
+    <img src="https://img.shields.io/github/forks/Mesteriis/universal-card?style=flat-square" alt="Forks"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/issues">
+    <img src="https://img.shields.io/github/issues/Mesteriis/universal-card?style=flat-square" alt="Issues"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/pulls">
+    <img src="https://img.shields.io/github/issues-pr/Mesteriis/universal-card?style=flat-square" alt="Pull Requests"/>
+  </a>
+</p>
+
+<p align="center">
+  <!-- Build & Quality -->
+  <a href="https://github.com/Mesteriis/universal-card/actions/workflows/build.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/Mesteriis/universal-card/build.yml?style=flat-square&label=build" alt="Build Status"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/Mesteriis/universal-card?style=flat-square&color=green" alt="License"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card">
+    <img src="https://img.shields.io/github/repo-size/Mesteriis/universal-card?style=flat-square" alt="Repo Size"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/commits/main">
+    <img src="https://img.shields.io/github/last-commit/Mesteriis/universal-card?style=flat-square" alt="Last Commit"/>
+  </a>
+</p>
+
+<p align="center">
+  <!-- Downloads -->
+  <a href="https://github.com/Mesteriis/universal-card/releases">
+    <img src="https://img.shields.io/github/downloads/Mesteriis/universal-card/total?style=flat-square&label=downloads&color=brightgreen" alt="Downloads"/>
+  </a>
+  <a href="https://github.com/Mesteriis/universal-card/graphs/contributors">
+    <img src="https://img.shields.io/github/contributors/Mesteriis/universal-card?style=flat-square" alt="Contributors"/>
+  </a>
 </p>
 
 <p align="center">
