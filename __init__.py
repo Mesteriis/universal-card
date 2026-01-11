@@ -38,11 +38,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     component_path = Path(__file__).parent
     
     # Регистрируем статический путь для JS файлов
-    hass.http.register_static_path(
-        URL_BASE,
-        str(component_path),
-        cache_headers=False  # Отключаем кеш для разработки
-    )
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            url_path=URL_BASE,
+            path=str(component_path),
+            cache_headers=False  # Отключаем кеш для разработки
+        )
+    ])
     
     # Добавляем JS ресурс в frontend
     add_extra_js_url(hass, f"{URL_BASE}/universal-card.js?v={VERSION}")
