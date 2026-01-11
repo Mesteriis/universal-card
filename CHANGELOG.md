@@ -87,12 +87,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Media Player Mini (controls, progress, volume, sources)
 - [x] Notification Center (persistent notifications, grouping, dismiss)
 
-### TODO - Phase 9: Editor
-- [ ] Visual Editor
-- [ ] Config Validation
-- [ ] Drag & Drop Reorder
-- [ ] Resizable Cards
-- [ ] Lock Mode
+### TODO - Phase 9: Editor ✅
+- [x] ConfigValidator (schema validation, autocomplete, suggestions)
+- [x] DragDrop (reorder cards with drag & drop)
+- [x] ResizableCards (resize cards with handles)
+- [x] LockMode (lock cards from accidental changes)
+- [x] EditorComponents (TextInput, NumberInput, Checkbox, Select, EntityPicker, IconPicker, ColorPicker, Section, ActionEditor)
+- [x] MultiLanguage (i18n support: EN, RU, ES, DE + more)
 
 ### TODO - Phase 10: Developer Tools
 - [ ] Event Logger
