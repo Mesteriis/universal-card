@@ -95,10 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] EditorComponents (TextInput, NumberInput, Checkbox, Select, EntityPicker, IconPicker, ColorPicker, Section, ActionEditor)
 - [x] MultiLanguage (i18n support: EN, RU, ES, DE + more)
 
-### TODO - Phase 10: Developer Tools
-- [ ] Event Logger
-- [ ] State Inspector
-- [ ] Performance Profiler
+### TODO - Phase 10: Developer Tools ✅
+- [x] EventLogger (levels, categories, grouping, panel UI, export)
+- [x] StateInspector (hass, config, internal state, live editing)
+- [x] PerformanceProfiler (render times, FPS, memory, charts)
 
 ### TODO - Phase 11: Extensibility
 - [ ] Plugin System
