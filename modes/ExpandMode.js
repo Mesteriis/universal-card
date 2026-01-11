@@ -63,11 +63,61 @@ export class ExpandMode extends BaseMode {
     
     // Apply grid styles
     if (this._config.grid) {
-      const { columns = 1, gap = '16px' } = this._config.grid;
-      if (columns > 1) {
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        grid.style.gap = gap;
+      const g = this._config.grid;
+      const columns = g.columns || 1;
+      const isStringColumns = typeof g.columns === 'string';
+      const hasMultipleColumns = isStringColumns || (typeof columns === 'number' && columns > 1);
+      
+      if (hasMultipleColumns || g.display === 'grid') {
+        grid.classList.add('has-grid');
+        
+        // Columns - support "1fr 2fr", "auto 1fr auto", number, or repeat
+        if (isStringColumns) {
+          grid.style.gridTemplateColumns = g.columns;
+        } else if (columns > 1) {
+          grid.style.gridTemplateColumns = 'repeat(' + columns + ', 1fr)';
+        }
+        
+        // Rows
+        if (g.rows) {
+          if (typeof g.rows === 'string') {
+            grid.style.gridTemplateRows = g.rows;
+          } else {
+            grid.style.gridTemplateRows = 'repeat(' + g.rows + ', auto)';
+          }
+        }
+        
+        // Auto rows/columns
+        if (g.auto_rows) grid.style.gridAutoRows = g.auto_rows;
+        if (g.auto_columns) grid.style.gridAutoColumns = g.auto_columns;
+        
+        // Gap
+        grid.style.gap = g.gap || '16px';
+        if (g.row_gap) grid.style.rowGap = g.row_gap;
+        if (g.column_gap) grid.style.columnGap = g.column_gap;
+        
+        // Alignment - items (individual cells)
+        if (g.align_items) grid.style.alignItems = g.align_items;
+        if (g.justify_items) grid.style.justifyItems = g.justify_items;
+        if (g.place_items) grid.style.placeItems = g.place_items;
+        
+        // Alignment - content (whole grid)
+        if (g.align_content) grid.style.alignContent = g.align_content;
+        if (g.justify_content) grid.style.justifyContent = g.justify_content;
+        if (g.place_content) grid.style.placeContent = g.place_content;
+        
+        // Direction (for flex fallback or grid-auto-flow)
+        if (g.direction) {
+          if (g.direction === 'row' || g.direction === 'row-reverse') {
+            grid.style.gridAutoFlow = g.direction === 'row-reverse' ? 'row dense' : 'row';
+          } else if (g.direction === 'column' || g.direction === 'column-reverse') {
+            grid.style.gridAutoFlow = g.direction === 'column-reverse' ? 'column dense' : 'column';
+          }
+        }
+        if (g.auto_flow) grid.style.gridAutoFlow = g.auto_flow;
+        
+        // Dense packing
+        if (g.dense) grid.style.gridAutoFlow = (grid.style.gridAutoFlow || 'row') + ' dense';
       }
     }
     
@@ -236,6 +286,11 @@ export class ExpandMode extends BaseMode {
         display: flex;
         flex-direction: column;
         gap: var(--uc-gap, 16px);
+      }
+      
+      .expand-grid.has-grid {
+        display: grid !important;
+        flex-direction: unset;
       }
       
       /* Card wrapper */

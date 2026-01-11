@@ -126,12 +126,12 @@ export const HEADER_STYLES = `
     line-height: 1.3;
   }
   
-  /* Badges in header */
+  /* Badges in header (right side) */
   .header-badges {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 6px;
-    margin-top: 6px;
   }
   
   .header-badges:empty {

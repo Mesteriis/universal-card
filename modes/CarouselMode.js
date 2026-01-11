@@ -89,19 +89,37 @@ export class CarouselMode extends BaseMode {
     this._container.className = 'carousel-mode';
     this._container.dataset.state = this._active ? 'expanded' : 'collapsed';
     
-    // Carousel viewport
+    // Carousel viewport (flex container)
     const viewport = document.createElement('div');
     viewport.className = 'carousel-viewport';
+    
+    // Previous arrow (left side)
+    if (this._showArrows) {
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'carousel-arrow carousel-arrow-prev';
+      prevBtn.innerHTML = '<ha-icon icon="mdi:chevron-left"></ha-icon>';
+      prevBtn.addEventListener('click', () => this._goTo(this._currentIndex - 1));
+      viewport.appendChild(prevBtn);
+    }
+    
+    // Track wrapper (for overflow hidden)
+    const trackWrapper = document.createElement('div');
+    trackWrapper.className = 'carousel-track-wrapper';
     
     // Slides track
     this._track = document.createElement('div');
     this._track.className = 'carousel-track';
     
-    viewport.appendChild(this._track);
+    trackWrapper.appendChild(this._track);
+    viewport.appendChild(trackWrapper);
     
-    // Navigation arrows
+    // Next arrow (right side)
     if (this._showArrows) {
-      viewport.appendChild(this._renderArrows());
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'carousel-arrow carousel-arrow-next';
+      nextBtn.innerHTML = '<ha-icon icon="mdi:chevron-right"></ha-icon>';
+      nextBtn.addEventListener('click', () => this._goTo(this._currentIndex + 1));
+      viewport.appendChild(nextBtn);
     }
     
     this._container.appendChild(viewport);
@@ -112,8 +130,8 @@ export class CarouselMode extends BaseMode {
       this._container.appendChild(this._indicators);
     }
     
-    // Bind touch events
-    this._bindTouchEvents(viewport);
+    // Bind touch events to track wrapper
+    this._bindTouchEvents(trackWrapper);
     
     return this._container;
   }
@@ -469,7 +487,7 @@ export class CarouselMode extends BaseMode {
     
     // Load cards if not loaded
     if (!this._loaded) {
-      await this.loadCards(this._config.body?.cards || []);
+      await this.loadCards(this._config.body?.cards || this._config.cards || []);
       this._populateSlides();
     }
     
@@ -564,7 +582,14 @@ export class CarouselMode extends BaseMode {
       
       .carousel-viewport {
         position: relative;
+        display: flex;
+        align-items: stretch;
+      }
+      
+      .carousel-track-wrapper {
+        flex: 1;
         overflow: hidden;
+        min-width: 0;
       }
       
       /* ============================= */
@@ -597,38 +622,33 @@ export class CarouselMode extends BaseMode {
       /* ============================= */
       
       .carousel-arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        background: var(--ha-card-background, white);
+        flex-shrink: 0;
+        width: 28px;
+        background: rgba(255, 255, 255, 0.05);
         border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: background 0.2s ease;
+        opacity: 0.6;
       }
       
       .carousel-arrow:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+        opacity: 1;
       }
       
       .carousel-arrow-prev {
-        left: 8px;
+        border-radius: 8px 0 0 8px;
       }
       
       .carousel-arrow-next {
-        right: 8px;
+        border-radius: 0 8px 8px 0;
       }
       
       .carousel-arrow ha-icon {
-        --mdc-icon-size: 24px;
+        --mdc-icon-size: 16px;
         color: var(--primary-text-color);
       }
       

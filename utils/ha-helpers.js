@@ -349,7 +349,24 @@ function handleMoreInfoAction(element, config) {
     detail: { entityId }
   });
   
-  element.dispatchEvent(event);
+  // Dispatch from a connected element - use document body as fallback
+  let target = element;
+  
+  // Find the root of the card (universal-card element)
+  while (target && target.tagName !== 'UNIVERSAL-CARD') {
+    target = target.parentElement || target.getRootNode().host;
+  }
+  
+  // If we found it and it's connected, use it
+  if (target && target.isConnected) {
+    target.dispatchEvent(event);
+  } else {
+    // Fallback: find any ha-panel-lovelace or use document
+    const panel = document.querySelector('ha-panel-lovelace') || 
+                  document.querySelector('home-assistant') ||
+                  document.body;
+    panel.dispatchEvent(event);
+  }
 }
 
 /**

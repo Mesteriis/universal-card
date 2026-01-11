@@ -56,6 +56,8 @@ export const VALID_BODY_MODES = Object.values(BODY_MODES);
  * @enum {string}
  */
 export const THEMES = Object.freeze({
+  DEFAULT: 'default',
+  TRANSPARENT: 'transparent',
   SOLID: 'solid',
   GLASS: 'glass',
   GLASSMORPHISM: 'glassmorphism',
@@ -64,7 +66,28 @@ export const THEMES = Object.freeze({
   GRADIENT: 'gradient',
   DARK: 'dark',
   NEON: 'neon',
-  AURORA: 'aurora'
+  AURORA: 'aurora',
+  // Dark themes
+  CARBON: 'carbon',
+  SLATE: 'slate',
+  OBSIDIAN: 'obsidian',
+  CHARCOAL: 'charcoal',
+  MIDNIGHT: 'midnight',
+  CYBER: 'cyber',
+  VOID: 'void',
+  EMBER: 'ember',
+  FOREST: 'forest',
+  OCEAN: 'ocean',
+  PURPLE_HAZE: 'purple-haze',
+  MATRIX: 'matrix',
+  GRAPHITE: 'graphite',
+  SMOKE: 'smoke',
+  // Popular color schemes
+  NORD: 'nord',
+  DRACULA: 'dracula',
+  MONOKAI: 'monokai',
+  TOKYO_NIGHT: 'tokyo-night',
+  CATPPUCCIN: 'catppuccin'
 });
 
 // =============================================================================
@@ -211,7 +234,7 @@ export const DEFAULTS = Object.freeze({
   body_mode: BODY_MODES.EXPAND,
   expanded: false,
   animation: true,
-  theme: THEMES.SOLID,
+  theme: THEMES.DEFAULT,
   
   // Layout
   border_radius: 'var(--ha-card-border-radius, 12px)',

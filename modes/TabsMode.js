@@ -132,11 +132,12 @@ export class TabsMode extends BaseMode {
         tabBtn.appendChild(icon);
       }
       
-      // Label
-      if (this._showLabels && tab.label) {
+      // Label (support both 'label' and 'title')
+      const tabLabel = tab.label || tab.title;
+      if (this._showLabels && tabLabel) {
         const label = document.createElement('span');
         label.className = 'tab-label';
-        label.textContent = tab.label;
+        label.textContent = tabLabel;
         tabBtn.appendChild(label);
       }
       
@@ -354,11 +355,16 @@ export class TabsMode extends BaseMode {
           wrapper.className = 'card-wrapper';
           
           const cardConfig = cards[cardIndex];
-          if (cardConfig.colspan) {
-            wrapper.style.gridColumn = `span ${cardConfig.colspan}`;
-          }
-          if (cardConfig.rowspan) {
-            wrapper.style.gridRow = `span ${cardConfig.rowspan}`;
+          if (cardConfig) {
+            const colspan = cardConfig.colspan || (cardConfig.card_options && cardConfig.card_options.colspan);
+            const rowspan = cardConfig.rowspan || (cardConfig.card_options && cardConfig.card_options.rowspan);
+            
+            if (colspan) {
+              wrapper.style.gridColumn = 'span ' + colspan;
+            }
+            if (rowspan) {
+              wrapper.style.gridRow = 'span ' + rowspan;
+            }
           }
           
           wrapper.appendChild(card);

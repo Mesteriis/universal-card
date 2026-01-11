@@ -1,8 +1,7 @@
 /**
  * Universal Card - Entry Point
- * 
- * Этот файл собирает все модули в один бандл
  */
+console.log('[UC] 1. Start loading');
 
 // =============================================================================
 // CORE
@@ -20,10 +19,16 @@ import {
   CSS_VARS,
   LIMITS
 } from '../core/constants.js';
+console.log('[UC] 2. Constants loaded');
 
 import { UniversalCard } from '../core/UniversalCard.js';
+console.log('[UC] 3. UniversalCard loaded');
+
 import { UniversalCardEditor } from '../core/UniversalCardEditor.js';
+console.log('[UC] 4. Editor loaded');
+
 import { ConfigManager, ConfigValidationError } from '../core/config.js';
+console.log('[UC] 5. Config loaded');
 
 // =============================================================================
 // UTILS
@@ -38,6 +43,7 @@ import {
   whenIdle,
   measureTime
 } from '../utils/performance.js';
+console.log('[UC] 6. Performance utils loaded');
 
 import { 
   deepMerge, 
@@ -53,6 +59,7 @@ import {
   formatDateTime,
   isValidEntityId
 } from '../utils/helpers.js';
+console.log('[UC] 7. Helpers loaded');
 
 import { 
   getCardHelpers,
@@ -69,6 +76,7 @@ import {
   getCurrentUser,
   isUserAdmin
 } from '../utils/ha-helpers.js';
+console.log('[UC] 8. HA helpers loaded');
 
 // =============================================================================
 // MODES
@@ -80,6 +88,7 @@ import { FullscreenMode } from '../modes/FullscreenMode.js';
 import { TabsMode } from '../modes/TabsMode.js';
 import { CarouselMode } from '../modes/CarouselMode.js';
 import { createMode, getAllModeStyles } from '../modes/index.js';
+console.log('[UC] 9. Modes loaded');
 
 // =============================================================================
 // FEATURES
@@ -88,6 +97,7 @@ import { VisibilityConditions } from '../features/VisibilityConditions.js';
 import { StateStyles } from '../features/StateStyles.js';
 import { SwipeGestures } from '../features/SwipeGestures.js';
 import { ResponsiveBreakpoints } from '../features/ResponsiveBreakpoints.js';
+console.log('[UC] 10. Features loaded');
 
 // =============================================================================
 // UI COMPONENTS
@@ -97,6 +107,7 @@ import { Footer } from '../ui/Footer.js';
 import { Badges } from '../ui/Badges.js';
 import { ContextMenu } from '../ui/ContextMenu.js';
 import { RadialMenu } from '../ui/RadialMenu.js';
+console.log('[UC] 11. UI loaded');
 
 // =============================================================================
 // ADVANCED FEATURES
@@ -115,6 +126,7 @@ import {
   UPDATE_STRATEGIES,
   UPDATE_PRIORITY
 } from '../advanced/WebSocketOptimizer.js';
+console.log('[UC] 12. Advanced loaded');
 
 // =============================================================================
 // COMPLEX FEATURES
@@ -122,6 +134,7 @@ import {
 import { CardLinking } from '../complex/CardLinking.js';
 import { AutoGrouping } from '../complex/AutoGrouping.js';
 import { CompactMode } from '../complex/CompactMode.js';
+console.log('[UC] 13. Complex loaded');
 
 // =============================================================================
 // THEMES
@@ -134,6 +147,7 @@ import { HoverEffects } from '../themes/HoverEffects.js';
 import { ColorSchemes } from '../themes/ColorSchemes.js';
 import { LoadingVariants } from '../themes/LoadingVariants.js';
 import { MicroInteractions } from '../themes/MicroInteractions.js';
+console.log('[UC] 14. Themes loaded');
 
 // =============================================================================
 // WIDGETS
@@ -142,6 +156,7 @@ import { RestApiWidget } from '../widgets/RestApiWidget.js';
 import { ImageEntity } from '../widgets/ImageEntity.js';
 import { MediaPlayerMini } from '../widgets/MediaPlayerMini.js';
 import { NotificationCenter } from '../widgets/NotificationCenter.js';
+console.log('[UC] 15. Widgets loaded');
 
 // =============================================================================
 // EDITOR
@@ -163,6 +178,7 @@ import {
   getEditorStyles
 } from '../editor/EditorComponents.js';
 import { MultiLanguage } from '../editor/MultiLanguage.js';
+console.log('[UC] 16. Editor components loaded');
 
 // =============================================================================
 // DEVTOOLS
@@ -170,29 +186,37 @@ import { MultiLanguage } from '../editor/MultiLanguage.js';
 import { EventLogger } from '../devtools/EventLogger.js';
 import { StateInspector } from '../devtools/StateInspector.js';
 import { PerformanceProfiler } from '../devtools/PerformanceProfiler.js';
+console.log('[UC] 17. Devtools loaded');
 
 // =============================================================================
 // EXTENSIBILITY
 // =============================================================================
 import { PluginSystem } from '../extensibility/PluginSystem.js';
 import { CustomCSS } from '../extensibility/CustomCSS.js';
+console.log('[UC] 18. Extensibility loaded');
 
 // =============================================================================
 // STYLES
 // =============================================================================
 import { HEADER_FOOTER_STYLES } from '../styles/header-footer.js';
+console.log('[UC] 19. Styles loaded');
 
 // =============================================================================
 // REGISTRATION
 // =============================================================================
+console.log('[UC] 20. Starting registration...');
 
 // Регистрируем custom elements
 if (!customElements.get('universal-card')) {
+  console.log('[UC] 21. Defining universal-card...');
   customElements.define('universal-card', UniversalCard);
+  console.log('[UC] 22. universal-card defined');
 }
 
 if (!customElements.get('universal-card-editor')) {
+  console.log('[UC] 23. Defining universal-card-editor...');
   customElements.define('universal-card-editor', UniversalCardEditor);
+  console.log('[UC] 24. universal-card-editor defined');
 }
 
 // Регистрируем в Home Assistant card picker
@@ -414,3 +438,127 @@ if (process.env.NODE_ENV === 'development') {
   );
   console.log('window.UniversalCard API:', window.UniversalCard);
 }
+
+// =============================================================================
+// GLOBAL DEBUG FUNCTIONS
+// =============================================================================
+
+// Глобальный объект devtools
+var __ucLogger = null;
+var __ucProfiler = null;
+
+// Функция поиска элементов во всех Shadow DOM
+function findAllInShadowDOM(selector, root) {
+  root = root || document;
+  var results = [];
+  
+  // Поиск в текущем корне
+  var found = root.querySelectorAll(selector);
+  for (var i = 0; i < found.length; i++) {
+    results.push(found[i]);
+  }
+  
+  // Поиск во всех shadow roots
+  var allElements = root.querySelectorAll('*');
+  for (var j = 0; j < allElements.length; j++) {
+    var el = allElements[j];
+    if (el.shadowRoot) {
+      var shadowResults = findAllInShadowDOM(selector, el.shadowRoot);
+      for (var k = 0; k < shadowResults.length; k++) {
+        results.push(shadowResults[k]);
+      }
+    }
+  }
+  
+  return results;
+}
+
+window.__UC_DEVTOOLS__ = {
+  get logger() {
+    if (!__ucLogger) {
+      __ucLogger = new EventLogger({ enabled: true });
+    }
+    return __ucLogger;
+  },
+  get profiler() {
+    if (!__ucProfiler) {
+      __ucProfiler = new PerformanceProfiler({ enabled: true });
+    }
+    return __ucProfiler;
+  },
+  
+  // Поиск всех карточек (включая Shadow DOM)
+  findCards: function() {
+    return findAllInShadowDOM('universal-card');
+  },
+  
+  showLogger: function() {
+    this.logger.showPanel();
+    return 'Logger panel opened';
+  },
+  showProfiler: function() {
+    this.profiler.showPanel();
+    return 'Profiler panel opened';
+  },
+  showInspector: function() {
+    console.log('%c📊 State Inspector', 'color: #9b59b6; font-weight: bold;');
+    console.log('All universal-card elements (including Shadow DOM):');
+    var cards = this.findCards();
+    cards.forEach(function(card, i) {
+      console.log('Card ' + i + ':', {
+        title: card._config ? card._config.title : 'unknown',
+        config: card._config,
+        expanded: card._expanded,
+        hass: card._hass ? 'connected' : 'not connected',
+        bodyCards: card._bodyCards ? card._bodyCards.length : 0
+      });
+    });
+    return 'Found ' + cards.length + ' cards';
+  },
+  
+  listCards: function() {
+    var cards = this.findCards();
+    console.table(Array.from(cards).map(function(c, i) {
+      return {
+        index: i,
+        title: c._config ? c._config.title : 'unknown',
+        mode: c._config ? c._config.body_mode : 'unknown',
+        expanded: c._expanded
+      };
+    }));
+    return cards.length + ' cards found';
+  },
+  
+  toggleCard: function(index) {
+    var cards = this.findCards();
+    if (cards[index]) {
+      cards[index]._toggle();
+      return 'Toggled card ' + index;
+    }
+    return 'Card not found';
+  },
+  
+  getCard: function(index) {
+    var cards = this.findCards();
+    return cards[index] || null;
+  }
+};
+
+// Функция включения debug режима
+window.enableUniversalCardDebug = function() {
+  console.log('%c🔧 Universal Card Debug Mode Enabled', 'color: #03a9f4; font-weight: bold; font-size: 14px;');
+  console.log('');
+  console.log('%cAvailable commands:', 'font-weight: bold;');
+  console.log('  • __UC_DEVTOOLS__.listCards()       - List all cards');
+  console.log('  • __UC_DEVTOOLS__.showInspector()   - Show card states');
+  console.log('  • __UC_DEVTOOLS__.toggleCard(0)     - Toggle card by index');
+  console.log('  • __UC_DEVTOOLS__.getCard(0)        - Get card element');
+  console.log('  • __UC_DEVTOOLS__.showLogger()      - Show event logger');
+  console.log('  • __UC_DEVTOOLS__.showProfiler()    - Show profiler');
+  console.log('');
+  console.log('%cQuick access:', 'font-weight: bold;');
+  console.log('  • window.UniversalCard - Full API');
+  return 'Debug mode enabled! Try __UC_DEVTOOLS__.listCards()';
+};
+
+console.log('[UC] Debug functions registered: enableUniversalCardDebug(), __UC_DEVTOOLS__');

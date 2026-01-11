@@ -69,6 +69,12 @@ export class Header {
     
     /** @type {number} Double tap threshold ms */
     this._doubleTapThreshold = 300;
+    
+    /** @type {boolean} Whether events are attached */
+    this._attached = false;
+    
+    /** @type {Object|null} Bound event handlers for cleanup */
+    this._boundHandlers = null;
   }
   
   // ===========================================================================
@@ -124,10 +130,10 @@ export class Header {
       <div class="header-content">
         ${this._renderTitle()}
         ${this._renderSubtitle()}
-        ${this._renderBadges()}
         <div class="header-cards-slot"></div>
       </div>
       <div class="header-right">
+        ${this._renderBadges()}
         <div class="header-right-slot"></div>
         ${this._renderExpandIcon()}
       </div>
@@ -135,6 +141,7 @@ export class Header {
     
     // Bind events
     this._bindEvents();
+    this._attached = true;
     
     return this._element;
   }
@@ -410,24 +417,37 @@ export class Header {
   _bindEvents() {
     if (!this._element) return;
     
+    // Store bound handlers for cleanup
+    this._boundHandlers = {
+      click: (e) => this._handleClick(e),
+      touchstart: (e) => this._handleTouchStart(e),
+      touchend: (e) => this._handleTouchEnd(e),
+      touchcancel: () => this._cancelHold(),
+      mousedown: (e) => this._handleMouseDown(e),
+      mouseup: () => this._handleMouseUp(),
+      mouseleave: () => this._cancelHold(),
+      keydown: (e) => this._handleKeydown(e),
+      contextmenu: (e) => this._handleContextMenu(e)
+    };
+    
     // Click / Tap
-    this._element.addEventListener('click', (e) => this._handleClick(e));
+    this._element.addEventListener('click', this._boundHandlers.click);
     
     // Touch events for hold detection
-    this._element.addEventListener('touchstart', (e) => this._handleTouchStart(e), { passive: true });
-    this._element.addEventListener('touchend', (e) => this._handleTouchEnd(e));
-    this._element.addEventListener('touchcancel', () => this._cancelHold());
+    this._element.addEventListener('touchstart', this._boundHandlers.touchstart, { passive: true });
+    this._element.addEventListener('touchend', this._boundHandlers.touchend);
+    this._element.addEventListener('touchcancel', this._boundHandlers.touchcancel);
     
     // Mouse events for hold detection (desktop)
-    this._element.addEventListener('mousedown', (e) => this._handleMouseDown(e));
-    this._element.addEventListener('mouseup', () => this._handleMouseUp());
-    this._element.addEventListener('mouseleave', () => this._cancelHold());
+    this._element.addEventListener('mousedown', this._boundHandlers.mousedown);
+    this._element.addEventListener('mouseup', this._boundHandlers.mouseup);
+    this._element.addEventListener('mouseleave', this._boundHandlers.mouseleave);
     
     // Keyboard
-    this._element.addEventListener('keydown', (e) => this._handleKeydown(e));
+    this._element.addEventListener('keydown', this._boundHandlers.keydown);
     
     // Context menu (right-click)
-    this._element.addEventListener('contextmenu', (e) => this._handleContextMenu(e));
+    this._element.addEventListener('contextmenu', this._boundHandlers.contextmenu);
   }
   
   /**
@@ -437,11 +457,17 @@ export class Header {
    * @param {Event} event - Click event
    */
   _handleClick(event) {
+    console.log('[UC-Header] click!', event.target);
+    
     // Ignore if clicking on interactive elements
-    if (this._isInteractiveElement(event.target)) return;
+    if (this._isInteractiveElement(event.target)) {
+      console.log('[UC-Header] ignored - interactive element');
+      return;
+    }
     
     // Ignore if was holding
     if (this._isHolding) {
+      console.log('[UC-Header] ignored - was holding');
       this._isHolding = false;
       return;
     }
@@ -453,6 +479,7 @@ export class Header {
     
     if (timeSinceLastTap < this._doubleTapThreshold) {
       // Double-tap detected
+      console.log('[UC-Header] double-tap detected');
       event.preventDefault();
       this._executeAction('double_tap_action');
       return;
@@ -585,18 +612,37 @@ export class Header {
    * @returns {boolean} True if interactive
    */
   _isInteractiveElement(target) {
-    const interactiveSelectors = [
-      'ha-icon-button',
-      'button',
-      'a',
-      'input',
-      'select',
-      'textarea',
-      '[role="button"]',
-      '.badge'
-    ];
+    // Guard: if element is destroyed, ignore
+    if (!this._element || !target) {
+      return true; // Block interaction if header is destroyed
+    }
     
-    return target.closest(interactiveSelectors.join(', ')) !== null;
+    // Пропускаем если клик на сам header или его контент
+    if (target === this._element || this._element.contains(target)) {
+      // Проверяем только реально интерактивные элементы внутри header
+      const interactiveSelectors = [
+        'ha-icon-button',
+        'button',
+        'a[href]',
+        'input',
+        'select',
+        'textarea',
+        '.badge.clickable',
+        '.quick-action'
+      ];
+      
+      // Проверяем сам target и его родителей до header (но не включая header)
+      let el = target;
+      while (el && el !== this._element) {
+        if (el.matches && el.matches(interactiveSelectors.join(', '))) {
+          console.log('[UC-Header] blocked interactive:', el.tagName);
+          return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+    return false;
   }
   
   /**
@@ -606,35 +652,43 @@ export class Header {
    * @param {string} actionKey - Action config key
    */
   _executeAction(actionKey) {
+    console.log('[UC-Header] _executeAction:', actionKey);
     const actionConfig = this._config[actionKey];
+    console.log('[UC-Header] actionConfig:', actionConfig);
     
     // Default tap action is toggle
     if (!actionConfig && actionKey === 'tap_action') {
+      console.log('[UC-Header] firing uc-toggle (default)');
       fireEvent(this._element, 'uc-toggle');
       return;
     }
     
     if (!actionConfig || actionConfig.action === ACTION_TYPES.NONE) {
+      console.log('[UC-Header] no action config or action=none');
       return;
     }
     
     // Handle expand/collapse actions
     if (actionConfig.action === ACTION_TYPES.EXPAND) {
+      console.log('[UC-Header] firing uc-expand');
       fireEvent(this._element, 'uc-expand');
       return;
     }
     
     if (actionConfig.action === ACTION_TYPES.COLLAPSE) {
+      console.log('[UC-Header] firing uc-collapse');
       fireEvent(this._element, 'uc-collapse');
       return;
     }
     
     if (actionConfig.action === 'toggle') {
+      console.log('[UC-Header] firing uc-toggle');
       fireEvent(this._element, 'uc-toggle');
       return;
     }
     
     // Execute HA action
+    console.log('[UC-Header] executing HA action');
     executeAction(this._hass, this._element, actionConfig);
   }
   
@@ -804,18 +858,63 @@ export class Header {
   }
   
   // ===========================================================================
-  // CLEANUP
+  // LIFECYCLE
   // ===========================================================================
   
   /**
-   * Destroy the header component
+   * Detach event listeners (call from disconnectedCallback)
+   * Keeps element reference for reattachment
+   */
+  detach() {
+    this._cancelHold();
+    this._removeEventListeners();
+    this._attached = false;
+  }
+  
+  /**
+   * Reattach event listeners (call from connectedCallback)
+   */
+  attach() {
+    if (this._attached) return;
+    if (!this._element) return;
+    
+    // Rebind events
+    this._bindEvents();
+    this._attached = true;
+  }
+  
+  /**
+   * Remove all event listeners
+   * @private
+   */
+  _removeEventListeners() {
+    if (this._element && this._boundHandlers) {
+      this._element.removeEventListener('click', this._boundHandlers.click);
+      this._element.removeEventListener('touchstart', this._boundHandlers.touchstart);
+      this._element.removeEventListener('touchend', this._boundHandlers.touchend);
+      this._element.removeEventListener('touchcancel', this._boundHandlers.touchcancel);
+      this._element.removeEventListener('mousedown', this._boundHandlers.mousedown);
+      this._element.removeEventListener('mouseup', this._boundHandlers.mouseup);
+      this._element.removeEventListener('mouseleave', this._boundHandlers.mouseleave);
+      this._element.removeEventListener('keydown', this._boundHandlers.keydown);
+      this._element.removeEventListener('contextmenu', this._boundHandlers.contextmenu);
+    }
+    this._boundHandlers = null;
+  }
+  
+  /**
+   * Destroy the header component completely
    */
   destroy() {
     this._cancelHold();
+    this._removeEventListeners();
+    
     this._leftCards = [];
     this._rightCards = [];
     this._contentCards = [];
+    this._hass = null;
     this._element = null;
+    this._attached = false;
   }
 }
 

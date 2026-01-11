@@ -100,12 +100,20 @@ export class ConfigManager {
       );
     }
     
-    // Validate grid columns
-    if (config.grid?.columns) {
+    // Validate grid columns (number or string like "1fr 2fr 1fr")
+    if (config.grid && config.grid.columns !== undefined) {
       const cols = config.grid.columns;
-      if (!isNumber(cols) || cols < LIMITS.MIN_GRID_COLUMNS || cols > LIMITS.MAX_GRID_COLUMNS) {
+      // Accept strings (CSS grid template) or numbers within limits
+      if (typeof cols === 'number') {
+        if (cols < LIMITS.MIN_GRID_COLUMNS || cols > LIMITS.MAX_GRID_COLUMNS) {
+          throw new ConfigValidationError(
+            'Grid columns must be between ' + LIMITS.MIN_GRID_COLUMNS + ' and ' + LIMITS.MAX_GRID_COLUMNS,
+            'grid.columns'
+          );
+        }
+      } else if (typeof cols !== 'string') {
         throw new ConfigValidationError(
-          `Grid columns must be between ${LIMITS.MIN_GRID_COLUMNS} and ${LIMITS.MAX_GRID_COLUMNS}`,
+          'Grid columns must be a number or CSS template string',
           'grid.columns'
         );
       }
@@ -336,8 +344,15 @@ export class ConfigManager {
     // Normalize header
     normalized.header = this._normalizeSection(config.header, 'header');
     
-    // Normalize body
-    normalized.body = this._normalizeSection(config.body, 'body');
+    // Normalize body - support both config.body.cards and config.cards
+    if (config.body) {
+      normalized.body = this._normalizeSection(config.body, 'body');
+    } else if (config.cards) {
+      // If cards specified at root level, move to body.cards
+      normalized.body = { cards: config.cards };
+    } else {
+      normalized.body = { cards: [] };
+    }
     
     // Normalize footer if present
     if (config.footer) {

@@ -36,14 +36,16 @@ const config = {
   banner: {
     js: `/**
  * Universal Card v1.0.0
- * Advanced Lovelace card for Home Assistant
- * 
- * @author Mesteriis
  * @license MIT
- * @see https://github.com/Mesteriis/universal-card
- * 
  * Built: ${new Date().toISOString()}
- */`
+ */
+// Global Error Handler
+window.addEventListener('error', function(e) {
+  console.error('[UC-ERR]', e.filename, e.lineno, e.colno, e.message, e.error);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[UC-REJ]', e.reason, e.reason && e.reason.stack);
+});`
   },
   define: {
     'process.env.NODE_ENV': isDev ? '"development"' : '"production"'

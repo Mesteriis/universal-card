@@ -39,8 +39,12 @@ import { Header } from '../ui/Header.js';
 import { Footer } from '../ui/Footer.js';
 import { Badges } from '../ui/Badges.js';
 
+// Modes
+import { createMode, getAllModeStyles, TabsMode, CarouselMode } from '../modes/index.js';
+
 // Styles
 import { HEADER_FOOTER_STYLES } from '../styles/header-footer.js';
+import { THEME_STYLES } from '../styles/themes.js';
 
 // =============================================================================
 // UNIVERSAL CARD CLASS
@@ -112,9 +116,11 @@ export class UniversalCard extends HTMLElement {
    */
   constructor() {
     super();
+    console.log('[UC] constructor() called');
     
     // Attach shadow DOM
     this.attachShadow({ mode: 'open' });
+    console.log('[UC] shadowRoot attached');
     
     // ===========================================
     // STATE
@@ -147,6 +153,15 @@ export class UniversalCard extends HTMLElement {
     
     /** @type {Badges|null} Badges component instance */
     this._badges = null;
+    
+    /** @type {BaseMode|null} Body mode instance */
+    this._mode = null;
+    
+    /** @type {TabsMode|null} Tabs mode instance */
+    this._tabsMode = null;
+    
+    /** @type {CarouselMode|null} Carousel mode instance */
+    this._carouselMode = null;
     
     // ===========================================
     // CARDS
@@ -232,21 +247,36 @@ export class UniversalCard extends HTMLElement {
    * Called when element is added to DOM
    */
   connectedCallback() {
+    console.log('[UC] connectedCallback()');
     // Register event listeners
     window.addEventListener(EVENTS.CARD_CONTROL, this._boundControlHandler);
     window.addEventListener('resize', this._resizeHandler);
     
     // Setup Intersection Observer for lazy loading
     this._setupIntersectionObserver();
+    
+    // Reattach component event listeners
+    if (this._header) this._header.attach();
+    if (this._footer && this._footer.attach) this._footer.attach();
+    if (this._mode && this._mode.attach) this._mode.attach();
+    
+    console.log('[UC] connectedCallback() done');
   }
   
   /**
    * Called when element is removed from DOM
    */
   disconnectedCallback() {
+    console.log('[UC] disconnectedCallback()');
+    
     // Cleanup event listeners
     window.removeEventListener(EVENTS.CARD_CONTROL, this._boundControlHandler);
     window.removeEventListener('resize', this._resizeHandler);
+    
+    // Detach component event listeners (but keep references)
+    if (this._header) this._header.detach();
+    if (this._footer && this._footer.detach) this._footer.detach();
+    if (this._mode && this._mode.detach) this._mode.detach();
     
     // Cleanup timers
     this._clearAllTimers();
@@ -254,8 +284,8 @@ export class UniversalCard extends HTMLElement {
     // Cleanup observers
     this._destroyIntersectionObserver();
     
-    // Cleanup child cards
-    this._destroyChildCards();
+    // Note: don't destroy child cards - they might be reused
+    console.log('[UC] disconnectedCallback() done');
   }
   
   // ===========================================================================
@@ -281,6 +311,10 @@ export class UniversalCard extends HTMLElement {
     if (this._header) this._header.hass = hass;
     if (this._footer) this._footer.hass = hass;
     if (this._badges) this._badges.hass = hass;
+    
+    // Update mode instances
+    if (this._tabsMode) this._tabsMode.hass = hass;
+    if (this._carouselMode) this._carouselMode.hass = hass;
     
     // Update child cards
     this._updateChildCardsHass(hass);
@@ -310,10 +344,17 @@ export class UniversalCard extends HTMLElement {
    * @throws {Error} If configuration is invalid
    */
   setConfig(config) {
+    console.log('[UC] setConfig() called', config);
     const startTime = performance.now();
     
     // Validate and normalize configuration
-    this._config = ConfigManager.normalize(config);
+    try {
+      this._config = ConfigManager.normalize(config);
+      console.log('[UC] config normalized');
+    } catch(e) {
+      console.error('[UC] config normalize error:', e);
+      throw e;
+    }
     
     this._debug.initTime = performance.now() - startTime;
     
@@ -340,46 +381,67 @@ export class UniversalCard extends HTMLElement {
    * @private
    */
   async _initializeCard() {
+    console.log('[UC] _initializeCard() start');
     try {
       // Load card helpers
+      console.log('[UC] getting card helpers...');
       this._helpers = await getCardHelpers();
+      console.log('[UC] card helpers loaded');
       
       // Restore state if configured
       this._restoreState();
+      console.log('[UC] state restored');
       
       // Create Header component
       this._createHeaderComponent();
+      console.log('[UC] header created');
       
       // Create Footer component if configured
       if (this._config.footer) {
         this._createFooterComponent();
+        console.log('[UC] footer created');
       }
       
+      // Create body mode instance
+      this._createModeInstance();
+      console.log('[UC] mode created:', this._config.body_mode);
+      
       // Perform initial render
+      console.log('[UC] starting render...');
       await this._render();
+      console.log('[UC] render done');
       
       // Load header cards asynchronously
       if (this._header) {
+        console.log('[UC] loading header cards...');
         await this._header.loadCards();
+        console.log('[UC] header cards loaded');
       }
       
       // Load footer cards asynchronously
       if (this._footer) {
+        console.log('[UC] loading footer cards...');
         await this._footer.loadCards();
+        console.log('[UC] footer cards loaded');
       }
       
       // Setup lazy loading or load body cards
       if (this._config.lazy_load) {
         this._observeForLazyLoad();
+        console.log('[UC] lazy load setup');
       } else if (this._expanded) {
+        console.log('[UC] loading body cards...');
         await this._loadBodyCards();
+        console.log('[UC] body cards loaded');
       }
       
       // Bind events
       this._bindEvents();
+      console.log('[UC] events bound');
       
       // Mark as initialized
       this._initialized = true;
+      console.log('[UC] initialization complete!');
       
       // Apply pending hass
       if (this._pendingHass) {
@@ -388,7 +450,7 @@ export class UniversalCard extends HTMLElement {
       }
       
     } catch (error) {
-      console.error('[UniversalCard] Initialization failed:', error);
+      console.error('[UC] Initialization failed:', error);
       this._renderError(error);
     }
   }
@@ -431,6 +493,37 @@ export class UniversalCard extends HTMLElement {
   _createFooterComponent() {
     this._footer = new Footer(this._config.footer);
     if (this._hass) this._footer.hass = this._hass;
+  }
+  
+  /**
+   * Create body mode instance based on config
+   * 
+   * @private
+   */
+  _createModeInstance() {
+    const bodyMode = this._config.body_mode || BODY_MODES.EXPAND;
+    
+    // Skip for 'none' mode
+    if (bodyMode === BODY_MODES.NONE) {
+      this._mode = null;
+      return;
+    }
+    
+    // Create mode instance
+    this._mode = createMode(bodyMode, {
+      ...this._config,
+      cards: this._config.body?.cards || [],
+      tabs: this._config.tabs || []
+    }, {
+      hass: this._hass,
+      helpers: this._helpers,
+      shadowRoot: this.shadowRoot,
+      card: this
+    });
+    
+    if (this._mode && this._hass) {
+      this._mode.hass = this._hass;
+    }
   }
   
   /**
@@ -489,7 +582,8 @@ export class UniversalCard extends HTMLElement {
     
     // Build card classes
     const cardClasses = ['universal-card'];
-    if (this._config.theme) {
+    // Add theme class (skip 'default' - it uses HA dashboard theme)
+    if (this._config.theme && this._config.theme !== 'default') {
       cardClasses.push(`theme-${this._config.theme}`);
     }
     
@@ -533,16 +627,36 @@ export class UniversalCard extends HTMLElement {
    */
   _renderBodyElement() {
     const config = this._config;
+    const mode = config.body_mode || 'expand';
     
-    // No body for 'none' mode
-    if (config.body_mode === BODY_MODES.NONE) {
+    // No body for 'none', 'modal', 'fullscreen' modes (they use overlays)
+    if (mode === 'none' || mode === 'modal' || mode === 'fullscreen') {
       return null;
     }
     
     const body = document.createElement('div');
     body.className = 'body';
     body.dataset.state = this._expanded ? 'expanded' : 'collapsed';
+    body.dataset.mode = mode;
     
+    // For tabs and carousel, use specialized mode renderers
+    if (mode === 'tabs') {
+      this._tabsMode = new TabsMode(config);
+      if (this._hass) this._tabsMode.hass = this._hass;
+      const tabsContainer = this._tabsMode.render();
+      body.appendChild(tabsContainer);
+      return body;
+    }
+    
+    if (mode === 'carousel') {
+      this._carouselMode = new CarouselMode(config);
+      if (this._hass) this._carouselMode.hass = this._hass;
+      const carouselContainer = this._carouselMode.render();
+      body.appendChild(carouselContainer);
+      return body;
+    }
+    
+    // Standard expand mode - use body-content container
     const content = document.createElement('div');
     content.className = 'body-content';
     
@@ -625,7 +739,16 @@ export class UniversalCard extends HTMLElement {
     this._isLoading = true;
     
     try {
+      const mode = this._config.body_mode || 'expand';
+      
+      // For tabs and carousel, modes handle their own card loading
+      if (mode === 'tabs' || mode === 'carousel') {
+        this._bodyCardsLoaded = true;
+        return;
+      }
+      
       const configs = this._config.body?.cards || [];
+      
       if (configs.length === 0) {
         this._bodyCardsLoaded = true;
         return;
@@ -633,7 +756,18 @@ export class UniversalCard extends HTMLElement {
       
       this._bodyCards = await createCardElements(configs);
       
-      // Get container
+      // Set hass on all cards
+      this._bodyCards.forEach(card => {
+        if (this._hass) card.hass = this._hass;
+      });
+      
+      // For modal/fullscreen modes, don't add to body-content (they show in overlay)
+      if (mode === 'modal' || mode === 'fullscreen') {
+        this._bodyCardsLoaded = true;
+        return;
+      }
+      
+      // Fallback: add cards to body-content container
       const container = this.shadowRoot.querySelector('.body-content');
       if (!container) return;
       
@@ -649,18 +783,21 @@ export class UniversalCard extends HTMLElement {
       const fragment = document.createDocumentFragment();
       
       this._bodyCards.forEach((card, index) => {
-        if (this._hass) card.hass = this._hass;
-        
         const wrapper = document.createElement('div');
         wrapper.className = 'card-wrapper';
         
-        // Apply grid span from config
+        // Apply grid span from config (check both direct and card_options)
         const cardConfig = configs[index];
-        if (cardConfig.colspan) {
-          wrapper.style.gridColumn = `span ${cardConfig.colspan}`;
-        }
-        if (cardConfig.rowspan) {
-          wrapper.style.gridRow = `span ${cardConfig.rowspan}`;
+        if (cardConfig) {
+          const colspan = cardConfig.colspan || (cardConfig.card_options && cardConfig.card_options.colspan);
+          const rowspan = cardConfig.rowspan || (cardConfig.card_options && cardConfig.card_options.rowspan);
+          
+          if (colspan) {
+            wrapper.style.gridColumn = 'span ' + colspan;
+          }
+          if (rowspan) {
+            wrapper.style.gridRow = 'span ' + rowspan;
+          }
         }
         
         wrapper.appendChild(card);
@@ -668,7 +805,6 @@ export class UniversalCard extends HTMLElement {
       });
       
       container.appendChild(fragment);
-      
       this._bodyCardsLoaded = true;
       
     } finally {
@@ -769,6 +905,12 @@ export class UniversalCard extends HTMLElement {
       ${HEADER_FOOTER_STYLES}
       
       /* ============================= */
+      /* THEMES */
+      /* ============================= */
+      
+      ${THEME_STYLES}
+      
+      /* ============================= */
       /* BODY */
       /* ============================= */
       
@@ -782,16 +924,17 @@ export class UniversalCard extends HTMLElement {
       .body[data-state="collapsed"] {
         max-height: 0;
         opacity: 0;
+        overflow: hidden;
       }
       
       .body[data-state="expanded"] {
-        max-height: 2000px;
+        max-height: none;
         opacity: 1;
+        overflow: visible;
       }
       
       .body-content {
         padding: var(--uc-padding);
-        padding-top: 0;
       }
       
       /* ============================= */
@@ -850,6 +993,12 @@ export class UniversalCard extends HTMLElement {
         0%, 100% { opacity: 0.4; }
         50% { opacity: 1; }
       }
+      
+      /* ============================= */
+      /* MODE STYLES */
+      /* ============================= */
+      
+      ${getAllModeStyles()}
     `;
   }
   
@@ -888,10 +1037,20 @@ export class UniversalCard extends HTMLElement {
     const header = this.shadowRoot.querySelector('.header');
     
     if (header) {
+      console.log('[UC] binding header events');
       // Listen for custom events from Header component
-      header.addEventListener('uc-toggle', () => this._toggle());
-      header.addEventListener('uc-expand', () => this._expand());
-      header.addEventListener('uc-collapse', () => this._collapse());
+      header.addEventListener('uc-toggle', () => {
+        console.log('[UC] uc-toggle received!');
+        this._toggle();
+      });
+      header.addEventListener('uc-expand', () => {
+        console.log('[UC] uc-expand received!');
+        this._expand();
+      });
+      header.addEventListener('uc-collapse', () => {
+        console.log('[UC] uc-collapse received!');
+        this._collapse();
+      });
       header.addEventListener('uc-context-menu', (e) => this._handleContextMenu(e));
     }
   }
@@ -971,12 +1130,29 @@ export class UniversalCard extends HTMLElement {
     if (this._expanded) return;
     
     this._expanded = true;
-    this._updateExpandedUI();
     this._saveState();
     
     // Load body cards if needed
     if (!this._bodyCardsLoaded) {
       await this._loadBodyCards();
+    }
+    
+    // Handle different modes
+    const mode = this._config.body_mode || 'expand';
+    
+    if (mode === 'modal') {
+      this._showModal();
+    } else if (mode === 'fullscreen') {
+      this._showFullscreen();
+    } else if (mode === 'tabs' && this._tabsMode) {
+      this._updateExpandedUI();
+      await this._tabsMode.open();
+    } else if (mode === 'carousel' && this._carouselMode) {
+      this._updateExpandedUI();
+      await this._carouselMode.open();
+    } else {
+      // Standard expand - just update UI
+      this._updateExpandedUI();
     }
     
     // Fire event
@@ -997,14 +1173,254 @@ export class UniversalCard extends HTMLElement {
     if (!this._expanded) return;
     
     this._expanded = false;
-    this._updateExpandedUI();
     this._saveState();
     this._clearAutoCollapseTimer();
+    
+    // Handle different modes
+    const mode = this._config.body_mode || 'expand';
+    
+    if (mode === 'modal') {
+      this._hideModal();
+    } else if (mode === 'fullscreen') {
+      this._hideFullscreen();
+    } else if (mode === 'tabs' && this._tabsMode) {
+      this._updateExpandedUI();
+      this._tabsMode.close();
+    } else if (mode === 'carousel' && this._carouselMode) {
+      this._updateExpandedUI();
+      this._carouselMode.close();
+    } else {
+      this._updateExpandedUI();
+    }
     
     // Fire event
     fireEvent(this, EVENTS.CARD_COLLAPSED, {
       card_id: this._config.card_id
     });
+  }
+  
+  /**
+   * Show modal overlay
+   * @private
+   */
+  _showModal() {
+    // Remove existing modal
+    this._hideModal();
+    
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'uc-modal-overlay';
+    overlay.innerHTML = `
+      <style>
+        .uc-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 999;
+          animation: uc-fade-in 0.2s ease;
+        }
+        .uc-modal-content {
+          background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
+          border-radius: 12px;
+          width: 90%;
+          max-width: 600px;
+          max-height: 80vh;
+          overflow: auto;
+          padding: 16px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          animation: uc-scale-in 0.2s ease;
+        }
+        .uc-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .uc-modal-title {
+          font-size: 18px;
+          font-weight: 500;
+        }
+        .uc-modal-close {
+          background: rgba(255,255,255,0.1);
+          border: none;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          cursor: pointer;
+          color: white;
+          font-size: 16px;
+        }
+        .uc-modal-close:hover {
+          background: rgba(255,255,255,0.2);
+        }
+        .uc-modal-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        @keyframes uc-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes uc-scale-in {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      </style>
+      <div class="uc-modal-content">
+        <div class="uc-modal-header">
+          <div class="uc-modal-title">${this._config.title || 'Modal'}</div>
+          <button class="uc-modal-close">✕</button>
+        </div>
+        <div class="uc-modal-cards"></div>
+      </div>
+    `;
+    
+    // Move cards to modal (not clone - custom elements don't clone well)
+    const cardsContainer = overlay.querySelector('.uc-modal-cards');
+    this._bodyCards.forEach(card => {
+      if (this._hass) card.hass = this._hass;
+      cardsContainer.appendChild(card);
+    });
+    
+    // Close handlers
+    overlay.querySelector('.uc-modal-close').addEventListener('click', () => this._collapse());
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) this._collapse();
+    });
+    
+    this._modalEscHandler = (e) => {
+      if (e.key === 'Escape') this._collapse();
+    };
+    document.addEventListener('keydown', this._modalEscHandler);
+    
+    document.body.appendChild(overlay);
+    this._modalOverlay = overlay;
+  }
+  
+  /**
+   * Hide modal overlay
+   * @private
+   */
+  _hideModal() {
+    if (this._modalOverlay) {
+      this._modalOverlay.remove();
+      this._modalOverlay = null;
+    }
+    if (this._modalEscHandler) {
+      document.removeEventListener('keydown', this._modalEscHandler);
+      this._modalEscHandler = null;
+    }
+  }
+  
+  /**
+   * Show fullscreen overlay
+   * @private
+   */
+  _showFullscreen() {
+    this._hideFullscreen();
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'uc-fullscreen-overlay';
+    overlay.innerHTML = `
+      <style>
+        .uc-fullscreen-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
+          z-index: 9999;
+          overflow: auto;
+          padding: 20px;
+          animation: uc-slide-up 0.3s ease;
+        }
+        .uc-fullscreen-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .uc-fullscreen-title {
+          font-size: 24px;
+          font-weight: 500;
+        }
+        .uc-fullscreen-close {
+          background: rgba(255,255,255,0.1);
+          border: none;
+          border-radius: 8px;
+          padding: 8px 16px;
+          cursor: pointer;
+          color: white;
+          font-size: 14px;
+        }
+        .uc-fullscreen-close:hover {
+          background: rgba(255,255,255,0.2);
+        }
+        .uc-fullscreen-content {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        @keyframes uc-slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+      </style>
+      <div class="uc-fullscreen-header">
+        <div class="uc-fullscreen-title">${this._config.title || 'Fullscreen'}</div>
+        <button class="uc-fullscreen-close">✕ Закрыть</button>
+      </div>
+      <div class="uc-fullscreen-content"></div>
+    `;
+    
+    // Move cards to fullscreen (not clone)
+    const content = overlay.querySelector('.uc-fullscreen-content');
+    this._bodyCards.forEach(card => {
+      if (this._hass) card.hass = this._hass;
+      content.appendChild(card);
+    });
+    
+    overlay.querySelector('.uc-fullscreen-close').addEventListener('click', () => {
+      this._collapse();
+    });
+    
+    this._fsEscHandler = (e) => {
+      if (e.key === 'Escape') this._collapse();
+    };
+    document.addEventListener('keydown', this._fsEscHandler);
+    
+    document.body.appendChild(overlay);
+    this._fullscreenOverlay = overlay;
+  }
+  
+  /**
+   * Hide fullscreen overlay
+   * @private
+   */
+  _hideFullscreen() {
+    if (this._fullscreenOverlay) {
+      this._fullscreenOverlay.remove();
+      this._fullscreenOverlay = null;
+    }
+    if (this._fsEscHandler) {
+      document.removeEventListener('keydown', this._fsEscHandler);
+      this._fsEscHandler = null;
+    }
   }
   
   /**
@@ -1018,7 +1434,13 @@ export class UniversalCard extends HTMLElement {
       this._header.expanded = this._expanded;
     }
     
-    // Update body state
+    // For modal/fullscreen - body is always collapsed (content shown in overlay)
+    const mode = this._config.body_mode || 'expand';
+    if (mode === 'modal' || mode === 'fullscreen') {
+      return; // Don't show body content - it's in overlay
+    }
+    
+    // Update body state for expand mode
     const body = this.shadowRoot.querySelector('.body');
     if (body) {
       body.dataset.state = this._expanded ? 'expanded' : 'collapsed';

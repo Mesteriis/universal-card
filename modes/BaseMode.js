@@ -324,13 +324,18 @@ export class BaseMode {
       const wrapper = document.createElement('div');
       wrapper.className = 'card-wrapper';
       
-      // Apply grid span from config
+      // Apply grid span from config (check both direct and card_options)
       const config = configs[index];
-      if (config?.colspan) {
-        wrapper.style.gridColumn = `span ${config.colspan}`;
-      }
-      if (config?.rowspan) {
-        wrapper.style.gridRow = `span ${config.rowspan}`;
+      if (config) {
+        const colspan = config.colspan || (config.card_options && config.card_options.colspan);
+        const rowspan = config.rowspan || (config.card_options && config.card_options.rowspan);
+        
+        if (colspan) {
+          wrapper.style.gridColumn = 'span ' + colspan;
+        }
+        if (rowspan) {
+          wrapper.style.gridRow = 'span ' + rowspan;
+        }
       }
       
       wrapper.appendChild(card);
