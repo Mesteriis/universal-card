@@ -653,18 +653,30 @@ export class Header {
    */
   _executeAction(actionKey) {
     debug('[UC-Header] _executeAction:', actionKey);
-    const actionConfig = this._config[actionKey];
-    debug('[UC-Header] actionConfig:', actionConfig);
     
-    // Default tap action is toggle
-    if (!actionConfig && actionKey === 'tap_action') {
-      debug('[UC-Header] firing uc-toggle (default)');
+    // Определяем какой триггер используется для раскрытия
+    const expandTrigger = this._config.expand_trigger || 'tap';
+    const expandActionKey = expandTrigger === 'double_tap' 
+      ? 'double_tap_action' 
+      : `${expandTrigger}_action`;
+    
+    debug('[UC-Header] expand_trigger:', expandTrigger, 'expandActionKey:', expandActionKey);
+    
+    const actionConfig = this._config[actionKey];
+    const hasExplicitAction = actionConfig && actionConfig.action && actionConfig.action !== 'none';
+    
+    debug('[UC-Header] actionConfig:', actionConfig, 'hasExplicitAction:', hasExplicitAction);
+    
+    // Если это триггер раскрытия и нет явного action - делаем toggle
+    if (actionKey === expandActionKey && !hasExplicitAction && expandTrigger !== 'none') {
+      debug('[UC-Header] firing uc-toggle (expand trigger default)');
       fireEvent(this._element, 'uc-toggle');
       return;
     }
     
-    if (!actionConfig || actionConfig.action === ACTION_TYPES.NONE) {
-      debug('[UC-Header] no action config or action=none');
+    // Если нет явного action - ничего не делаем
+    if (!hasExplicitAction) {
+      debug('[UC-Header] no explicit action');
       return;
     }
     

@@ -1,7 +1,7 @@
 {
   "domain": "universal_card",
   "name": "Universal Card",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "documentation": "https://github.com/Mesteriis/universal-card",
   "issue_tracker": "https://github.com/Mesteriis/universal-card/issues",
   "codeowners": ["@Mesteriis"],

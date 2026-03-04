@@ -25,7 +25,7 @@ from homeassistant.components.http import StaticPathConfig
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN: Final = "universal_card"
-VERSION: Final = "1.0.0"
+VERSION: Final = "1.0.3"
 
 # Пути к статическим файлам
 URL_BASE: Final = "/universal_card_static"

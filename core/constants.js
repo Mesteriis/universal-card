@@ -12,7 +12,7 @@
 // =============================================================================
 
 /** @type {string} Card version */
-export const CARD_VERSION = '1.0.0';
+export const CARD_VERSION = '1.0.3';
 
 /** @type {string} Card name for display */
 export const CARD_NAME = 'Universal Card';

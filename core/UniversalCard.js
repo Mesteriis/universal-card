@@ -638,6 +638,16 @@ export class UniversalCard extends HTMLElement {
     body.className = 'body';
     body.dataset.state = this._expanded ? 'expanded' : 'collapsed';
     body.dataset.mode = mode;
+    body.dataset.expandAnimation = config.expand_animation || 'slide';
+    body.dataset.collapseAnimation = config.collapse_animation || 'slide';
+    body.dataset.cardsAnimation = config.cards_animation || 'fadeUp';
+    body.dataset.cardsDirection = config.cards_direction || 'sequential';
+    
+    // Set animation duration and stagger
+    const duration = config.animation_duration || 300;
+    const stagger = config.cards_stagger || 50;
+    body.style.setProperty('--expand-duration', `${duration}ms`);
+    body.style.setProperty('--cards-stagger', `${stagger}ms`);
     
     // For tabs and carousel, use specialized mode renderers
     if (mode === 'tabs') {
@@ -782,9 +792,19 @@ export class UniversalCard extends HTMLElement {
       // Use DocumentFragment for batch insert
       const fragment = document.createDocumentFragment();
       
+      // Calculate animation indices based on direction
+      const direction = this._config.cards_direction || 'sequential';
+      const gridCols = this._config.grid?.columns || 1;
+      const cardCount = this._bodyCards.length;
+      const animationIndices = this._calculateAnimationIndices(cardCount, direction, gridCols);
+      
       this._bodyCards.forEach((card, index) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'card-wrapper';
+        
+        // Set animation delay index based on direction
+        const animIndex = animationIndices[index];
+        wrapper.style.setProperty('--card-index', animIndex);
         
         // Apply grid span from config (check both direct and card_options)
         const cardConfig = configs[index];
@@ -916,21 +936,145 @@ export class UniversalCard extends HTMLElement {
       
       .body {
         overflow: hidden;
-        transition: 
-          max-height var(--uc-transition-duration) ease,
-          opacity var(--uc-transition-duration) ease;
+        will-change: max-height, opacity, transform;
+        --expand-duration: var(--uc-transition-duration, 300ms);
       }
       
+      /* Base states */
       .body[data-state="collapsed"] {
         max-height: 0;
         opacity: 0;
         overflow: hidden;
+        pointer-events: none;
       }
       
       .body[data-state="expanded"] {
-        max-height: none;
+        max-height: 2000px;
         opacity: 1;
         overflow: visible;
+        pointer-events: auto;
+      }
+      
+      /* ============================= */
+      /* EXPAND ANIMATIONS */
+      /* ============================= */
+      
+      /* None - instant */
+      .body[data-expand-animation="none"] {
+        transition: none !important;
+      }
+      
+      /* Slide (default) */
+      .body[data-expand-animation="slide"],
+      .body:not([data-expand-animation]) {
+        transition: 
+          max-height var(--expand-duration) cubic-bezier(0.4, 0, 0.2, 1),
+          opacity var(--expand-duration) ease;
+      }
+      
+      /* Fade */
+      .body[data-expand-animation="fade"] {
+        transition: opacity var(--expand-duration) ease, max-height 0s;
+      }
+      
+      /* Scale */
+      .body[data-expand-animation="scale"] {
+        transition: 
+          max-height var(--expand-duration) cubic-bezier(0.4, 0, 0.2, 1),
+          opacity var(--expand-duration) ease,
+          transform var(--expand-duration) ease;
+        transform-origin: top center;
+      }
+      .body[data-expand-animation="scale"][data-state="collapsed"] {
+        transform: scaleY(0);
+      }
+      .body[data-expand-animation="scale"][data-state="expanded"] {
+        transform: scaleY(1);
+      }
+      
+      /* FadeUp */
+      .body[data-expand-animation="fadeUp"].expanding .body-content {
+        animation: body-fadeUp var(--expand-duration) ease forwards;
+      }
+      
+      /* FadeDown */
+      .body[data-expand-animation="fadeDown"].expanding .body-content {
+        animation: body-fadeDown var(--expand-duration) ease forwards;
+      }
+      
+      /* Bounce */
+      .body[data-expand-animation="bounce"].expanding .body-content {
+        animation: body-bounce var(--expand-duration) cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+      }
+      
+      /* Flip */
+      .body[data-expand-animation="flip"] {
+        perspective: 1000px;
+      }
+      .body[data-expand-animation="flip"].expanding .body-content {
+        animation: body-flip var(--expand-duration) ease forwards;
+      }
+      
+      /* ============================= */
+      /* COLLAPSE ANIMATIONS */
+      /* ============================= */
+      
+      .body[data-collapse-animation="none"][data-state="collapsed"] {
+        transition: none !important;
+      }
+      
+      .body[data-collapse-animation="fadeDown"].collapsing .body-content {
+        animation: body-collapse-fadeDown var(--expand-duration) ease forwards;
+      }
+      
+      .body[data-collapse-animation="fadeUp"].collapsing .body-content {
+        animation: body-collapse-fadeUp var(--expand-duration) ease forwards;
+      }
+      
+      .body[data-collapse-animation="scale"].collapsing {
+        transform-origin: top center;
+        animation: body-collapse-scale var(--expand-duration) ease forwards;
+      }
+      
+      /* ============================= */
+      /* BODY KEYFRAMES */
+      /* ============================= */
+      
+      @keyframes body-fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes body-fadeDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes body-bounce {
+        0% { opacity: 0; transform: scale(0.3); }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      
+      @keyframes body-flip {
+        from { opacity: 0; transform: perspective(400px) rotateX(-90deg); }
+        to { opacity: 1; transform: perspective(400px) rotateX(0); }
+      }
+      
+      @keyframes body-collapse-fadeDown {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(20px); }
+      }
+      
+      @keyframes body-collapse-fadeUp {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-20px); }
+      }
+      
+      @keyframes body-collapse-scale {
+        from { opacity: 1; transform: scaleY(1); }
+        to { opacity: 0; transform: scaleY(0); }
       }
       
       .body-content {
@@ -943,10 +1087,170 @@ export class UniversalCard extends HTMLElement {
       
       .card-wrapper {
         min-width: 0;
+        --card-index: 0;
       }
       
       .card-wrapper > * {
         height: 100%;
+      }
+      
+      /* ============================= */
+      /* CARDS CASCADE ANIMATIONS */
+      /* ============================= */
+      
+      /* Card indices for stagger */
+      .body-content .card-wrapper:nth-child(1) { --card-index: 0; }
+      .body-content .card-wrapper:nth-child(2) { --card-index: 1; }
+      .body-content .card-wrapper:nth-child(3) { --card-index: 2; }
+      .body-content .card-wrapper:nth-child(4) { --card-index: 3; }
+      .body-content .card-wrapper:nth-child(5) { --card-index: 4; }
+      .body-content .card-wrapper:nth-child(6) { --card-index: 5; }
+      .body-content .card-wrapper:nth-child(7) { --card-index: 6; }
+      .body-content .card-wrapper:nth-child(8) { --card-index: 7; }
+      .body-content .card-wrapper:nth-child(9) { --card-index: 8; }
+      .body-content .card-wrapper:nth-child(10) { --card-index: 9; }
+      .body-content .card-wrapper:nth-child(n+11) { --card-index: 10; }
+      
+      /* Base card animation */
+      .body[data-state="expanded"] .card-wrapper {
+        opacity: 0;
+        animation-fill-mode: forwards;
+        animation-delay: calc(var(--card-index) * var(--cards-stagger, 50ms));
+        animation-duration: var(--expand-duration, 300ms);
+      }
+      
+      /* FadeUp (default) */
+      .body[data-cards-animation="fadeUp"][data-state="expanded"] .card-wrapper {
+        animation-name: card-fadeUp;
+      }
+      
+      /* FadeDown */
+      .body[data-cards-animation="fadeDown"][data-state="expanded"] .card-wrapper {
+        animation-name: card-fadeDown;
+      }
+      
+      /* FadeLeft */
+      .body[data-cards-animation="fadeLeft"][data-state="expanded"] .card-wrapper {
+        animation-name: card-fadeLeft;
+      }
+      
+      /* FadeRight */
+      .body[data-cards-animation="fadeRight"][data-state="expanded"] .card-wrapper {
+        animation-name: card-fadeRight;
+      }
+      
+      /* Scale */
+      .body[data-cards-animation="scale"][data-state="expanded"] .card-wrapper {
+        animation-name: card-scale;
+      }
+      
+      /* Bounce */
+      .body[data-cards-animation="bounce"][data-state="expanded"] .card-wrapper {
+        animation-name: card-bounce;
+        animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+      
+      /* Flip */
+      .body[data-cards-animation="flip"][data-state="expanded"] .card-wrapper {
+        animation-name: card-flip;
+        perspective: 1000px;
+      }
+      
+      /* None - instant */
+      .body[data-cards-animation="none"][data-state="expanded"] .card-wrapper {
+        opacity: 1;
+        animation: none;
+      }
+      
+      /* Collapsed state - hide cards */
+      .body[data-state="collapsed"] .card-wrapper {
+        opacity: 0;
+        animation: none;
+      }
+      
+      /* Card Animation Keyframes */
+      @keyframes card-fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes card-fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes card-fadeLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes card-fadeRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes card-scale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      
+      @keyframes card-bounce {
+        0% {
+          opacity: 0;
+          transform: scale(0.3);
+        }
+        50% {
+          opacity: 0.9;
+          transform: scale(1.05);
+        }
+        70% {
+          transform: scale(0.95);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      
+      @keyframes card-flip {
+        from {
+          opacity: 0;
+          transform: perspective(400px) rotateY(-90deg);
+        }
+        to {
+          opacity: 1;
+          transform: perspective(400px) rotateY(0);
+        }
       }
       
       /* ============================= */
@@ -1022,6 +1326,93 @@ export class UniversalCard extends HTMLElement {
       grid-template-columns: repeat(${columns}, 1fr);
       gap: ${gap};
     `.replace(/\s+/g, ' ').trim();
+  }
+  
+  /**
+   * Calculate animation indices based on direction
+   * 
+   * @private
+   * @param {number} count - Total number of cards
+   * @param {string} direction - Animation direction
+   * @param {number} cols - Number of grid columns
+   * @returns {number[]} Array of animation indices
+   */
+  _calculateAnimationIndices(count, direction, cols) {
+    const indices = [];
+    const numCols = typeof cols === 'number' ? cols : 1;
+    const numRows = Math.ceil(count / numCols);
+    
+    switch (direction) {
+      case 'reverse':
+        // Reverse order: last card first
+        for (let i = 0; i < count; i++) {
+          indices.push(count - 1 - i);
+        }
+        break;
+        
+      case 'center-out':
+        // From center to edges
+        const center = Math.floor(count / 2);
+        for (let i = 0; i < count; i++) {
+          indices.push(Math.abs(i - center));
+        }
+        break;
+        
+      case 'edges-in':
+        // From edges to center
+        const mid = Math.floor(count / 2);
+        for (let i = 0; i < count; i++) {
+          const distFromCenter = Math.abs(i - mid);
+          indices.push(mid - distFromCenter);
+        }
+        break;
+        
+      case 'diagonal':
+        // Diagonal wave (top-left to bottom-right)
+        for (let i = 0; i < count; i++) {
+          const row = Math.floor(i / numCols);
+          const col = i % numCols;
+          indices.push(row + col);
+        }
+        break;
+        
+      case 'wave':
+        // Horizontal wave with row offset
+        for (let i = 0; i < count; i++) {
+          const row = Math.floor(i / numCols);
+          const col = i % numCols;
+          // Alternating direction per row
+          const waveCol = row % 2 === 0 ? col : (numCols - 1 - col);
+          indices.push(row * 2 + waveCol);
+        }
+        break;
+        
+      case 'random':
+        // Random order (consistent within session)
+        const tempIndices = Array.from({ length: count }, (_, i) => i);
+        // Fisher-Yates shuffle with seeded random based on card count
+        const seed = count * 7 + (numCols * 13);
+        let random = seed;
+        for (let i = tempIndices.length - 1; i > 0; i--) {
+          random = (random * 1103515245 + 12345) & 0x7fffffff;
+          const j = random % (i + 1);
+          [tempIndices[i], tempIndices[j]] = [tempIndices[j], tempIndices[i]];
+        }
+        for (let i = 0; i < count; i++) {
+          indices.push(tempIndices.indexOf(i));
+        }
+        break;
+        
+      case 'sequential':
+      default:
+        // Sequential order (default)
+        for (let i = 0; i < count; i++) {
+          indices.push(i);
+        }
+        break;
+    }
+    
+    return indices;
   }
   
   // ===========================================================================
@@ -1151,8 +1542,19 @@ export class UniversalCard extends HTMLElement {
       this._updateExpandedUI();
       await this._carouselMode.open();
     } else {
-      // Standard expand - just update UI
+      // Standard expand with animation class
+      const body = this.shadowRoot.querySelector('.body');
+      if (body) {
+        body.classList.remove('collapsing');
+        body.classList.add('expanding');
+      }
       this._updateExpandedUI();
+      
+      // Remove expanding class after animation
+      const duration = this._config.animation_duration || 300;
+      setTimeout(() => {
+        if (body) body.classList.remove('expanding');
+      }, duration + 50);
     }
     
     // Fire event
@@ -1190,7 +1592,19 @@ export class UniversalCard extends HTMLElement {
       this._updateExpandedUI();
       this._carouselMode.close();
     } else {
+      // Standard collapse with animation class
+      const body = this.shadowRoot.querySelector('.body');
+      if (body) {
+        body.classList.remove('expanding');
+        body.classList.add('collapsing');
+      }
       this._updateExpandedUI();
+      
+      // Remove collapsing class after animation
+      const duration = this._config.animation_duration || 300;
+      setTimeout(() => {
+        if (body) body.classList.remove('collapsing');
+      }, duration + 50);
     }
     
     // Fire event

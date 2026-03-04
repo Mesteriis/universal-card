@@ -372,8 +372,13 @@ export class ConfigManager {
     // Normalize grid
     normalized.grid = this._normalizeGrid(config.grid);
     
-    // Normalize actions
-    normalized.tap_action = this._normalizeAction(config.tap_action, 'toggle');
+    // Normalize actions based on expand_trigger
+    // Default action is only 'toggle' for the action that matches expand_trigger
+    const expandTrigger = config.expand_trigger || 'tap';
+    
+    // Для триггера раскрытия - не устанавливаем дефолт, пусть Header.js обрабатывает
+    // Для остальных триггеров - none
+    normalized.tap_action = this._normalizeAction(config.tap_action, 'none');
     normalized.hold_action = this._normalizeAction(config.hold_action, 'none');
     normalized.double_tap_action = this._normalizeAction(config.double_tap_action, 'none');
     
