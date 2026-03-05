@@ -127,7 +127,11 @@ export class ModalMode extends BaseMode {
     // Apply grid styles
     if (this._config.grid) {
       const { columns = 1, gap = '16px' } = this._config.grid;
-      if (columns > 1) {
+      if (typeof columns === 'string' && columns.trim()) {
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = columns;
+        grid.style.gap = gap;
+      } else if (typeof columns === 'number' && columns > 1) {
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
         grid.style.gap = gap;
@@ -144,7 +148,17 @@ export class ModalMode extends BaseMode {
     // Assemble dialog
     this._dialog.appendChild(header);
     this._dialog.appendChild(content);
+
+    // Mode styles live in shadow DOM, but modal is rendered in document.body.
+    // Inject mode styles into the overlay subtree so modal layout is always styled.
+    const style = document.createElement('style');
+    style.textContent = ModalMode.getStyles();
+    this._overlay.appendChild(style);
     this._overlay.appendChild(this._dialog);
+
+    // Propagate resolved theme variables to portal elements.
+    this._applyThemeVariables(this._overlay);
+    this._applyThemeVariables(this._dialog);
     
     return this._overlay;
   }
@@ -169,6 +183,7 @@ export class ModalMode extends BaseMode {
     // Close button
     if (this._showClose) {
       const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
       closeBtn.className = 'uc-modal-close';
       closeBtn.innerHTML = '<ha-icon icon="mdi:close"></ha-icon>';
       closeBtn.addEventListener('click', () => this.close());

@@ -12,6 +12,7 @@ export { ModalMode } from './ModalMode.js';
 export { FullscreenMode } from './FullscreenMode.js';
 export { TabsMode } from './TabsMode.js';
 export { CarouselMode } from './CarouselMode.js';
+export { SubviewMode } from './SubviewMode.js';
 
 // Mode factory
 import { ExpandMode } from './ExpandMode.js';
@@ -19,6 +20,7 @@ import { ModalMode } from './ModalMode.js';
 import { FullscreenMode } from './FullscreenMode.js';
 import { TabsMode } from './TabsMode.js';
 import { CarouselMode } from './CarouselMode.js';
+import { SubviewMode } from './SubviewMode.js';
 
 /**
  * Mode type to class mapping
@@ -28,7 +30,8 @@ const MODE_CLASSES = {
   modal: ModalMode,
   fullscreen: FullscreenMode,
   tabs: TabsMode,
-  carousel: CarouselMode
+  carousel: CarouselMode,
+  subview: SubviewMode
 };
 
 /**
@@ -61,6 +64,7 @@ export function getAllModeStyles() {
     ModalMode.getStyles(),
     FullscreenMode.getStyles(),
     TabsMode.getStyles(),
-    CarouselMode.getStyles()
+    CarouselMode.getStyles(),
+    SubviewMode.getStyles()
   ].join('\n');
 }

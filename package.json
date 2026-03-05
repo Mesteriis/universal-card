@@ -6,7 +6,10 @@
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
-    "dev": "node build.js --dev"
+    "dev": "node build.js --dev",
+    "smoke:themes-modes": "node scripts/smoke-theme-mode-matrix.js",
+    "test": "npm run build && npm run smoke:themes-modes",
+    "check": "npm run build && npm run smoke:themes-modes"
   },
   "devDependencies": {
     "esbuild": "^0.20.0"

@@ -12,6 +12,7 @@
 import { BODY_MODES, THEMES, DEFAULTS, VALID_BODY_MODES } from './constants.js';
 import { ConfigManager } from './config.js';
 import { fireEvent, deepClone } from '../utils/helpers.js';
+import { getThemePreviewStyle } from '../styles/themes.js';
 
 // =============================================================================
 // EDITOR SECTIONS
@@ -92,6 +93,9 @@ export class UniversalCardEditor extends HTMLElement {
     
     /** @type {HTMLElement|null} Субредактор карточки */
     this._subEditor = null;
+
+    /** @type {{section: string, index: number}|null} Drag state for card reordering */
+    this._dragState = null;
   }
   
   // ===========================================================================
@@ -159,7 +163,12 @@ export class UniversalCardEditor extends HTMLElement {
         ${this._renderToolbar()}
         ${this._renderTabBar()}
         <div class="editor-content">
-          ${this._showSubEditor ? this._renderSubEditorContainer() : this._renderSection(this._activeSection)}
+          ${this._showSubEditor
+            ? this._renderSubEditorContainer()
+            : `
+              ${this._renderSection(this._activeSection)}
+              ${this._renderLiveInspector()}
+            `}
         </div>
       </div>
     `;
@@ -477,7 +486,7 @@ export class UniversalCardEditor extends HTMLElement {
         
         <div class="subsection">
           <h4>Карточки в заголовке</h4>
-          <p class="hint">Добавьте карточки для отображения в заголовке</p>
+          <p class="hint">Перетаскивайте карточки для сортировки. С клавиатуры: Alt + ↑/↓.</p>
           
           <div class="cards-list" id="header-cards">
             ${this._renderCardsList(this._config.header?.cards || [], 'header')}
@@ -530,6 +539,7 @@ export class UniversalCardEditor extends HTMLElement {
         
         <div class="subsection">
           <h4>Карточки в body</h4>
+          <p class="hint">Drag & drop или кнопки перемещения справа. С клавиатуры: Alt + ↑/↓.</p>
           
           <div class="cards-list" id="body-cards">
             ${this._renderCardsList(this._config.body?.cards || [], 'body')}
@@ -571,10 +581,12 @@ export class UniversalCardEditor extends HTMLElement {
           </select>
         </div>
         
-        <div class="theme-preview" style="${this._getThemePreviewStyle()}">
+        <div class="theme-preview" style="${this._escapeHtml(this._getThemePreviewStyle())}">
           <div class="preview-header">Preview</div>
           <div class="preview-body">Содержимое</div>
         </div>
+
+        ${this._renderThemeTokensEditor()}
         
         <div class="field">
           <label for="border_radius">Скругление углов</label>
@@ -611,6 +623,46 @@ export class UniversalCardEditor extends HTMLElement {
                  min="0" 
                  max="2000">
         </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render theme token overrides editor
+   *
+   * @private
+   * @returns {string}
+   */
+  _renderThemeTokensEditor() {
+    const tokens = Object.entries(this._config.theme_tokens || {});
+
+    return `
+      <div class="subsection">
+        <h4>Theme Tokens Overrides</h4>
+        <p class="hint">Переопределение CSS переменных карточки (например: --uc-primary-color)</p>
+
+        <div class="theme-tokens-list">
+          ${tokens.map(([name, value], index) => `
+            <div class="theme-token-item" data-index="${index}" data-token-name="${this._escapeHtml(name)}">
+              <input type="text"
+                     class="token-name"
+                     placeholder="--uc-primary-color"
+                     value="${this._escapeHtml(name)}">
+              <input type="text"
+                     class="token-value"
+                     placeholder="#00d4ff"
+                     value="${this._escapeHtml(value)}">
+              <button class="btn-icon btn-delete" data-action="delete-theme-token" data-index="${index}" title="Удалить токен">
+                <ha-icon icon="mdi:delete"></ha-icon>
+              </button>
+            </div>
+          `).join('')}
+        </div>
+
+        <button class="btn btn-small btn-add" data-action="add-theme-token">
+          <ha-icon icon="mdi:plus"></ha-icon>
+          Добавить токен
+        </button>
       </div>
     `;
   }
@@ -686,7 +738,17 @@ export class UniversalCardEditor extends HTMLElement {
    * @returns {string} HTML string
    */
   _renderVisibilityConditionsUI() {
-    const conditions = this._config.visibility || [];
+    const globalConditions = this._config.visibility || [];
+    const sectionVisibility = this._config.section_visibility || {};
+    const headerConditions = sectionVisibility.header || [];
+    const bodyConditions = sectionVisibility.body || [];
+    const footerConditions = sectionVisibility.footer || [];
+    const totalConditions =
+      globalConditions.length +
+      headerConditions.length +
+      bodyConditions.length +
+      footerConditions.length;
+
     const conditionTypes = [
       { value: 'state', label: 'Состояние entity', icon: 'mdi:toggle-switch' },
       { value: 'numeric_state', label: 'Числовое значение', icon: 'mdi:numeric' },
@@ -696,30 +758,81 @@ export class UniversalCardEditor extends HTMLElement {
     ];
     
     return `
-      <div class="feature-group collapsible ${conditions.length > 0 ? 'has-content' : ''}" data-feature="visibility">
+      <div class="feature-group collapsible ${totalConditions > 0 ? 'has-content' : ''}" data-feature="visibility">
         <div class="feature-group-header" data-toggle="visibility">
           <ha-icon icon="mdi:eye-settings"></ha-icon>
           <span>Условия видимости</span>
-          <span class="feature-badge">${conditions.length || ''}</span>
+          <span class="feature-badge">${totalConditions || ''}</span>
           <ha-icon icon="mdi:chevron-down" class="collapse-icon"></ha-icon>
         </div>
         
         <div class="feature-group-content" id="visibility-content">
-          <p class="feature-hint">Карточка показывается только если все условия выполнены</p>
-          
-          <div class="conditions-list" id="visibility-list">
-            ${conditions.map((cond, idx) => this._renderConditionItem(cond, idx)).join('')}
-          </div>
-          
-          <div class="add-condition-row">
-            <select id="new-condition-type" class="condition-type-select">
-              <option value="">Выберите тип условия...</option>
-              ${conditionTypes.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
-            </select>
-            <button class="btn btn-small btn-add" data-action="add-visibility-condition">
-              <ha-icon icon="mdi:plus"></ha-icon>
-            </button>
-          </div>
+          <p class="feature-hint">Каждый блок использует AND-логику: секция показывается только если все условия выполнены.</p>
+
+          ${this._renderVisibilityScope(
+            'global',
+            'Вся карточка',
+            globalConditions,
+            conditionTypes,
+            'Скрывает/показывает весь компонент.'
+          )}
+          ${this._renderVisibilityScope(
+            'section:header',
+            'Header',
+            headerConditions,
+            conditionTypes,
+            'Видимость только заголовка.'
+          )}
+          ${this._renderVisibilityScope(
+            'section:body',
+            'Body',
+            bodyConditions,
+            conditionTypes,
+            'Видимость секции контента.'
+          )}
+          ${this._renderVisibilityScope(
+            'section:footer',
+            'Footer',
+            footerConditions,
+            conditionTypes,
+            'Видимость footer.'
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render a visibility scope editor
+   * @private
+   * @param {string} scope - Scope key
+   * @param {string} label - Human label
+   * @param {Array<Object>} conditions - Scope conditions
+   * @param {Array<Object>} conditionTypes - Available condition types
+   * @param {string} hint - Scope hint text
+   * @returns {string}
+   */
+  _renderVisibilityScope(scope, label, conditions, conditionTypes, hint = '') {
+    return `
+      <div class="visibility-scope">
+        <div class="visibility-scope-header">
+          <span class="visibility-scope-title">${label}</span>
+          <span class="feature-badge">${conditions.length || ''}</span>
+        </div>
+        ${hint ? `<p class="feature-hint">${hint}</p>` : ''}
+
+        <div class="conditions-list">
+          ${conditions.map((cond, idx) => this._renderConditionItem(cond, idx, scope)).join('')}
+        </div>
+
+        <div class="add-condition-row">
+          <select class="condition-type-select" data-visibility-scope="${scope}">
+            <option value="">Выберите тип условия...</option>
+            ${conditionTypes.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
+          </select>
+          <button class="btn btn-small btn-add" data-action="add-visibility-condition" data-scope="${scope}">
+            <ha-icon icon="mdi:plus"></ha-icon>
+          </button>
         </div>
       </div>
     `;
@@ -729,7 +842,7 @@ export class UniversalCardEditor extends HTMLElement {
    * Render single condition item
    * @private
    */
-  _renderConditionItem(condition, index) {
+  _renderConditionItem(condition, index, scope = 'global') {
     const type = condition.condition || 'state';
     let fieldsHtml = '';
     
@@ -801,10 +914,10 @@ export class UniversalCardEditor extends HTMLElement {
     }
     
     return `
-      <div class="condition-item" data-index="${index}" data-type="${type}">
+      <div class="condition-item" data-index="${index}" data-type="${type}" data-scope="${scope}">
         <div class="condition-type-badge">${type}</div>
         <div class="condition-fields">${fieldsHtml}</div>
-        <button class="btn-icon btn-delete" data-action="delete-condition" data-index="${index}">
+        <button class="btn-icon btn-delete" data-action="delete-condition" data-scope="${scope}" data-index="${index}">
           <ha-icon icon="mdi:delete"></ha-icon>
         </button>
       </div>
@@ -1360,6 +1473,8 @@ export class UniversalCardEditor extends HTMLElement {
     
     return cards.map((card, index) => {
       const isEditing = this._inlineEditSection === section && this._inlineEditIndex === index;
+      const isFirst = index === 0;
+      const isLast = index === cards.length - 1;
       
       if (isEditing) {
         // Inline editor
@@ -1373,14 +1488,25 @@ export class UniversalCardEditor extends HTMLElement {
       }
       
       return `
-        <div class="card-item" data-section="${section}" data-index="${index}">
+        <div class="card-item"
+             data-section="${section}"
+             data-index="${index}"
+             draggable="true"
+             tabindex="0"
+             aria-label="Card ${index + 1} in ${section}">
           <div class="card-item-content" data-action="edit-card-inline" data-section="${section}" data-index="${index}">
             <ha-icon icon="mdi:drag-vertical" class="drag-handle"></ha-icon>
-            <span class="card-type">${card.type || 'unknown'}</span>
-            ${card.entity ? `<span class="card-entity">${card.entity}</span>` : ''}
+            <span class="card-type">${this._escapeHtml(card.type || 'unknown')}</span>
+            ${card.entity ? `<span class="card-entity">${this._escapeHtml(card.entity)}</span>` : ''}
             ${card.content ? `<span class="card-content-preview">${this._escapeHtml((card.content || '').substring(0, 30))}...</span>` : ''}
           </div>
           <div class="card-item-actions">
+            <button class="btn-icon" data-action="move-card" data-direction="up" data-section="${section}" data-index="${index}" title="Сдвинуть вверх" ${isFirst ? 'disabled' : ''}>
+              <ha-icon icon="mdi:arrow-up"></ha-icon>
+            </button>
+            <button class="btn-icon" data-action="move-card" data-direction="down" data-section="${section}" data-index="${index}" title="Сдвинуть вниз" ${isLast ? 'disabled' : ''}>
+              <ha-icon icon="mdi:arrow-down"></ha-icon>
+            </button>
             <button class="btn-icon" data-action="edit-card-inline" data-section="${section}" data-index="${index}" title="Редактировать">
               <ha-icon icon="mdi:pencil"></ha-icon>
             </button>
@@ -1452,10 +1578,109 @@ export class UniversalCardEditor extends HTMLElement {
    * @param {string} section - Section name (header/body)
    */
   async _showCardPicker(container, section) {
-    // Используем только наш fallback-селектор - он надёжнее
-    // hui-card-picker требует правильный lovelace.config.views который не всегда доступен
-    container.innerHTML = this._renderCardTypeSelector(section);
+    const rendered = await this._tryShowHaCardPicker(container, section);
+    if (!rendered) {
+      this._showFallbackCardPicker(
+        container,
+        section,
+        'Стандартный picker недоступен, используется встроенный список.'
+      );
+    }
+  }
+  
+  /**
+   * Show fallback picker
+   * 
+   * @private
+   * @param {HTMLElement} container - Container element
+   * @param {string} section - Section name (header/body)
+   * @param {string} reason - Reason why fallback is used
+   */
+  _showFallbackCardPicker(container, section, reason = '') {
+    container.innerHTML = this._renderCardTypeSelector(section, reason);
     this._bindCardTypeSelector(container, section);
+  }
+  
+  /**
+   * Try rendering Home Assistant native card picker
+   * 
+   * @private
+   * @param {HTMLElement} container - Container element
+   * @param {string} section - Section name (header/body)
+   * @returns {Promise<boolean>} True when native picker is rendered
+   */
+  async _tryShowHaCardPicker(container, section) {
+    if (!this._hass) {
+      return false;
+    }
+    
+    // В некоторых версиях HA элемент регистрируется только после loadCardHelpers()
+    await this._loadCardHelpers();
+    
+    if (!customElements.get('hui-card-picker')) {
+      return false;
+    }
+    
+    try {
+      container.innerHTML = `
+        <div class="ha-picker-wrapper">
+          <div class="picker-tools">
+            <button class="btn btn-add btn-small" type="button" id="use-fallback-picker">
+              <ha-icon icon="mdi:view-grid"></ha-icon>
+              Список карточек
+            </button>
+          </div>
+          <div id="ha-card-picker-slot"></div>
+        </div>
+      `;
+      
+      const slot = container.querySelector('#ha-card-picker-slot');
+      if (!slot) {
+        return false;
+      }
+      
+      const picker = document.createElement('hui-card-picker');
+      picker.hass = this._hass;
+      picker.lovelace = this._getLovelace();
+      picker.path = [];
+      picker.addEventListener('config-changed', (event) => {
+        const pickedConfig = event.detail?.config;
+        if (!pickedConfig || !pickedConfig.type) return;
+        this._handlePickedCardConfig(section, pickedConfig);
+      });
+      slot.appendChild(picker);
+      
+      const fallbackBtn = container.querySelector('#use-fallback-picker');
+      if (fallbackBtn) {
+        fallbackBtn.addEventListener('click', () => {
+          this._showFallbackCardPicker(container, section);
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.warn('[UC Editor] Could not render hui-card-picker:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Normalize and apply picked card config
+   * 
+   * @private
+   * @param {string} section - Section name
+   * @param {Object} pickedConfig - Config emitted by picker
+   */
+  _handlePickedCardConfig(section, pickedConfig) {
+    if (!pickedConfig || typeof pickedConfig !== 'object') return;
+    
+    const config = deepClone(pickedConfig);
+    config.type = this._normalizeCardType(config.type);
+    
+    if (!config.type) return;
+    
+    this._addCardConfig(section, config);
+    this._closeSubEditor();
   }
   
   /**
@@ -1655,13 +1880,24 @@ export class UniversalCardEditor extends HTMLElement {
    * @param {string} section - Section name
    * @returns {string} HTML string
    */
-  _renderCardTypeSelector(section) {
+  _renderCardTypeSelector(section, reason = '') {
     const allCards = this._getAllAvailableCards();
     const builtInCards = allCards.filter(c => !c.isCustom);
     const customCards = allCards.filter(c => c.isCustom);
+    const canUseHaPicker = Boolean(this._hass && customElements.get('hui-card-picker'));
     
     return `
       <div class="card-picker-container">
+        <div class="picker-tools">
+          ${canUseHaPicker ? `
+            <button class="btn btn-small" type="button" id="use-ha-picker">
+              <ha-icon icon="mdi:home-assistant"></ha-icon>
+              Стандартный picker
+            </button>
+          ` : ''}
+          ${reason ? `<div class="picker-fallback-note">${this._escapeHtml(reason)}</div>` : ''}
+        </div>
+
         <div class="card-picker-search">
           <ha-icon icon="mdi:magnify"></ha-icon>
           <input type="text" id="card-search" placeholder="Поиск карточек..." autocomplete="off">
@@ -1698,7 +1934,7 @@ export class UniversalCardEditor extends HTMLElement {
           </h4>
           <div class="custom-type-row">
             <input type="text" id="custom-card-type" placeholder="custom:my-card или entities">
-            <button class="btn btn-add" id="add-custom-card">Добавить</button>
+            <button class="btn btn-add" type="button" id="add-custom-card">Добавить</button>
           </div>
         </div>
       </div>
@@ -1720,9 +1956,10 @@ export class UniversalCardEditor extends HTMLElement {
     
     return `
       <button class="card-type-btn ${card.isCustom ? 'custom' : ''}" 
-              data-type="${card.type}" 
+              type="button"
+              data-type="${this._escapeHtml(card.type)}" 
               data-section="${section}"
-              title="${card.description || card.name}">
+              title="${this._escapeHtml(card.description || card.name || card.type)}">
         <ha-icon icon="${icon}"></ha-icon>
         <span class="card-name">${this._escapeHtml(card.name)}</span>
         ${card.isCustom ? '<span class="custom-badge">CUSTOM</span>' : ''}
@@ -1738,6 +1975,20 @@ export class UniversalCardEditor extends HTMLElement {
    * @param {string} section - Section name
    */
   _bindCardTypeSelector(container, section) {
+    const useHaPickerBtn = container.querySelector('#use-ha-picker');
+    if (useHaPickerBtn) {
+      useHaPickerBtn.addEventListener('click', async () => {
+        const rendered = await this._tryShowHaCardPicker(container, section);
+        if (!rendered) {
+          this._showFallbackCardPicker(
+            container,
+            section,
+            'Не удалось открыть стандартный picker, используется встроенный список.'
+          );
+        }
+      });
+    }
+    
     // Поиск карточек
     const searchInput = container.querySelector('#card-search');
     if (searchInput) {
@@ -1752,14 +2003,18 @@ export class UniversalCardEditor extends HTMLElement {
       });
     }
     
-    // Клик по карточке
-    container.querySelectorAll('.card-type-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const type = btn.dataset.type;
-        const config = this._getDefaultCardConfig(type);
-        this._addCardConfig(section, config);
-        this._closeSubEditor();
-      });
+    // Клик по карточке (делегирование, чтобы не терять обработчики после фильтрации/перерендера)
+    container.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      
+      const cardBtn = target.closest('.card-type-btn');
+      if (!cardBtn || !container.contains(cardBtn)) return;
+      
+      const type = cardBtn.dataset.type;
+      const config = this._getDefaultCardConfig(type);
+      this._addCardConfig(section, config);
+      this._closeSubEditor();
     });
     
     // Добавление кастомной карточки вручную
@@ -1769,7 +2024,7 @@ export class UniversalCardEditor extends HTMLElement {
         const input = container.querySelector('#custom-card-type');
         const type = input?.value?.trim();
         if (type) {
-          this._addCardConfig(section, { type });
+          this._addCardConfig(section, { type: this._normalizeCardType(type) });
           this._closeSubEditor();
         }
       });
@@ -1777,8 +2032,9 @@ export class UniversalCardEditor extends HTMLElement {
       // Enter для добавления
       const customInput = container.querySelector('#custom-card-type');
       if (customInput) {
-        customInput.addEventListener('keypress', (e) => {
+        customInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
+            e.preventDefault();
             addCustomBtn.click();
           }
         });
@@ -1794,6 +2050,7 @@ export class UniversalCardEditor extends HTMLElement {
    * @returns {Object} Default config
    */
   _getDefaultCardConfig(type) {
+    const normalizedType = this._normalizeCardType(type);
     const defaults = {
       'markdown': { type: 'markdown', content: 'Новая карточка' },
       'entities': { type: 'entities', entities: [] },
@@ -1809,7 +2066,49 @@ export class UniversalCardEditor extends HTMLElement {
       'weather-forecast': { type: 'weather-forecast', entity: '' }
     };
     
-    return defaults[type] || { type };
+    const defaultConfig = defaults[normalizedType];
+    return defaultConfig ? deepClone(defaultConfig) : { type: normalizedType };
+  }
+  
+  /**
+   * Normalize selected card type
+   * 
+   * @private
+   * @param {string} type - Raw card type
+   * @returns {string} Normalized card type
+   */
+  _normalizeCardType(type) {
+    const rawType = typeof type === 'string' ? type.trim() : '';
+    if (!rawType) return '';
+    
+    if (rawType.startsWith('custom:')) {
+      return rawType;
+    }
+    
+    if (this._isBuiltInCardType(rawType)) {
+      return rawType;
+    }
+    
+    const customCards = Array.isArray(window.customCards) ? window.customCards : [];
+    const isKnownCustom = customCards.some((card) => {
+      const customType = typeof card?.type === 'string' ? card.type.trim() : '';
+      if (!customType) return false;
+      return customType === rawType || customType === `custom:${rawType}`;
+    });
+    
+    return isKnownCustom ? `custom:${rawType}` : rawType;
+  }
+  
+  /**
+   * Check if type is a built-in card
+   * 
+   * @private
+   * @param {string} type - Card type
+   * @returns {boolean} True when type is built-in
+   */
+  _isBuiltInCardType(type) {
+    const allCards = this._getAllAvailableCards();
+    return allCards.some(card => !card.isCustom && card.type === type);
   }
   
   /**
@@ -2062,39 +2361,180 @@ export class UniversalCardEditor extends HTMLElement {
    */
   _getThemePreviewStyle() {
     const theme = this._config.theme || THEMES.DEFAULT;
-    const styles = {
-      [THEMES.DEFAULT]: 'background: var(--ha-card-background, #fff); color: var(--primary-text-color, #333);',
-      [THEMES.TRANSPARENT]: 'background: transparent; color: var(--primary-text-color, #fff); border: 1px dashed rgba(255,255,255,0.3);',
-      [THEMES.SOLID]: 'background: var(--ha-card-background, #fff); color: var(--primary-text-color, #333);',
-      [THEMES.GLASS]: 'background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #fff; border: 1px solid rgba(255,255,255,0.2);',
-      [THEMES.GLASSMORPHISM]: 'background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); color: #fff; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.1);',
-      [THEMES.NEUMORPHISM]: 'background: #e0e5ec; color: #333; box-shadow: 8px 8px 16px #b8bec7, -8px -8px 16px #fff;',
-      [THEMES.MINIMAL]: 'background: transparent; color: var(--primary-text-color, #fff); border-bottom: 1px solid rgba(255,255,255,0.2);',
-      [THEMES.GRADIENT]: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;',
-      [THEMES.DARK]: 'background: #1a1a2e; color: #eee;',
-      [THEMES.NEON]: 'background: #0a0a0a; color: #0ff; border: 1px solid #0ff; box-shadow: 0 0 10px #0ff;',
-      [THEMES.AURORA]: 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff;',
-      [THEMES.CARBON]: 'background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%); color: #ccc;',
-      [THEMES.SLATE]: 'background: #334155; color: #f1f5f9;',
-      [THEMES.OBSIDIAN]: 'background: #1e1e2e; color: #cdd6f4;',
-      [THEMES.CHARCOAL]: 'background: #36454f; color: #fff;',
-      [THEMES.MIDNIGHT]: 'background: #191970; color: #e6e6fa;',
-      [THEMES.CYBER]: 'background: #0d0221; color: #ff00ff; border: 1px solid #ff00ff;',
-      [THEMES.VOID]: 'background: #000; color: #666;',
-      [THEMES.EMBER]: 'background: linear-gradient(135deg, #f12711, #f5af19); color: #fff;',
-      [THEMES.FOREST]: 'background: linear-gradient(135deg, #134e5e, #71b280); color: #fff;',
-      [THEMES.OCEAN]: 'background: linear-gradient(135deg, #2e3192, #1bffff); color: #fff;',
-      [THEMES.PURPLE_HAZE]: 'background: linear-gradient(135deg, #7303c0, #ec38bc); color: #fff;',
-      [THEMES.MATRIX]: 'background: #000; color: #00ff00;',
-      [THEMES.GRAPHITE]: 'background: #3a3a3c; color: #d1d1d6;',
-      [THEMES.SMOKE]: 'background: rgba(50,50,50,0.8); color: #ccc;',
-      [THEMES.NORD]: 'background: #2e3440; color: #eceff4;',
-      [THEMES.DRACULA]: 'background: #282a36; color: #f8f8f2;',
-      [THEMES.MONOKAI]: 'background: #272822; color: #f8f8f2;',
-      [THEMES.TOKYO_NIGHT]: 'background: #1a1b26; color: #c0caf5;',
-      [THEMES.CATPPUCCIN]: 'background: #1e1e2e; color: #cdd6f4;'
+    const baseStyle = getThemePreviewStyle(theme);
+    const tokenStyles = this._getThemeTokenStyleOverrides();
+    return `${baseStyle} ${tokenStyles}`.trim();
+  }
+
+  /**
+   * Build CSS declarations for theme token overrides
+   * @private
+   * @returns {string}
+   */
+  _getThemeTokenStyleOverrides() {
+    const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+    return Object.entries(this._config.theme_tokens || {})
+      .filter(([name, value]) => tokenNameRegex.test(name) && typeof value === 'string' && value.trim())
+      .map(([name, value]) => `${name}: ${value.trim()};`)
+      .join(' ');
+  }
+
+  /**
+   * Render live preview and lint panel
+   * @private
+   * @returns {string}
+   */
+  _renderLiveInspector() {
+    return `
+      <div class="live-inspector">
+        ${this._renderLiveInspectorContent()}
+      </div>
+    `;
+  }
+
+  /**
+   * Render live inspector inner content
+   * @private
+   * @returns {string}
+   */
+  _renderLiveInspectorContent() {
+    const lint = this._collectLintMessages();
+    const bodyMode = this._config.body_mode || BODY_MODES.EXPAND;
+    const headerCards = this._config.header?.cards?.length || 0;
+    const bodyCards = this._config.body?.cards?.length || 0;
+    const footerCards = this._config.footer?.cards?.length || 0;
+    const theme = this._config.theme || THEMES.DEFAULT;
+
+    const lintClass = lint.errors.length > 0
+      ? 'has-errors'
+      : lint.warnings.length > 0
+        ? 'has-warnings'
+        : 'is-clean';
+
+    return `
+      <div class="live-inspector-title-row">
+        <h4>Live Preview & Lint</h4>
+      </div>
+
+      <div class="live-preview-card" style="${this._escapeHtml(this._getThemePreviewStyle())}">
+        <div class="live-preview-header-row">
+          <span class="live-title">${this._escapeHtml(this._config.title || 'Universal Card')}</span>
+          <span class="live-mode">${this._escapeHtml(this._getModeLabel(bodyMode))}</span>
+        </div>
+        <div class="live-preview-meta">
+          <span>Theme: <strong>${this._escapeHtml(this._getThemeLabel(theme))}</strong></span>
+          <span>Header cards: <strong>${headerCards}</strong></span>
+          <span>Body cards: <strong>${bodyCards}</strong></span>
+          <span>Footer cards: <strong>${footerCards}</strong></span>
+        </div>
+      </div>
+
+      <div class="lint-panel ${lintClass}">
+        <div class="lint-header">
+          <span>Lint</span>
+          <span class="lint-summary">
+            ${lint.errors.length} errors · ${lint.warnings.length} warnings
+          </span>
+        </div>
+        <div class="lint-list">
+          ${this._renderLintItems(lint)}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render lint messages
+   * @private
+   * @param {{errors: Array<Object>, warnings: Array<Object>, info: Array<Object>}} lint
+   * @returns {string}
+   */
+  _renderLintItems(lint) {
+    const messages = [
+      ...lint.errors.map(msg => ({ ...msg, level: 'error' })),
+      ...lint.warnings.map(msg => ({ ...msg, level: 'warning' })),
+      ...lint.info.map(msg => ({ ...msg, level: 'info' }))
+    ];
+
+    if (messages.length === 0) {
+      return '<div class="lint-item level-info">Проблем не найдено</div>';
+    }
+
+    return messages.map((item) => `
+      <div class="lint-item level-${item.level}">
+        <span class="lint-level">${item.level.toUpperCase()}</span>
+        <span class="lint-message">${this._escapeHtml(item.message || '')}</span>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Collect lint diagnostics for current config
+   * @private
+   * @returns {{errors: Array<Object>, warnings: Array<Object>, info: Array<Object>}}
+   */
+  _collectLintMessages() {
+    const result = {
+      errors: [],
+      warnings: [],
+      info: []
     };
-    return styles[theme] || styles[THEMES.DEFAULT];
+
+    try {
+      ConfigManager.validate(this._config);
+    } catch (error) {
+      result.errors.push({
+        message: error.message || 'Configuration validation failed'
+      });
+    }
+
+    const bodyMode = this._config.body_mode || BODY_MODES.EXPAND;
+    const bodyCards = this._config.body?.cards || [];
+    const tabs = this._config.tabs || [];
+    const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+
+    if (bodyMode !== BODY_MODES.NONE && bodyCards.length === 0 && bodyMode !== BODY_MODES.TABS) {
+      result.warnings.push({
+        message: 'Body mode включен, но в body.cards нет карточек'
+      });
+    }
+
+    if (bodyMode === BODY_MODES.TABS && tabs.length === 0) {
+      result.warnings.push({
+        message: 'Режим tabs выбран, но tabs[] пустой'
+      });
+    }
+
+    if (bodyMode === BODY_MODES.CAROUSEL && bodyCards.length < 2) {
+      result.info.push({
+        message: 'Для карусели обычно нужно 2+ карточки'
+      });
+    }
+
+    Object.entries(this._config.theme_tokens || {}).forEach(([name, value]) => {
+      if (!tokenNameRegex.test(name)) {
+        result.warnings.push({
+          message: `Некорректное имя theme token: ${name}`
+        });
+      }
+      if (typeof value !== 'string' || value.trim() === '') {
+        result.warnings.push({
+          message: `Пустое значение для theme token: ${name}`
+        });
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * Update live inspector without full editor rerender
+   * @private
+   */
+  _updateLiveInspector() {
+    const inspector = this.shadowRoot.querySelector('.live-inspector');
+    if (!inspector) return;
+    inspector.innerHTML = this._renderLiveInspectorContent();
   }
   
   /**
@@ -2305,6 +2745,38 @@ export class UniversalCardEditor extends HTMLElement {
       this._fireConfigChangedAndRender();
     }
   }
+
+  /**
+   * Move a card within a section
+   *
+   * @private
+   * @param {string} section - Section name
+   * @param {number} fromIndex - Source index
+   * @param {number} toIndex - Target index
+   */
+  _moveCard(section, fromIndex, toIndex) {
+    const cards = this._config[section]?.cards;
+    if (!Array.isArray(cards)) return;
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= cards.length) return;
+    if (toIndex < 0 || toIndex >= cards.length) return;
+
+    const nextCards = [...cards];
+    const [moved] = nextCards.splice(fromIndex, 1);
+    nextCards.splice(toIndex, 0, moved);
+
+    this._config = {
+      ...this._config,
+      [section]: {
+        ...(this._config[section] || {}),
+        cards: nextCards
+      }
+    };
+
+    this._dragState = null;
+    this._pushHistory(this._config);
+    this._fireConfigChangedAndRender();
+  }
   
   /**
    * Open card editor
@@ -2469,6 +2941,17 @@ export class UniversalCardEditor extends HTMLElement {
         }
       });
     });
+
+    this.shadowRoot.querySelectorAll('[data-action="move-card"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const section = btn.dataset.section;
+        const index = parseInt(btn.dataset.index, 10);
+        const direction = btn.dataset.direction;
+        const nextIndex = direction === 'up' ? index - 1 : index + 1;
+        this._moveCard(section, index, nextIndex);
+      });
+    });
     
     // Close sub-editor button
     this.shadowRoot.querySelectorAll('[data-action="close-sub-editor"]').forEach(btn => {
@@ -2522,6 +3005,9 @@ export class UniversalCardEditor extends HTMLElement {
     
     // Visibility Conditions
     this._bindVisibilityConditions();
+
+    // Theme token overrides
+    this._bindThemeTokens();
     
     // State Styles
     this._bindStateStyles();
@@ -2537,6 +3023,78 @@ export class UniversalCardEditor extends HTMLElement {
     
     // Animation Presets
     this._bindAnimationPresets();
+
+    // Drag&drop + keyboard reorder
+    this._bindCardReordering();
+
+    // Update live inspector content after binding phase
+    this._updateLiveInspector();
+  }
+
+  /**
+   * Bind drag&drop and keyboard reorder for cards
+   * @private
+   */
+  _bindCardReordering() {
+    const items = this.shadowRoot.querySelectorAll('.cards-list .card-item:not(.editing)');
+
+    items.forEach((item) => {
+      item.addEventListener('dragstart', (event) => {
+        const section = item.dataset.section;
+        const index = parseInt(item.dataset.index, 10);
+        if (!section || Number.isNaN(index)) return;
+
+        this._dragState = { section, index };
+        item.classList.add('dragging');
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('text/plain', `${section}:${index}`);
+        }
+      });
+
+      item.addEventListener('dragover', (event) => {
+        if (!this._dragState) return;
+        if (this._dragState.section !== item.dataset.section) return;
+        event.preventDefault();
+        item.classList.add('drop-target');
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.classList.remove('drop-target');
+      });
+
+      item.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const targetSection = item.dataset.section;
+        const targetIndex = parseInt(item.dataset.index, 10);
+        item.classList.remove('drop-target');
+
+        if (!this._dragState || !targetSection || Number.isNaN(targetIndex)) return;
+        if (this._dragState.section !== targetSection) return;
+
+        this._moveCard(targetSection, this._dragState.index, targetIndex);
+      });
+
+      item.addEventListener('dragend', () => {
+        this._dragState = null;
+        this.shadowRoot.querySelectorAll('.card-item.dragging, .card-item.drop-target').forEach((el) => {
+          el.classList.remove('dragging', 'drop-target');
+        });
+      });
+
+      item.addEventListener('keydown', (event) => {
+        if (!event.altKey) return;
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+
+        const section = item.dataset.section;
+        const index = parseInt(item.dataset.index, 10);
+        if (!section || Number.isNaN(index)) return;
+
+        event.preventDefault();
+        const targetIndex = event.key === 'ArrowUp' ? index - 1 : index + 1;
+        this._moveCard(section, index, targetIndex);
+      });
+    });
   }
   
   /**
@@ -2544,50 +3102,43 @@ export class UniversalCardEditor extends HTMLElement {
    * @private
    */
   _bindVisibilityConditions() {
-    // Add condition
-    const addBtn = this.shadowRoot.querySelector('[data-action="add-visibility-condition"]');
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        const typeSelect = this.shadowRoot.querySelector('#new-condition-type');
+    this.shadowRoot.querySelectorAll('[data-action="add-visibility-condition"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const scope = btn.dataset.scope || 'global';
+        const typeSelect = this.shadowRoot.querySelector(`.condition-type-select[data-visibility-scope="${scope}"]`);
         const type = typeSelect?.value;
         if (!type) return;
-        
-        // Immutable update
-        const currentVisibility = this._config.visibility ? [...this._config.visibility] : [];
-        currentVisibility.push({ condition: type });
-        this._config = { ...this._config, visibility: currentVisibility };
-        
-        typeSelect.value = '';
-        this._pushHistory(this._config);
-        this._fireConfigChangedAndRender();
-      });
-    }
-    
-    // Delete condition
-    this.shadowRoot.querySelectorAll('[data-action="delete-condition"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const index = parseInt(btn.dataset.index, 10);
-        if (this._config.visibility) {
-          // Immutable update
-          const newVisibility = this._config.visibility.filter((_, i) => i !== index);
-          this._config = { ...this._config, visibility: newVisibility };
-          this._pushHistory(this._config);
-          this._fireConfigChangedAndRender();
-        }
+
+        const current = this._getVisibilityConditionsByScope(scope);
+        const next = [...current, { condition: type }];
+        this._setVisibilityConditionsByScope(scope, next, true);
       });
     });
-    
-    // Condition field changes
+
+    this.shadowRoot.querySelectorAll('[data-action="delete-condition"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const scope = btn.dataset.scope || 'global';
+        const index = parseInt(btn.dataset.index, 10);
+        if (Number.isNaN(index)) return;
+
+        const current = this._getVisibilityConditionsByScope(scope);
+        const next = current.filter((_, i) => i !== index);
+        this._setVisibilityConditionsByScope(scope, next, true);
+      });
+    });
+
     this.shadowRoot.querySelectorAll('.condition-item').forEach(item => {
+      const scope = item.dataset.scope || 'global';
       const index = parseInt(item.dataset.index, 10);
-      
+      if (Number.isNaN(index)) return;
+
       item.querySelectorAll('.cond-field, .cond-operator, .cond-weekday, .cond-checkbox input').forEach(field => {
         field.addEventListener('change', () => {
-          this._updateConditionField(index, item);
+          this._updateConditionField(scope, index, item);
         });
         if (field.tagName === 'INPUT' && field.type !== 'checkbox') {
           field.addEventListener('input', () => {
-            this._updateConditionField(index, item);
+            this._updateConditionField(scope, index, item);
           });
         }
       });
@@ -2598,10 +3149,11 @@ export class UniversalCardEditor extends HTMLElement {
    * Update condition field (immutable)
    * @private
    */
-  _updateConditionField(index, item) {
-    if (!this._config.visibility || !this._config.visibility[index]) return;
-    
-    const oldCondition = this._config.visibility[index];
+  _updateConditionField(scope, index, item) {
+    const currentConditions = this._getVisibilityConditionsByScope(scope);
+    if (!currentConditions[index]) return;
+
+    const oldCondition = currentConditions[index];
     const type = item.dataset.type;
     let newCondition = { ...oldCondition };
     
@@ -2649,12 +3201,139 @@ export class UniversalCardEditor extends HTMLElement {
         break;
     }
     
-    // Immutable update
-    const newVisibility = [...this._config.visibility];
-    newVisibility[index] = newCondition;
-    this._config = { ...this._config, visibility: newVisibility };
-    
+    const nextConditions = [...currentConditions];
+    nextConditions[index] = newCondition;
+    this._setVisibilityConditionsByScope(scope, nextConditions, false);
+  }
+
+  /**
+   * Get visibility conditions by scope
+   * @private
+   * @param {string} scope - global | section:header | section:body | section:footer
+   * @returns {Array<Object>}
+   */
+  _getVisibilityConditionsByScope(scope) {
+    if (scope === 'global') {
+      return this._config.visibility ? [...this._config.visibility] : [];
+    }
+
+    const section = scope.split(':')[1];
+    if (!section || !['header', 'body', 'footer'].includes(section)) {
+      return [];
+    }
+
+    return this._config.section_visibility?.[section]
+      ? [...this._config.section_visibility[section]]
+      : [];
+  }
+
+  /**
+   * Set visibility conditions for a scope
+   * @private
+   * @param {string} scope - Scope identifier
+   * @param {Array<Object>} conditions - New conditions array
+   * @param {boolean} rerender - Whether to rerender editor
+   */
+  _setVisibilityConditionsByScope(scope, conditions, rerender) {
+    if (scope === 'global') {
+      this._config = {
+        ...this._config,
+        visibility: conditions
+      };
+    } else {
+      const section = scope.split(':')[1];
+      if (!section || !['header', 'body', 'footer'].includes(section)) return;
+      const sectionVisibility = {
+        ...(this._config.section_visibility || {}),
+        [section]: conditions
+      };
+
+      this._config = {
+        ...this._config,
+        section_visibility: sectionVisibility
+      };
+    }
+
+    if (rerender) {
+      this._pushHistory(this._config);
+      this._fireConfigChangedAndRender();
+      return;
+    }
+
     this._fireConfigChanged();
+  }
+
+  /**
+   * Bind theme token editor events
+   * @private
+   */
+  _bindThemeTokens() {
+    const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+
+    const updateTokensFromDom = () => {
+      const tokens = {};
+      this.shadowRoot.querySelectorAll('.theme-token-item').forEach((item) => {
+        const name = item.querySelector('.token-name')?.value?.trim();
+        const value = item.querySelector('.token-value')?.value?.trim();
+        if (!name || !value) return;
+        if (!tokenNameRegex.test(name)) return;
+        tokens[name] = value;
+      });
+
+      this._config = {
+        ...this._config,
+        theme_tokens: tokens
+      };
+      this._fireConfigChanged();
+    };
+
+    const addBtn = this.shadowRoot.querySelector('[data-action="add-theme-token"]');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const existing = this._config.theme_tokens || {};
+        let index = Object.keys(existing).length + 1;
+        let tokenName = `--uc-custom-token-${index}`;
+        while (Object.prototype.hasOwnProperty.call(existing, tokenName)) {
+          index += 1;
+          tokenName = `--uc-custom-token-${index}`;
+        }
+
+        this._config = {
+          ...this._config,
+          theme_tokens: {
+            ...existing,
+            [tokenName]: 'initial'
+          }
+        };
+
+        this._pushHistory(this._config);
+        this._fireConfigChangedAndRender();
+      });
+    }
+
+    this.shadowRoot.querySelectorAll('[data-action="delete-theme-token"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index, 10);
+        if (Number.isNaN(index)) return;
+
+        const entries = Object.entries(this._config.theme_tokens || {});
+        if (!entries[index]) return;
+        entries.splice(index, 1);
+
+        this._config = {
+          ...this._config,
+          theme_tokens: Object.fromEntries(entries)
+        };
+
+        this._pushHistory(this._config);
+        this._fireConfigChangedAndRender();
+      });
+    });
+
+    this.shadowRoot.querySelectorAll('.theme-token-item .token-name, .theme-token-item .token-value').forEach((input) => {
+      input.addEventListener('input', () => updateTokensFromDom());
+      input.addEventListener('change', () => updateTokensFromDom());
+    });
   }
   
   /**
@@ -3173,6 +3852,7 @@ export class UniversalCardEditor extends HTMLElement {
     // Обновляем кэш конфига чтобы setConfig не вызвал перерендеринг
     this._lastConfigStr = JSON.stringify(this._config);
     fireEvent(this, 'config-changed', { config: this._config });
+    this._updateLiveInspector();
   }
   
   /**
@@ -3512,6 +4192,19 @@ export class UniversalCardEditor extends HTMLElement {
       .card-item:hover {
         background: rgba(var(--editor-primary-rgb), 0.05);
       }
+
+      .card-item[draggable="true"] {
+        cursor: grab;
+      }
+
+      .card-item.dragging {
+        opacity: 0.55;
+        border: 1px dashed var(--editor-primary);
+      }
+
+      .card-item.drop-target {
+        box-shadow: inset 0 0 0 2px rgba(var(--editor-primary-rgb), 0.45);
+      }
       
       .card-item-content {
         display: flex;
@@ -3595,6 +4288,12 @@ export class UniversalCardEditor extends HTMLElement {
         color: var(--editor-text);
         background: rgba(0,0,0,0.05);
       }
+
+      .btn-icon:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
       
       .btn-back {
         background: transparent;
@@ -3634,6 +4333,24 @@ export class UniversalCardEditor extends HTMLElement {
         display: flex;
         flex-direction: column;
         gap: 16px;
+      }
+      
+      .ha-picker-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .picker-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      
+      .picker-fallback-note {
+        font-size: 12px;
+        color: var(--editor-text-secondary);
       }
       
       .card-picker-search {
@@ -4131,11 +4848,151 @@ export class UniversalCardEditor extends HTMLElement {
       .preview-body {
         color: var(--editor-text-secondary);
       }
+
+      .theme-tokens-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .theme-token-item {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid var(--editor-border);
+        border-radius: 8px;
+        background: var(--editor-bg);
+      }
+
+      .theme-token-item input {
+        padding: 8px 10px;
+        border: 1px solid var(--editor-border);
+        border-radius: 6px;
+        font-size: 12px;
+      }
       
       .hint {
         font-size: 12px;
         color: var(--editor-text-secondary);
         margin-bottom: 12px;
+      }
+
+      .live-inspector {
+        margin-top: 16px;
+        border: 1px solid var(--editor-border);
+        border-radius: 10px;
+        background: var(--editor-surface);
+        padding: 14px;
+      }
+
+      .live-inspector-title-row {
+        margin-bottom: 10px;
+      }
+
+      .live-inspector-title-row h4 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--editor-text);
+      }
+
+      .live-preview-card {
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 10px 12px;
+        margin-bottom: 12px;
+      }
+
+      .live-preview-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .live-title {
+        font-weight: 600;
+      }
+
+      .live-mode {
+        font-size: 11px;
+        opacity: 0.85;
+      }
+
+      .live-preview-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
+      .lint-panel {
+        border: 1px solid var(--editor-border);
+        border-radius: 8px;
+        background: var(--editor-bg);
+      }
+
+      .lint-panel.has-errors {
+        border-color: #e57373;
+      }
+
+      .lint-panel.has-warnings {
+        border-color: #ffb74d;
+      }
+
+      .lint-panel.is-clean {
+        border-color: #81c784;
+      }
+
+      .lint-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--editor-border);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .lint-summary {
+        font-weight: 500;
+        color: var(--editor-text-secondary);
+      }
+
+      .lint-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px;
+      }
+
+      .lint-item {
+        display: flex;
+        gap: 8px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .lint-level {
+        min-width: 50px;
+        font-weight: 700;
+      }
+
+      .lint-item.level-error .lint-level {
+        color: #e53935;
+      }
+
+      .lint-item.level-warning .lint-level {
+        color: #fb8c00;
+      }
+
+      .lint-item.level-info .lint-level {
+        color: #1e88e5;
       }
       
       /* Feature Groups */
@@ -4232,6 +5089,27 @@ export class UniversalCardEditor extends HTMLElement {
         flex-direction: column;
         gap: 8px;
         margin-bottom: 12px;
+      }
+
+      .visibility-scope {
+        padding: 12px;
+        border: 1px solid var(--editor-border);
+        border-radius: 10px;
+        background: var(--editor-bg);
+        margin-bottom: 12px;
+      }
+
+      .visibility-scope-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .visibility-scope-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--editor-text);
       }
       
       .condition-item {
@@ -4784,6 +5662,15 @@ export class UniversalCardEditor extends HTMLElement {
         
         .swipe-actions-grid {
           grid-template-columns: 1fr;
+        }
+
+        .theme-token-item {
+          grid-template-columns: 1fr;
+        }
+
+        .live-preview-header-row {
+          flex-direction: column;
+          align-items: flex-start;
         }
       }
     `;

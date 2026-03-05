@@ -103,7 +103,11 @@ export class FullscreenMode extends BaseMode {
     // Apply grid styles
     if (this._config.grid) {
       const { columns = 1, gap = '16px' } = this._config.grid;
-      if (columns > 1) {
+      if (typeof columns === 'string' && columns.trim()) {
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = columns;
+        grid.style.gap = gap;
+      } else if (typeof columns === 'number' && columns > 1) {
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
         grid.style.gap = gap;
@@ -118,7 +122,17 @@ export class FullscreenMode extends BaseMode {
     content.appendChild(grid);
     inner.appendChild(header);
     inner.appendChild(content);
+
+    // Mode styles live in shadow DOM, but fullscreen overlay is in document.body.
+    // Inject styles into overlay subtree to avoid missing CSS in portal context.
+    const style = document.createElement('style');
+    style.textContent = FullscreenMode.getStyles();
+    this._overlay.appendChild(style);
     this._overlay.appendChild(inner);
+
+    // Propagate resolved theme variables to portal elements.
+    this._applyThemeVariables(this._overlay);
+    this._applyThemeVariables(inner);
     
     return this._overlay;
   }
@@ -136,6 +150,7 @@ export class FullscreenMode extends BaseMode {
     // Back/Close button
     if (this._showClose) {
       const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
       closeBtn.className = 'uc-fullscreen-back';
       closeBtn.innerHTML = '<ha-icon icon="mdi:arrow-left"></ha-icon>';
       closeBtn.addEventListener('click', () => this.close());

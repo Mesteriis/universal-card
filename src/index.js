@@ -88,6 +88,7 @@ import { ModalMode } from '../modes/ModalMode.js';
 import { FullscreenMode } from '../modes/FullscreenMode.js';
 import { TabsMode } from '../modes/TabsMode.js';
 import { CarouselMode } from '../modes/CarouselMode.js';
+import { SubviewMode } from '../modes/SubviewMode.js';
 import { createMode, getAllModeStyles } from '../modes/index.js';
 debug('[UC] 9. Modes loaded');
 
@@ -258,7 +259,8 @@ window.UniversalCard = {
     ModalMode,
     FullscreenMode,
     TabsMode,
-    CarouselMode
+    CarouselMode,
+    SubviewMode
   },
   
   // Features

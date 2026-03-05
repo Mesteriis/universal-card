@@ -7,8 +7,6 @@
  * @module widgets/RestApiWidget
  */
 
-import { debounce } from '../utils/performance.js';
-
 /**
  * Методы HTTP запросов
  */
@@ -47,6 +45,7 @@ const DEFAULT_CONFIG = {
   value_path: '',           // JSONPath к значению
   template: '',             // Шаблон отображения
   transform: null,          // Функция трансформации
+  allow_unsafe_html: false, // Разрешить небезопасный HTML-рендер
   error_message: 'Ошибка загрузки данных',
   loading_message: 'Загрузка...',
   show_timestamp: false,
@@ -122,52 +121,68 @@ export class RestApiWidget {
       return;
     }
 
-    // Проверяем кэш
-    const cacheKey = this._getCacheKey();
-    const cached = this._cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < cache_ttl) {
-      this._data = cached.data;
-      this._updateDisplay();
-      return;
-    }
-
     // Отменяем предыдущий запрос
     if (this._abortController) {
       this._abortController.abort();
     }
     this._abortController = new AbortController();
 
+    // Подготавливаем URL/Body заранее — они участвуют в ключе кэша
+    const processedUrl = this._processTemplate(url);
+    const processedBody = body ? this._processTemplate(body) : null;
+
+    // Подготавливаем headers
+    const requestHeaders = { ...headers };
+    
+    // Аутентификация
+    if (this._config.authentication) {
+      const auth = this._config.authentication;
+      if (auth.type === 'bearer') {
+        requestHeaders['Authorization'] = `Bearer ${auth.token}`;
+      } else if (auth.type === 'basic') {
+        const encoded = btoa(`${auth.username}:${auth.password}`);
+        requestHeaders['Authorization'] = `Basic ${encoded}`;
+      } else if (auth.type === 'api_key') {
+        requestHeaders[auth.header || 'X-API-Key'] = auth.key;
+      }
+    }
+
+    // Проверяем кэш по обработанному запросу
+    const cacheKey = this._getCacheKey({
+      method,
+      url: processedUrl,
+      body: processedBody,
+      headers: requestHeaders
+    });
+    const cached = this._cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < cache_ttl) {
+      this._data = cached.data;
+      this._loading = false;
+      this._error = null;
+      this._updateDisplay();
+      return;
+    }
+
     this._loading = true;
     this._error = null;
     this._updateDisplay();
 
-    try {
-      // Подготавливаем URL (поддержка переменных HA)
-      const processedUrl = this._processTemplate(url);
-      
-      // Подготавливаем headers
-      const requestHeaders = { ...headers };
-      
-      // Аутентификация
-      if (this._config.authentication) {
-        const auth = this._config.authentication;
-        if (auth.type === 'bearer') {
-          requestHeaders['Authorization'] = `Bearer ${auth.token}`;
-        } else if (auth.type === 'basic') {
-          const encoded = btoa(`${auth.username}:${auth.password}`);
-          requestHeaders['Authorization'] = `Basic ${encoded}`;
-        } else if (auth.type === 'api_key') {
-          requestHeaders[auth.header || 'X-API-Key'] = auth.key;
-        }
-      }
+    let didTimeout = false;
+    let timeoutId = null;
+    if (Number.isFinite(timeout) && timeout > 0) {
+      timeoutId = setTimeout(() => {
+        didTimeout = true;
+        this._abortController?.abort();
+      }, timeout);
+    }
 
+    try {
       // Выполняем запрос
       const response = await fetch(processedUrl, {
         method,
         headers: requestHeaders,
-        body: body ? JSON.stringify(this._processTemplate(body)) : null,
-        signal: this._abortController.signal,
-        timeout
+        body: processedBody ? JSON.stringify(processedBody) : null,
+        signal: this._abortController.signal
       });
 
       if (!response.ok) {
@@ -200,13 +215,19 @@ export class RestApiWidget {
       this._error = null;
 
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error.name === 'AbortError' && !didTimeout) {
         return; // Запрос был отменён
       }
       
       this._loading = false;
-      this._error = error.message || this._config.error_message;
+      this._error = didTimeout 
+        ? `Таймаут запроса (${timeout}мс)`
+        : (error.message || this._config.error_message);
       console.error('[RestApiWidget] Fetch error:', error);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
 
     this._updateDisplay();
@@ -216,9 +237,9 @@ export class RestApiWidget {
    * Получает ключ кэша
    * @returns {string}
    */
-  _getCacheKey() {
-    const { url, method, body } = this._config;
-    return `${method}:${url}:${JSON.stringify(body || {})}`;
+  _getCacheKey(request) {
+    const { method, url, body, headers } = request;
+    return `${method}:${url}:${JSON.stringify(body || {})}:${JSON.stringify(headers || {})}`;
   }
 
   /**
@@ -258,14 +279,21 @@ export class RestApiWidget {
     }
     
     if (typeof transform === 'string') {
-      // Простой JavaScript expression
-      try {
-        const fn = new Function('data', `return ${transform}`);
-        return fn(data);
-      } catch (error) {
-        console.error('[RestApiWidget] Transform error:', error);
-        return data;
+      const value = transform.trim();
+      if (!value) return data;
+      
+      // Безопасный режим: поддерживаем только path-трансформацию
+      // Примеры: "path:weather.current.temp" или "weather.current.temp"
+      if (value.startsWith('path:')) {
+        return this._getValueByPath(data, value.slice(5).trim());
       }
+      
+      if (/^[\w.[\]]+$/.test(value)) {
+        return this._getValueByPath(data, value);
+      }
+      
+      console.warn('[RestApiWidget] Unsafe string transform blocked. Use path:<json_path>.');
+      return data;
     }
     
     return data;
@@ -309,7 +337,7 @@ export class RestApiWidget {
       this._element.innerHTML = `
         <div class="uc-rest-loading">
           <div class="uc-rest-spinner"></div>
-          <span>${this._config.loading_message}</span>
+          <span>${this._escapeHtml(this._config.loading_message)}</span>
         </div>
       `;
       return;
@@ -320,7 +348,7 @@ export class RestApiWidget {
       this._element.innerHTML = `
         <div class="uc-rest-error">
           <ha-icon icon="mdi:alert-circle"></ha-icon>
-          <span>${this._error}</span>
+          <span>${this._escapeHtml(this._error)}</span>
           <button class="uc-rest-retry">Повторить</button>
         </div>
       `;
@@ -338,7 +366,7 @@ export class RestApiWidget {
 
     switch (display_format) {
       case DISPLAY_FORMATS.RAW:
-        content = `<pre class="uc-rest-raw">${JSON.stringify(value, null, 2)}</pre>`;
+        content = `<pre class="uc-rest-raw">${this._escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
         break;
         
       case DISPLAY_FORMATS.VALUE:
@@ -380,9 +408,16 @@ export class RestApiWidget {
    * @returns {string}
    */
   _formatValue(value) {
-    if (value === null || value === undefined) return '-';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
+    let stringValue = '-';
+    if (value !== null && value !== undefined) {
+      stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    }
+    
+    if (this._config.allow_unsafe_html) {
+      return stringValue;
+    }
+    
+    return this._escapeHtml(stringValue);
   }
 
   /**
@@ -402,7 +437,7 @@ export class RestApiWidget {
       <table class="uc-rest-table">
         <thead>
           <tr>
-            ${headers.map(h => `<th>${h}</th>`).join('')}
+            ${headers.map(h => `<th>${this._formatValue(h)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
@@ -451,10 +486,19 @@ export class RestApiWidget {
     if (!template) return this._formatValue(data);
     
     // Заменяем {{ path }} на значения
-    return template.replace(/\{\{\s*([\w.[\]]+)\s*\}\}/g, (match, path) => {
+    const rendered = template.replace(/\{\{\s*([\w.[\]]+)\s*\}\}/g, (match, path) => {
       const value = this._getValueByPath(data, path);
-      return this._formatValue(value);
+      const text = value === null || value === undefined
+        ? '-'
+        : (typeof value === 'object' ? JSON.stringify(value) : String(value));
+      return text;
     });
+    
+    if (this._config.allow_unsafe_html) {
+      return rendered;
+    }
+    
+    return `<div class="uc-rest-template">${this._escapeHtml(rendered)}</div>`;
   }
 
   /**
@@ -489,6 +533,20 @@ export class RestApiWidget {
         />
       </svg>
     `;
+  }
+
+  /**
+   * Экранирует HTML
+   * @param {*} value
+   * @returns {string}
+   */
+  _escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   /**

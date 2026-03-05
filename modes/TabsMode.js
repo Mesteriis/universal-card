@@ -180,8 +180,12 @@ export class TabsMode extends BaseMode {
     // Apply grid styles
     const gridConfig = tab.grid || this._config.grid || {};
     const { columns = 1, gap = '16px' } = gridConfig;
-    
-    if (columns > 1) {
+
+    if (typeof columns === 'string' && columns.trim()) {
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = columns;
+      grid.style.gap = gap;
+    } else if (typeof columns === 'number' && columns > 1) {
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
       grid.style.gap = gap;

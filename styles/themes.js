@@ -12,6 +12,53 @@
  * @module styles/themes
  */
 
+/**
+ * Theme preview styles used by the visual editor.
+ * Keep this in sync with runtime theme classes.
+ */
+export const THEME_PREVIEW_STYLES = Object.freeze({
+  'default': 'background: var(--ha-card-background, #fff); color: var(--primary-text-color, #333);',
+  'transparent': 'background: transparent; color: var(--primary-text-color, #fff); border: 1px dashed rgba(255,255,255,0.3);',
+  'solid': 'background: #1a1a1a; color: #e0e0e0;',
+  'glass': 'background: rgba(30,30,30,0.55); backdrop-filter: blur(8px); color: #f0f0f0; border: 1px solid rgba(255,255,255,0.08);',
+  'glassmorphism': 'background: rgba(30,30,30,0.7); backdrop-filter: blur(12px) saturate(180%); color: #f7f7f7; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.3);',
+  'neumorphism': 'background: #1e1e1e; color: #d9d9d9; box-shadow: 6px 6px 12px rgba(0,0,0,0.5), -6px -6px 12px rgba(255,255,255,0.03);',
+  'minimal': 'background: transparent; color: var(--primary-text-color, #fff); border: 1px solid rgba(255,255,255,0.1);',
+  'gradient': 'background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff;',
+  'dark': 'background: #121212; color: #fff; border: 1px solid rgba(255,255,255,0.08);',
+  'neon': 'background: rgba(0,0,0,0.9); color: #00ff88; border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.5);',
+  'aurora': 'background: linear-gradient(135deg, rgba(0,212,170,0.15), rgba(124,58,237,0.15), rgba(14,165,233,0.15)), #0a0a0f; color: #fff;',
+  'carbon': 'background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255,255,255,0.02) 1px, rgba(255,255,255,0.02) 2px), #0d0d0d; color: #c0c0c0;',
+  'slate': 'background: #1e293b; color: #f1f5f9;',
+  'obsidian': 'background: #0f0f0f; color: #d4d4d4;',
+  'charcoal': 'background: #1f1f1f; color: #e5e5e5;',
+  'midnight': 'background: #0f172a; color: #e2e8f0;',
+  'cyber': 'background: #0a0a0a; color: #00d4ff; border: 1px solid #00d4ff;',
+  'void': 'background: #000; color: #a0a0a0;',
+  'ember': 'background: linear-gradient(135deg, #1a0a0a, #0a0505); color: #ffcccc;',
+  'forest': 'background: linear-gradient(135deg, #0a1a0a, #050a05); color: #bbffcc;',
+  'ocean': 'background: linear-gradient(135deg, #0a0f1a, #050810); color: #bae6fd;',
+  'purple-haze': 'background: linear-gradient(135deg, #120a1a, #0a050f); color: #e9d5ff;',
+  'matrix': 'background: #000500; color: #00ff00;',
+  'graphite': 'background: #252525; color: #d0d0d0;',
+  'smoke': 'background: rgba(40,40,40,0.85); color: #ccc; backdrop-filter: blur(8px);',
+  'nord': 'background: #2e3440; color: #eceff4;',
+  'dracula': 'background: #282a36; color: #f8f8f2;',
+  'monokai': 'background: #272822; color: #f8f8f2;',
+  'tokyo-night': 'background: #1a1b26; color: #c0caf5;',
+  'catppuccin': 'background: #1e1e2e; color: #cdd6f4;'
+});
+
+/**
+ * Get inline preview style for a given theme
+ *
+ * @param {string} theme - Theme key
+ * @returns {string} CSS inline style
+ */
+export function getThemePreviewStyle(theme = 'default') {
+  return THEME_PREVIEW_STYLES[theme] || THEME_PREVIEW_STYLES.default;
+}
+
 export const THEME_STYLES = `
   /* ============================= */
   /* DEFAULT THEME */
@@ -49,17 +96,29 @@ export const THEME_STYLES = `
   }
   
   /* ============================= */
-  /* GLASS / GLASSMORPHISM THEME */
+  /* GLASS THEME */
   /* ============================= */
-  .theme-glass,
+  .theme-glass {
+    --ha-card-background: rgba(30, 30, 30, 0.55);
+    --card-background-color: rgba(30, 30, 30, 0.55);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ============================= */
+  /* GLASSMORPHISM THEME */
+  /* ============================= */
   .theme-glassmorphism {
     --ha-card-background: rgba(30, 30, 30, 0.7);
     --card-background-color: rgba(30, 30, 30, 0.7);
-    
+
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 
+    box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.3),
       inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   }

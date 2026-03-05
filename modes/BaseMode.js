@@ -400,6 +400,58 @@ export class BaseMode {
     this._loaded = false;
     this._active = false;
   }
+
+  // ===========================================================================
+  // THEME HELPERS
+  // ===========================================================================
+
+  /**
+   * Resolve source element for theme CSS variables
+   *
+   * @protected
+   * @returns {HTMLElement|null} Source element with resolved theme vars
+   */
+  _getThemeVarSourceElement() {
+    const card = this._options?.card;
+    const cardRoot = card?.shadowRoot?.querySelector('.universal-card');
+    if (cardRoot) return cardRoot;
+    if (card instanceof HTMLElement) return card;
+    return null;
+  }
+
+  /**
+   * Apply resolved theme variables to target element.
+   * This is required for portal overlays rendered outside shadow DOM.
+   *
+   * @protected
+   * @param {HTMLElement} target - Target element
+   */
+  _applyThemeVariables(target) {
+    if (!(target instanceof HTMLElement)) return;
+
+    const source = this._getThemeVarSourceElement();
+    if (!(source instanceof HTMLElement)) return;
+
+    const computed = getComputedStyle(source);
+    const vars = [
+      '--ha-card-background',
+      '--card-background-color',
+      '--ha-card-box-shadow',
+      '--ha-card-border-radius',
+      '--primary-color',
+      '--primary-text-color',
+      '--secondary-text-color',
+      '--divider-color',
+      '--secondary-background-color'
+    ];
+
+    vars.forEach((name) => {
+      const value = computed.getPropertyValue(name);
+      if (value && value.trim()) {
+        target.style.setProperty(name, value.trim());
+      }
+    });
+  }
 }
 
 // =============================================================================

@@ -157,6 +157,49 @@ export class ConfigManager {
     if (config.visibility) {
       this._validateConditions(config.visibility, 'visibility');
     }
+
+    // Validate section visibility conditions
+    if (config.section_visibility !== undefined) {
+      if (!isObject(config.section_visibility)) {
+        throw new ConfigValidationError(
+          'section_visibility must be an object with header/body/footer arrays',
+          'section_visibility'
+        );
+      }
+
+      ['header', 'body', 'footer'].forEach((section) => {
+        const conditions = config.section_visibility[section];
+        if (conditions !== undefined) {
+          this._validateConditions(conditions, `section_visibility.${section}`);
+        }
+      });
+    }
+
+    // Validate theme token overrides
+    if (config.theme_tokens !== undefined) {
+      if (!isObject(config.theme_tokens)) {
+        throw new ConfigValidationError(
+          'theme_tokens must be an object',
+          'theme_tokens'
+        );
+      }
+
+      const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+      Object.entries(config.theme_tokens).forEach(([name, value]) => {
+        if (!tokenNameRegex.test(name)) {
+          throw new ConfigValidationError(
+            `Invalid CSS variable name "${name}"`,
+            `theme_tokens.${name}`
+          );
+        }
+        if (typeof value !== 'string') {
+          throw new ConfigValidationError(
+            'Theme token value must be a string',
+            `theme_tokens.${name}`
+          );
+        }
+      });
+    }
     
     // Validate actions
     ['tap_action', 'hold_action', 'double_tap_action'].forEach(actionKey => {
@@ -386,6 +429,12 @@ export class ConfigManager {
     if (config.visibility) {
       normalized.visibility = config.visibility.map(c => this._normalizeCondition(c));
     }
+
+    // Normalize section visibility
+    normalized.section_visibility = this._normalizeSectionVisibility(config.section_visibility);
+
+    // Normalize theme token overrides
+    normalized.theme_tokens = this._normalizeThemeTokens(config.theme_tokens);
     
     return normalized;
   }
@@ -475,6 +524,54 @@ export class ConfigManager {
     }
     
     return normalized;
+  }
+
+  /**
+   * Normalize section visibility object
+   *
+   * @param {Object} sectionVisibility - Section visibility config
+   * @returns {Object} Normalized section visibility
+   * @private
+   * @static
+   */
+  static _normalizeSectionVisibility(sectionVisibility) {
+    const source = isObject(sectionVisibility) ? sectionVisibility : {};
+    const normalizeList = (value) => (
+      Array.isArray(value) ? value.map(c => this._normalizeCondition(c)) : []
+    );
+
+    return {
+      header: normalizeList(source.header),
+      body: normalizeList(source.body),
+      footer: normalizeList(source.footer)
+    };
+  }
+
+  /**
+   * Normalize theme token overrides
+   *
+   * @param {Object} themeTokens - Theme tokens object
+   * @returns {Object} Normalized token map
+   * @private
+   * @static
+   */
+  static _normalizeThemeTokens(themeTokens) {
+    if (!isObject(themeTokens)) {
+      return {};
+    }
+
+    const result = {};
+    const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+
+    Object.entries(themeTokens).forEach(([name, value]) => {
+      if (!tokenNameRegex.test(name)) return;
+      if (typeof value !== 'string') return;
+      const tokenValue = value.trim();
+      if (!tokenValue) return;
+      result[name] = tokenValue;
+    });
+
+    return result;
   }
   
   // ===========================================================================
@@ -568,6 +665,17 @@ export class ConfigManager {
             columns: { type: 'number', minimum: 1, maximum: 12 },
             gap: { type: 'string' }
           }
+        },
+        section_visibility: {
+          type: 'object',
+          properties: {
+            header: { type: 'array' },
+            body: { type: 'array' },
+            footer: { type: 'array' }
+          }
+        },
+        theme_tokens: {
+          type: 'object'
         }
         // Additional schema properties...
       }

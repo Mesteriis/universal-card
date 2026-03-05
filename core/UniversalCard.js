@@ -45,6 +45,7 @@ import { createMode, getAllModeStyles, TabsMode, CarouselMode } from '../modes/i
 // Styles
 import { HEADER_FOOTER_STYLES } from '../styles/header-footer.js';
 import { THEME_STYLES } from '../styles/themes.js';
+import { VisibilityConditions } from '../features/VisibilityConditions.js';
 
 // =============================================================================
 // UNIVERSAL CARD CLASS
@@ -140,6 +141,9 @@ export class UniversalCard extends HTMLElement {
     
     /** @type {Object|null} Pending hass object before init */
     this._pendingHass = null;
+
+    /** @type {number} Initialization token for stale async guard */
+    this._initToken = 0;
     
     // ===========================================
     // COMPONENTS
@@ -162,6 +166,19 @@ export class UniversalCard extends HTMLElement {
     
     /** @type {CarouselMode|null} Carousel mode instance */
     this._carouselMode = null;
+
+    /** @type {SubviewMode|null} Subview mode instance */
+    this._subviewMode = null;
+
+    /** @type {VisibilityConditions|null} Global card visibility evaluator */
+    this._visibilityEvaluator = null;
+
+    /** @type {{header: VisibilityConditions|null, body: VisibilityConditions|null, footer: VisibilityConditions|null}} */
+    this._sectionVisibilityEvaluators = {
+      header: null,
+      body: null,
+      footer: null
+    };
     
     // ===========================================
     // CARDS
@@ -226,6 +243,12 @@ export class UniversalCard extends HTMLElement {
     
     /** @type {IntersectionObserver|null} Lazy load observer */
     this._intersectionObserver = null;
+
+    /** @type {HTMLElement|null} Modal overlay reference */
+    this._modalOverlay = null;
+
+    /** @type {HTMLElement|null} Fullscreen overlay reference */
+    this._fullscreenOverlay = null;
     
     // ===========================================
     // DEBUG
@@ -283,6 +306,19 @@ export class UniversalCard extends HTMLElement {
     
     // Cleanup observers
     this._destroyIntersectionObserver();
+
+    // Close active portal mode overlay/listeners
+    if (this._mode && (this._config.body_mode === 'modal' || this._config.body_mode === 'fullscreen' || this._config.body_mode === 'subview')) {
+      try {
+        void this._mode.close();
+      } catch {
+        // Ignore mode cleanup errors on detach
+      }
+    }
+
+    // Backward-compat cleanup for legacy overlays/listeners
+    this._hideModal();
+    this._hideFullscreen();
     
     // Note: don't destroy child cards - they might be reused
     debug('[UC] disconnectedCallback() done');
@@ -300,6 +336,13 @@ export class UniversalCard extends HTMLElement {
    */
   set hass(hass) {
     this._hass = hass;
+
+    if (this._visibilityEvaluator) {
+      this._visibilityEvaluator.hass = hass;
+    }
+    Object.values(this._sectionVisibilityEvaluators).forEach((evaluator) => {
+      if (evaluator) evaluator.hass = hass;
+    });
     
     // If not initialized yet, store for later
     if (!this._initialized) {
@@ -313,8 +356,10 @@ export class UniversalCard extends HTMLElement {
     if (this._badges) this._badges.hass = hass;
     
     // Update mode instances
+    if (this._mode) this._mode.hass = hass;
     if (this._tabsMode) this._tabsMode.hass = hass;
     if (this._carouselMode) this._carouselMode.hass = hass;
+    if (this._subviewMode) this._subviewMode.hass = hass;
     
     // Update child cards
     this._updateChildCardsHass(hass);
@@ -357,9 +402,38 @@ export class UniversalCard extends HTMLElement {
     }
     
     this._debug.initTime = performance.now() - startTime;
+
+    // Increment init token to invalidate any in-flight async init
+    this._initToken += 1;
+
+    this._setupVisibilityEvaluators();
+
+    // Cleanup previous runtime state before re-initializing
+    this._resetRuntimeState();
     
     // Initialize card
-    this._initializeCard();
+    this._initializeCard(this._initToken);
+  }
+
+  /**
+   * Setup visibility evaluators for card and sections
+   *
+   * @private
+   */
+  _setupVisibilityEvaluators() {
+    this._visibilityEvaluator = new VisibilityConditions(this._config.visibility || []);
+    if (this._hass) {
+      this._visibilityEvaluator.hass = this._hass;
+    }
+
+    const sectionVisibility = this._config.section_visibility || {};
+    ['header', 'body', 'footer'].forEach((section) => {
+      const evaluator = new VisibilityConditions(sectionVisibility[section] || []);
+      if (this._hass) {
+        evaluator.hass = this._hass;
+      }
+      this._sectionVisibilityEvaluators[section] = evaluator;
+    });
   }
   
   /**
@@ -369,6 +443,25 @@ export class UniversalCard extends HTMLElement {
    */
   getConfig() {
     return deepClone(this._config);
+  }
+
+  /**
+   * Reset runtime state before re-initialization
+   *
+   * @private
+   */
+  _resetRuntimeState() {
+    this._initialized = false;
+    this._pendingHass = this._hass;
+    this._isLoading = false;
+
+    this._clearAllTimers();
+    this._destroyIntersectionObserver();
+    this._hideModal();
+    this._hideFullscreen();
+
+    this._destroyChildCards();
+    this.shadowRoot.innerHTML = '';
   }
   
   // ===========================================================================
@@ -380,12 +473,16 @@ export class UniversalCard extends HTMLElement {
    * 
    * @private
    */
-  async _initializeCard() {
+  async _initializeCard(initToken) {
     debug('[UC] _initializeCard() start');
+    const isStale = () => initToken !== this._initToken;
+
     try {
       // Load card helpers
       debug('[UC] getting card helpers...');
-      this._helpers = await getCardHelpers();
+      const helpers = await getCardHelpers();
+      if (isStale()) return;
+      this._helpers = helpers;
       debug('[UC] card helpers loaded');
       
       // Restore state if configured
@@ -409,12 +506,14 @@ export class UniversalCard extends HTMLElement {
       // Perform initial render
       debug('[UC] starting render...');
       await this._render();
+      if (isStale()) return;
       debug('[UC] render done');
       
       // Load header cards asynchronously
       if (this._header) {
         debug('[UC] loading header cards...');
         await this._header.loadCards();
+        if (isStale()) return;
         debug('[UC] header cards loaded');
       }
       
@@ -422,6 +521,7 @@ export class UniversalCard extends HTMLElement {
       if (this._footer) {
         debug('[UC] loading footer cards...');
         await this._footer.loadCards();
+        if (isStale()) return;
         debug('[UC] footer cards loaded');
       }
       
@@ -432,8 +532,11 @@ export class UniversalCard extends HTMLElement {
       } else if (this._expanded) {
         debug('[UC] loading body cards...');
         await this._loadBodyCards();
+        if (isStale()) return;
         debug('[UC] body cards loaded');
       }
+
+      if (isStale()) return;
       
       // Bind events
       this._bindEvents();
@@ -503,9 +606,15 @@ export class UniversalCard extends HTMLElement {
   _createModeInstance() {
     const bodyMode = this._config.body_mode || BODY_MODES.EXPAND;
     
-    // Skip for 'none' mode
-    if (bodyMode === BODY_MODES.NONE) {
+    // Skip modes that are rendered/handled by dedicated branches
+    if (
+      bodyMode === BODY_MODES.NONE ||
+      bodyMode === BODY_MODES.EXPAND ||
+      bodyMode === BODY_MODES.TABS ||
+      bodyMode === BODY_MODES.CAROUSEL
+    ) {
       this._mode = null;
+      this._subviewMode = null;
       return;
     }
     
@@ -524,6 +633,8 @@ export class UniversalCard extends HTMLElement {
     if (this._mode && this._hass) {
       this._mode.hass = this._hass;
     }
+
+    this._subviewMode = bodyMode === BODY_MODES.SUBVIEW ? this._mode : null;
   }
   
   /**
@@ -564,6 +675,72 @@ export class UniversalCard extends HTMLElement {
       }
     }
   }
+
+  /**
+   * Check global card visibility
+   *
+   * @private
+   * @returns {boolean}
+   */
+  _isCardVisible() {
+    if (!this._visibilityEvaluator) {
+      return true;
+    }
+
+    return this._visibilityEvaluator.evaluate();
+  }
+
+  /**
+   * Check section visibility
+   *
+   * @private
+   * @param {'header'|'body'|'footer'} section - Section name
+   * @returns {boolean}
+   */
+  _isSectionVisible(section) {
+    const evaluator = this._sectionVisibilityEvaluators?.[section];
+    if (!evaluator) {
+      return true;
+    }
+
+    return evaluator.evaluate();
+  }
+
+  /**
+   * Apply current visibility state to DOM
+   *
+   * @private
+   */
+  _applyVisibilityState() {
+    const cardVisible = this._isCardVisible();
+    this.style.display = cardVisible ? '' : 'none';
+
+    if (!cardVisible) {
+      if (this._expanded) {
+        this._collapse();
+      }
+      return;
+    }
+
+    const header = this.shadowRoot.querySelector('.header');
+    if (header) {
+      header.style.display = this._isSectionVisible('header') ? '' : 'none';
+    }
+
+    const bodyVisible = this._isSectionVisible('body');
+    const body = this.shadowRoot.querySelector('.body');
+    if (body) {
+      body.style.display = bodyVisible ? '' : 'none';
+    }
+    if (!bodyVisible && this._expanded) {
+      this._collapse();
+    }
+
+    const footer = this.shadowRoot.querySelector('.footer');
+    if (footer) {
+      footer.style.display = this._isSectionVisible('footer') ? '' : 'none';
+    }
+  }
   
   // ===========================================================================
   // RENDERING
@@ -579,6 +756,14 @@ export class UniversalCard extends HTMLElement {
     const startTime = performance.now();
     
     const styles = this._generateStyles();
+    const showHeader = this._isSectionVisible('header');
+    const showBody = this._isSectionVisible('body');
+    const showFooter = this._isSectionVisible('footer');
+
+    if (!showBody && this._expanded) {
+      this._expanded = false;
+      this._saveState();
+    }
     
     // Build card classes
     const cardClasses = ['universal-card'];
@@ -593,20 +778,20 @@ export class UniversalCard extends HTMLElement {
     cardContainer.dataset.cardId = this._config.card_id;
     
     // Render Header using component
-    if (this._header) {
+    if (this._header && showHeader) {
       this._header.expanded = this._expanded;
       const headerElement = this._header.render();
       cardContainer.appendChild(headerElement);
     }
     
     // Render Body
-    const bodyElement = this._renderBodyElement();
+    const bodyElement = showBody ? this._renderBodyElement() : null;
     if (bodyElement) {
       cardContainer.appendChild(bodyElement);
     }
     
     // Render Footer using component
-    if (this._footer) {
+    if (this._footer && showFooter) {
       const footerElement = this._footer.render();
       cardContainer.appendChild(footerElement);
     }
@@ -614,6 +799,7 @@ export class UniversalCard extends HTMLElement {
     // Clear and append to shadow DOM
     this.shadowRoot.innerHTML = `<style>${styles}</style>`;
     this.shadowRoot.appendChild(cardContainer);
+    this._applyVisibilityState();
     
     this._debug.renderCount++;
     this._debug.lastRenderTime = performance.now() - startTime;
@@ -628,9 +814,13 @@ export class UniversalCard extends HTMLElement {
   _renderBodyElement() {
     const config = this._config;
     const mode = config.body_mode || 'expand';
+
+    if (!this._isSectionVisible('body')) {
+      return null;
+    }
     
-    // No body for 'none', 'modal', 'fullscreen' modes (they use overlays)
-    if (mode === 'none' || mode === 'modal' || mode === 'fullscreen') {
+    // No body for modes that render outside/away from the card body
+    if (mode === 'none' || mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
       return null;
     }
     
@@ -751,8 +941,8 @@ export class UniversalCard extends HTMLElement {
     try {
       const mode = this._config.body_mode || 'expand';
       
-      // For tabs and carousel, modes handle their own card loading
-      if (mode === 'tabs' || mode === 'carousel') {
+      // For tabs/carousel/subview, loading is handled separately
+      if (mode === 'tabs' || mode === 'carousel' || mode === 'subview') {
         this._bodyCardsLoaded = true;
         return;
       }
@@ -877,6 +1067,24 @@ export class UniversalCard extends HTMLElement {
       this._badges.destroy();
       this._badges = null;
     }
+
+    if (this._mode && typeof this._mode.destroy === 'function') {
+      this._mode.destroy();
+    }
+    if (this._tabsMode && typeof this._tabsMode.destroy === 'function') {
+      this._tabsMode.destroy();
+    }
+    if (this._carouselMode && typeof this._carouselMode.destroy === 'function') {
+      this._carouselMode.destroy();
+    }
+    if (this._subviewMode && typeof this._subviewMode.destroy === 'function') {
+      this._subviewMode.destroy();
+    }
+
+    this._mode = null;
+    this._tabsMode = null;
+    this._carouselMode = null;
+    this._subviewMode = null;
     
     this._headerCards = [];
     this._bodyCards = [];
@@ -887,6 +1095,22 @@ export class UniversalCard extends HTMLElement {
   // ===========================================================================
   // STYLES
   // ===========================================================================
+
+  /**
+   * Build CSS custom property declarations from theme_tokens
+   *
+   * @private
+   * @returns {string}
+   */
+  _getThemeTokenDeclarations() {
+    const tokenNameRegex = /^--[a-z0-9_-]+$/i;
+    const tokens = this._config.theme_tokens || {};
+
+    return Object.entries(tokens)
+      .filter(([name, value]) => tokenNameRegex.test(name) && typeof value === 'string' && value.trim())
+      .map(([name, value]) => `${name}: ${value.trim()};`)
+      .join('\n        ');
+  }
   
   /**
    * Generate all CSS styles
@@ -905,6 +1129,7 @@ export class UniversalCard extends HTMLElement {
         --uc-transition-duration: ${this._config.animation_duration}ms;
         --uc-border-radius: ${this._config.border_radius};
         --uc-padding: ${this._config.padding};
+        ${this._getThemeTokenDeclarations()}
       }
       
       /* ============================= */
@@ -1317,15 +1542,27 @@ export class UniversalCard extends HTMLElement {
     const columns = grid.columns || DEFAULTS.grid_columns;
     const gap = grid.gap || DEFAULTS.grid_gap;
     
-    if (columns <= 1) {
-      return '';
+    if (typeof columns === 'number') {
+      if (columns <= 1) {
+        return '';
+      }
+
+      return `
+        display: grid;
+        grid-template-columns: repeat(${columns}, 1fr);
+        gap: ${gap};
+      `.replace(/\s+/g, ' ').trim();
     }
-    
-    return `
-      display: grid;
-      grid-template-columns: repeat(${columns}, 1fr);
-      gap: ${gap};
-    `.replace(/\s+/g, ' ').trim();
+
+    if (typeof columns === 'string' && columns.trim()) {
+      return `
+        display: grid;
+        grid-template-columns: ${columns};
+        gap: ${gap};
+      `.replace(/\s+/g, ' ').trim();
+    }
+
+    return '';
   }
   
   /**
@@ -1519,22 +1756,30 @@ export class UniversalCard extends HTMLElement {
    */
   async _expand() {
     if (this._expanded) return;
+    if (!this._isCardVisible() || !this._isSectionVisible('body')) return;
     
     this._expanded = true;
     this._saveState();
-    
-    // Load body cards if needed
-    if (!this._bodyCardsLoaded) {
-      await this._loadBodyCards();
-    }
-    
-    // Handle different modes
     const mode = this._config.body_mode || 'expand';
     
-    if (mode === 'modal') {
+    // Load inline body cards only for standard expand mode.
+    // Overlay/tabs/subview modes manage their own card loading.
+    if (!this._bodyCardsLoaded && mode === 'expand') {
+      await this._loadBodyCards();
+    }
+
+    // Handle different modes
+    
+    if ((mode === 'modal' || mode === 'fullscreen' || mode === 'subview') && this._mode) {
+      await this._mode.open();
+      this._updateExpandedUI();
+    } else if (mode === 'modal') {
+      // Legacy fallback (kept for backward compatibility)
       this._showModal();
     } else if (mode === 'fullscreen') {
+      // Legacy fallback (kept for backward compatibility)
       this._showFullscreen();
+      this._updateExpandedUI();
     } else if (mode === 'tabs' && this._tabsMode) {
       this._updateExpandedUI();
       await this._tabsMode.open();
@@ -1581,10 +1826,17 @@ export class UniversalCard extends HTMLElement {
     // Handle different modes
     const mode = this._config.body_mode || 'expand';
     
-    if (mode === 'modal') {
+    if ((mode === 'modal' || mode === 'fullscreen' || mode === 'subview') && this._mode) {
+      void this._mode.close();
+      this._updateExpandedUI();
+    } else if (mode === 'modal') {
+      // Legacy fallback (kept for backward compatibility)
       this._hideModal();
+      this._updateExpandedUI();
     } else if (mode === 'fullscreen') {
+      // Legacy fallback (kept for backward compatibility)
       this._hideFullscreen();
+      this._updateExpandedUI();
     } else if (mode === 'tabs' && this._tabsMode) {
       this._updateExpandedUI();
       this._tabsMode.close();
@@ -1847,10 +2099,14 @@ export class UniversalCard extends HTMLElement {
     if (this._header) {
       this._header.expanded = this._expanded;
     }
+
+    if (!this._isSectionVisible('body')) {
+      return;
+    }
     
-    // For modal/fullscreen - body is always collapsed (content shown in overlay)
+    // For modal/fullscreen/subview - body is not shown in place
     const mode = this._config.body_mode || 'expand';
-    if (mode === 'modal' || mode === 'fullscreen') {
+    if (mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
       return; // Don't show body content - it's in overlay
     }
     
@@ -1964,11 +2220,7 @@ export class UniversalCard extends HTMLElement {
    * @private
    */
   _updateDynamicContent() {
-    // This method will be expanded to handle:
-    // - Status indicators
-    // - Badge values
-    // - Visibility conditions
-    // - State-based styling
+    this._applyVisibilityState();
   }
   
   // ===========================================================================
