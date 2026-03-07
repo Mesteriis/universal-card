@@ -916,7 +916,7 @@
             
             <div class="code-block" id="code-basic">
                 <div class="code-header">
-                    <span>configuration.yaml</span>
+                    <span>lovelace.yaml</span>
                     <button class="copy-btn" onclick="copyCode('basic')">📋 Copy</button>
                 </div>
                 <pre><code class="language-yaml">type: custom:universal-card
@@ -1075,9 +1075,9 @@ body:
                     <h3>📁 Ручная установка</h3>
                     <ol class="install-steps">
                         <li>Скачайте последний релиз с <a href="https://github.com/Mesteriis/universal-card/releases" target="_blank">GitHub Releases</a></li>
-                        <li>Скопируйте папку <code>universal_card</code> в <code>/config/custom_components/</code></li>
-                        <li>Добавьте в <code>configuration.yaml</code>:<br><code>universal_card:</code></li>
-                        <li>Перезагрузите Home Assistant</li>
+                        <li>Скопируйте <code>universal-card.js</code> и папку <code>lazy/</code> в <code>/config/www/universal-card/</code></li>
+                        <li>Добавьте Lovelace resource:<br><code>/local/universal-card/universal-card.js</code> (<code>module</code>)</li>
+                        <li>Обновите страницу и очистите кеш браузера</li>
                     </ol>
                 </div>
             </div>

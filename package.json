@@ -1,7 +1,7 @@
 {
   "name": "universal-card",
   "version": "1.0.3",
-  "description": "Advanced Lovelace card for Home Assistant",
+  "description": "Advanced Lovelace custom card for Home Assistant",
   "private": true,
   "scripts": {
     "build": "node build.js",

@@ -147,17 +147,16 @@
 1. Откройте **HACS** → **Frontend**
 2. Нажмите **"+"** → Найдите **"Universal Card"**
 3. Нажмите **"Установить"**
-4. Перезагрузите Home Assistant
+4. Обновите страницу и очистите кеш браузера при необходимости
 
 ### Ручная установка
 
 1. Скачайте последний релиз с [GitHub Releases](https://github.com/Mesteriis/universal-card/releases)
-2. Скопируйте папку `universal_card` в `/config/custom_components/`
-3. Добавьте в `configuration.yaml`:
-   ```yaml
-   universal_card:
-   ```
-4. Перезагрузите Home Assistant
+2. Скопируйте `universal-card.js` и папку `lazy/` в `/config/www/universal-card/`
+3. Добавьте Lovelace resource:
+   - URL: `/local/universal-card/universal-card.js`
+   - Type: `module`
+4. Обновите страницу и очистите кеш браузера
 
 ---
 
@@ -1268,8 +1267,6 @@ theme_tokens:
 
 ```text
 universal_card/
-├── __init__.py
-├── manifest.json
 ├── hacs.json
 ├── universal-card.js
 ├── lazy/
@@ -1303,7 +1300,7 @@ universal_card/
 
 ```bash
 # Установка зависимостей
-cd custom_components/universal_card
+cd universal-card
 npm ci
 
 # Сборка для production
@@ -1323,7 +1320,6 @@ npm run release:prepare
 
 - CI: `.github/workflows/build.yml`
 - HACS validation: `.github/workflows/validate.yaml`
-- Hassfest: `.github/workflows/hassfest.yaml`
 - Release automation: `.github/workflows/release.yml`
 - Production source: `src/`
 - Tests: `tests/`
@@ -1341,8 +1337,8 @@ npm run release:prepare
 
 ### Карточка не появляется
 
-1. Проверьте что `universal_card` добавлен в `configuration.yaml`
-2. Перезагрузите Home Assistant
+1. Проверьте что resource `/local/universal-card/universal-card.js` добавлен в Lovelace
+2. Убедитесь что рядом доступна папка `/local/universal-card/lazy/`
 3. Очистите кеш браузера (Ctrl+Shift+R)
 4. Проверьте консоль браузера на ошибки
 

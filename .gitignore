@@ -8,6 +8,8 @@ __pycache__/
 .coverage
 htmlcov/
 coverage/
+coverage-curated/
+coverage-expanded/
 
 # IDE
 .idea/

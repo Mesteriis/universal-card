@@ -44,10 +44,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Validate integration files
+      - name: Validate package metadata
         run: |
-          python3 -m json.tool manifest.json >/dev/null
-          python3 -m compileall __init__.py >/dev/null
+          python3 -m json.tool hacs.json >/dev/null
+          node -e "const pkg=require('./package.json'); if(!pkg.version) throw new Error('package.json version is missing');"
 
       - name: Run quality gates
         run: |
@@ -68,7 +68,7 @@ jobs:
             exit 0
           fi
 
-          git add manifest.json __init__.py package.json package-lock.json universal-card.js lazy/
+          git add package.json package-lock.json universal-card.js lazy/
           git commit -m "chore: release v${{ steps.prepare_release.outputs.release_version }} [skip ci]"
           git push origin HEAD:main
           echo "commit_created=true" >> "$GITHUB_OUTPUT"

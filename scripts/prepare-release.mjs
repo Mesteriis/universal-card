@@ -6,10 +6,8 @@ import path from 'node:path';
 import process from 'node:process';
 
 const repoRoot = process.cwd();
-const manifestPath = path.join(repoRoot, 'manifest.json');
 const packageJsonPath = path.join(repoRoot, 'package.json');
 const packageLockPath = path.join(repoRoot, 'package-lock.json');
-const initPath = path.join(repoRoot, '__init__.py');
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'));
@@ -33,19 +31,9 @@ function hasVersionTag(tags, version) {
   return tags.has(`v${version}`) || tags.has(version);
 }
 
-function replaceInitVersion(source, version) {
-  const pattern = /VERSION:\s*Final\s*=\s*"[^"]+"/;
-  if (!pattern.test(source)) {
-    throw new Error('Failed to locate VERSION constant in __init__.py');
-  }
-
-  return source.replace(pattern, `VERSION: Final = "${version}"`);
-}
-
-const manifest = readJson(manifestPath);
 const packageJson = readJson(packageJsonPath);
 const packageLock = readJson(packageLockPath);
-const originalVersion = manifest.version || packageJson.version;
+const originalVersion = packageJson.version;
 const tags = new Set(
   execSync('git tag --list', { encoding: 'utf8' })
     .split(/\r?\n/)
@@ -59,9 +47,6 @@ while (hasVersionTag(tags, releaseVersion)) {
 }
 
 if (releaseVersion !== originalVersion) {
-  manifest.version = releaseVersion;
-  writeJson(manifestPath, manifest);
-
   packageJson.version = releaseVersion;
   writeJson(packageJsonPath, packageJson);
 
@@ -70,9 +55,6 @@ if (releaseVersion !== originalVersion) {
     packageLock.packages[''].version = releaseVersion;
   }
   writeJson(packageLockPath, packageLock);
-
-  const initSource = readFileSync(initPath, 'utf8');
-  writeFileSync(initPath, replaceInitVersion(initSource, releaseVersion), 'utf8');
 }
 
 const output = [

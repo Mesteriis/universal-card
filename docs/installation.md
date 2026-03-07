@@ -2,11 +2,14 @@
 
 ## HACS
 1. Open HACS.
-2. Add the repository as a custom repository if needed.
-3. Search for `Universal Card` in the `Integrations` category.
-4. Restart Home Assistant.
+2. Open the Frontend section.
+3. Add this repository as a custom repository if needed.
+4. Install `Universal Card`.
+5. Refresh the browser cache.
 
 ## Manual
-1. Copy this repository contents into `custom_components/universal_card`.
-2. Restart Home Assistant.
-3. Add the card resource if your frontend cache still points to an older bundle.
+1. Copy `universal-card.js` and the `lazy/` directory into `/config/www/universal-card/`.
+2. Add a Lovelace resource:
+   - URL: `/local/universal-card/universal-card.js`
+   - Type: `module`
+3. Refresh the browser cache.

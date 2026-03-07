@@ -23,4 +23,4 @@ jobs:
       - name: Validate HACS metadata
         uses: hacs/action@main
         with:
-          category: integration
+          category: plugin

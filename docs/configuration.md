@@ -1,6 +1,11 @@
 # Configuration
 
-`Universal Card` is a frontend integration that serves `universal-card.js` and lazy bundles through Home Assistant.
+`Universal Card` is a frontend-only Lovelace custom card.
+
+## Important
+- No backend integration is required.
+- No `configuration.yaml` entry is required.
+- The card is loaded as a Lovelace resource.
 
 ## Minimal example
 

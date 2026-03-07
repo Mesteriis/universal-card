@@ -1,20 +1,14 @@
 {
   "name": "Universal Card",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.12"
-    }
-  },
-  "postCreateCommand": "npm ci && python3 -m pip install -r requirements_dev.txt",
   "customizations": {
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-playwright.playwright",
-        "ms-python.python"
+        "ms-playwright.playwright"
       ]
     }
-  }
+  },
+  "postCreateCommand": "npm ci && npx playwright install chromium"
 }

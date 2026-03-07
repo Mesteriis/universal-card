@@ -5,7 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 npm ci
-python3 -m pip install -r requirements_dev.txt
 npx playwright install chromium
 
 echo "Development environment is ready."

@@ -37,13 +37,13 @@
 
 ## Current Status
 - Production source layer is TS-first and migrated end-to-end (`core`, `modes`, `ui`, `features`, `complex`, `themes`, `styles`, `advanced`, `widgets`, `editor`, `devtools`, `extensibility`, `src/lazy`).
-- Publishable repository layout is normalized around `src/` for production source and `tests/` for verification, while the repository root remains directly HACS-installable with `content_in_root: true`.
+- Publishable repository layout is normalized around `src/` for production source and `tests/` for verification, and the repository is now packaged as a frontend-only HACS custom card with `content_in_root: true`.
 - Shared contract is unified for runtime/editor/schema/migrations.
 - Provider layer, derived provider layer, public API policy, and plugin lifecycle surface are implemented.
 - `tsc --noEmit`, curated `vitest --coverage`, expanded mode-layer coverage, regression scripts, smoke scripts, Playwright E2E, and production build are green.
 - Complex editor groups now have unit coverage for helper and bind flows, not only `typecheck`.
 - CI now enforces config validation, unit/regression, curated coverage, expanded coverage, build, smoke checks, and browser E2E.
-- HACS validation, hassfest staging validation, automated version bumping, release commit/tag creation, and GitHub release publishing are wired through `.github/workflows`.
+- HACS plugin validation, automated version bumping, release commit/tag creation, and GitHub release publishing are wired through `.github/workflows`.
 - `allowJs` is removed from the production typecheck graph; remaining JS is an explicit tooling/test boundary only.
 
 ## Track Exit Criteria

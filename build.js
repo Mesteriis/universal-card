@@ -14,10 +14,10 @@ const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
-const manifest = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf8')
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')
 );
-const CARD_VERSION = manifest.version || '0.0.0';
+const CARD_VERSION = packageJson.version || '0.0.0';
 
 // Аргументы командной строки
 const args = process.argv.slice(2);
