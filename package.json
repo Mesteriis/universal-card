@@ -1,18 +1,31 @@
 {
   "name": "universal-card",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Advanced Lovelace card for Home Assistant",
   "private": true,
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
     "dev": "node build.js --dev",
+    "test:unit": "node scripts/test-regressions.js",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:expanded": "vitest run --config vitest.config.expanded.mjs --coverage",
+    "test:config": "node scripts/test-config-validator.js",
+    "test:e2e": "playwright test",
     "smoke:themes-modes": "node scripts/smoke-theme-mode-matrix.js",
-    "test": "npm run build && npm run smoke:themes-modes",
-    "check": "npm run build && npm run smoke:themes-modes"
+    "smoke:runtime": "node scripts/smoke-runtime-optimizations.js",
+    "test": "npm run test:config && npm run test:unit && npm run typecheck && npm run build && npm run smoke:themes-modes && npm run smoke:runtime",
+    "check": "npm run test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "release:prepare": "node scripts/prepare-release.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.20.0"
+    "@playwright/test": "^1.54.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "esbuild": "^0.20.0",
+    "jsdom": "^28.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "repository": {
     "type": "git",

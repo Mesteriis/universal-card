@@ -1,151 +1,84 @@
-name: Build Universal Card
+name: CI
 
 on:
   push:
     branches:
       - main
-      - master
-    paths:
-      - 'src/**'
-      - 'core/**'
-      - 'modes/**'
-      - 'features/**'
-      - 'ui/**'
-      - 'advanced/**'
-      - 'complex/**'
-      - 'themes/**'
-      - 'widgets/**'
-      - 'editor/**'
-      - 'devtools/**'
-      - 'extensibility/**'
-      - 'styles/**'
-      - 'utils/**'
-      - 'build.js'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/**'
   pull_request:
     branches:
       - main
-      - master
   workflow_dispatch:
 
-# Права для GitHub Actions
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: universal-card-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  ci:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate integration files
+        run: |
+          python3 -m json.tool manifest.json >/dev/null
+          python3 -m compileall __init__.py >/dev/null
+
+      - name: Validate config contract
+        run: npm run test:config
+
+      - name: Run regression suite
+        run: npm run test:unit
+
+      - name: Typecheck runtime and editor
+        run: npm run typecheck
+
+      - name: Run curated coverage gate
+        run: npm run test:coverage
+
+      - name: Run expanded coverage gate
+        run: npm run test:coverage:expanded
+
       - name: Build production bundle
         run: npm run build
 
-      - name: Verify build output
-        run: |
-          if [ ! -f universal-card.js ]; then
-            echo "Build failed: universal-card.js not found"
-            exit 1
-          fi
-          echo "✅ Build successful!"
-          echo "📦 File size: $(wc -c < universal-card.js | tr -d ' ') bytes"
-          echo "📝 Lines: $(wc -l < universal-card.js | tr -d ' ')"
+      - name: Verify generated artifacts are up to date
+        run: git diff --exit-code -- universal-card.js lazy/
 
-      - name: Check for changes
-        id: check_changes
-        run: |
-          if git diff --quiet universal-card.js 2>/dev/null; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+      - name: Smoke test theme and mode matrix
+        run: npm run smoke:themes-modes
 
-      - name: Commit built file
-        if: github.event_name == 'push' && steps.check_changes.outputs.changed == 'true'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add universal-card.js
-          git commit -m "🔨 Auto-build: universal-card.js [skip ci]"
-          git push
+      - name: Smoke test runtime surface
+        run: npm run smoke:runtime
 
-      - name: Upload build artifact
+      - name: Run browser E2E suite
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: universal-card-js
-          path: universal-card.js
-          retention-days: 30
-
-  # Создание релиза при пуше тега
-  release:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production bundle
-        run: npm run build
-
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Release v${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## Universal Card v${{ steps.get_version.outputs.VERSION }}
-            
-            ### 📦 Установка через HACS
-            1. Добавьте репозиторий в HACS как custom repository
-            2. Категория: Integration
-            3. Установите Universal Card
-            4. Перезапустите Home Assistant
-            5. Добавьте в `configuration.yaml`:
-               ```yaml
-               universal_card:
-               ```
-            
-            ### 🔧 Ручная установка
-            1. Скопируйте папку `custom_components/universal_card` в свой `config/custom_components/`
-            2. Перезапустите Home Assistant
-            3. Добавьте в `configuration.yaml`:
-               ```yaml
-               universal_card:
-               ```
-            
-            ### 📋 Изменения
-            См. [CHANGELOG.md](CHANGELOG.md)
-          files: |
-            universal-card.js
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14

@@ -1,0 +1,32 @@
+name: Hassfest
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository into staging directory
+        uses: actions/checkout@v4
+        with:
+          path: repository
+
+      - name: Prepare Home Assistant integration layout
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/custom_components"
+          ln -s "$GITHUB_WORKSPACE/repository" "$GITHUB_WORKSPACE/custom_components/universal_card"
+
+      - name: Run Hassfest
+        uses: home-assistant/actions/hassfest@master

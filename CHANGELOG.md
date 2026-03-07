@@ -99,11 +99,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] EventLogger (levels, categories, grouping, panel UI, export)
 - [x] StateInspector (hass, config, internal state, live editing)
 - [x] PerformanceProfiler (render times, FPS, memory, charts)
+- [x] Debug mode bootstrap (`enableUniversalCardDebug`, lazy devtools surface)
 
 ### TODO - Phase 11: Extensibility ✅
 - [x] PluginSystem (hooks, priorities, lifecycle, createPlugin helper)
 - [x] CustomCSS (scopes, sanitization, variables, helpers)
-- [x] Multi-language (i18n) - уже реализовано в Phase 9 (MultiLanguage.js)
+- [x] Multi-language (i18n) - уже реализовано в Phase 9 (MultiLanguage.ts)
 
 ---
 

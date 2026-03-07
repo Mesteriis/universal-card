@@ -60,6 +60,11 @@
 
 ---
 
+## 🗺️ Platform Roadmap
+
+- [Enterprise Roadmap](docs/enterprise-roadmap.md)
+- [TypeScript Migration Strategy](docs/typescript-migration.md)
+
 ## 📖 Оглавление
 
 - [Возможности](#-возможности)
@@ -119,7 +124,8 @@
 - **Skeleton Loaders** — плейсхолдеры во время загрузки
 - **Асинхронная загрузка** — не блокирует страницу
 - **GPU-accelerated анимации** — плавность 60 FPS
-- **WebSocket Throttling** — оптимизация обновлений состояний
+- **WebSocket Optimization** — доступна в advanced bundle, статус experimental
+- **stability_mode** — безопасный режим без pool/autoplay/анимаций и без incremental lazy batches
 
 ### 🛠️ Дополнительные функции
 
@@ -130,6 +136,7 @@
 - 🪆 Nested Cards — неограниченная вложенность
 - 🦶 Footer — подвал с действиями
 - 🎨 Визуальный редактор — встроен в Lovelace
+- 🧪 Advanced/widgets API — часть lazy bundle; widget, advanced, header/badges и state-driven feature runtime уже сидят на internal provider + derived-provider context, но public surface ещё не зафиксирован
 
 ---
 
@@ -273,11 +280,8 @@ tabs:
 type: custom:universal-card
 title: Комнаты
 body_mode: carousel
-carousel:
-  autoplay: true
-  interval: 5000
-  show_indicators: true
-  show_arrows: true
+carousel_autoplay: true
+carousel_interval: 5000
 body:
   cards:
     - type: picture-entity
@@ -353,7 +357,9 @@ badges:
     icon: mdi:thermometer
   - entity: sensor.humidity
     icon: mdi:water-percent
-  - text: "Online"
+  - type: custom
+    label: Status
+    value: Online
     color: green
 ```
 
@@ -362,13 +368,15 @@ badges:
 ```yaml
 type: custom:universal-card
 title: Header Slots
-header:
-  left:
+header_left:
+  cards:
     - type: state-icon
       entity: light.room
-  right:
+header_right:
+  cards:
     - type: state-badge
       entity: sensor.temperature
+header:
   cards:
     - type: custom:mini-graph-card
       entities:
@@ -934,9 +942,105 @@ __UC_DEVTOOLS__.showProfiler()
 ### Быстрый доступ к API
 
 ```javascript
-// Полный API карточки
+// Минимальный platform API
 window.UniversalCard
+
+// Versioned public API policy
+window.UniversalCard.policy.version
+window.UniversalCard.policy.configVersion
+window.UniversalCard.policy.supportsNamespace('config', 1)
+window.UniversalCard.policy.supportsMember('config', 'migrate')
+window.UniversalCard.policy.supportsNamespace('plugins', 2)
+window.UniversalCard.policy.hasFeature('lazyBundles')
+window.UniversalCard.policy.hasFeature('pluginUiHooks')
+
+// Shared config contract
+window.UniversalCard.config.getSchema()
+window.UniversalCard.config.getCurrentVersion()
+window.UniversalCard.config.migrate(config)
+window.UniversalCard.config.validate(config)
+window.UniversalCard.config.normalize(config)
+
+// Capability inventory
+window.UniversalCard.capabilities.publicNamespaces
+window.UniversalCard.capabilities.pluginHooks
+
+// Lazy platform loaders
+window.UniversalCard.loaders.advanced()
+window.UniversalCard.loaders.editor()
+window.UniversalCard.loaders.cardEditor()
+window.UniversalCard.loaders.devtools()
+
+// Local plugin hook API
+window.UniversalCard.plugins.list()
+window.UniversalCard.plugins.register(plugin)
+window.UniversalCard.plugins.getHooks()
 ```
+
+`window.UniversalCard` считается публичным только в рамках namespaces, перечисленных в `window.UniversalCard.policy.namespaceVersions`.
+Все, что не объявлено в `policy` и `capabilities.publicNamespaces`, считается внутренним runtime surface и может меняться без предупреждения.
+Пока стадия `development`, обратная совместимость public API не гарантируется; breaking change должен сопровождаться bump соответствующей namespace version в policy.
+`window.UniversalCard.plugins` поддерживает только локальную регистрацию plugin objects. Remote executable plugin loading отключен и не считается частью публичного API.
+Текущий public plugin contract `v2` покрывает lifecycle, section render (`header/body/footer`), action execution, `click`, и `hold` hooks.
+
+### Пример локального plugins v2 registration
+
+```javascript
+if (window.UniversalCard.policy.supportsNamespace('plugins', 2)) {
+  window.UniversalCard.plugins.register({
+    name: 'demo-plugin',
+    hooks: {
+      init(ctx) {
+        ctx.card.dataset.pluginReady = 'true';
+      },
+      headerRender(ctx) {
+        ctx.header?.classList.add('demo-plugin-header');
+      },
+      actionExecute(ctx) {
+        if (ctx.action?.action === 'navigate' && ctx.action.navigation_path === '/admin') {
+          return { handled: true };
+        }
+        return null;
+      }
+    }
+  });
+}
+```
+
+Практическое правило простое:
+- проверяйте `window.UniversalCard.policy` перед использованием namespace/member
+- регистрируйте только локальные plugin objects
+- если hook меняет runtime behavior, он должен опираться только на payload/context, объявленные в `policy` и `capabilities`
+
+### Политика миграций и breaking changes
+
+- `window.UniversalCard.config.normalize(config)` это входная точка для legacy/imported config; она применяет `v1 -> v2` migrations и ставит актуальный `config_version`
+- `window.UniversalCard.config.validate(config)` рассчитан на уже текущий контракт и не делает auto-migrate
+- любой breaking change в public API требует bump соответствующего namespace version в `window.UniversalCard.policy`
+- любой breaking change в config-контракте требует bump `config_version` и явных migration rules
+- проект всё ещё в стадии `development`, поэтому обратная совместимость не является целью сама по себе; миграции и versioned policy важнее compatibility shims
+
+### Quality Gates и tooling boundary
+
+Локально и в CI теперь считаются обязательными:
+
+- `npm run test:config`
+- `npm run test:unit`
+- `npm run typecheck`
+- `npm run test:coverage`
+- `npm run test:coverage:expanded`
+- `npm run build`
+- `npm run smoke:themes-modes`
+- `npm run smoke:runtime`
+- `npm run test:e2e`
+
+Production source layer теперь TS-first и собирается с `allowJs: false`.
+Осознанная JS boundary пока оставлена только там, где это tooling/test glue, а не production runtime:
+
+- `build.js`
+- `scripts/*`
+- `tests/helpers/manual-dom.js`
+- browser fixture glue в `tests/e2e/*`
 
 ---
 
@@ -946,25 +1050,91 @@ window.UniversalCard
 
 | Параметр | Тип | По умолчанию | Описание |
 |----------|-----|--------------|----------|
+| `config_version` | number | `2` | Версия config-контракта. Legacy configs мигрируются при `normalize()` |
 | `title` | string | — | Заголовок карточки |
 | `subtitle` | string | — | Подзаголовок |
-| `icon` | string | — | MDI иконка (mdi:home) |
+| `icon` | string | — | Опциональная MDI иконка. По умолчанию иконка не показывается |
 | `entity` | string | — | Entity для состояния |
+| `attribute` | string | — | Root attribute для `state_styles` и state-aware visibility условий |
 | `body_mode` | string | `expand` | Режим body |
+| `expand_trigger` | string | `tap` | Жест заголовка для раскрытия по умолчанию |
 | `expanded` | boolean | `false` | Раскрыта по умолчанию |
 | `theme` | string | `default` | Тема оформления |
 | `animation` | boolean | `true` | Включить анимации |
+| `animation_duration` | number | `300` | Базовая длительность анимаций (мс) |
+| `stability_mode` | boolean | `false` | Отключить рискованные эффекты ради предсказуемости |
 | `lazy_load` | boolean | `true` | Ленивая загрузка |
-| `remember_state` | boolean | `false` | Запоминать состояние |
+| `lazy_initial_batch` | number | `4` | Первая порция lazy-загрузки |
+| `lazy_batch_size` | number | `4` | Размер следующих порций lazy-загрузки |
+| `lazy_idle_timeout` | number | `800` | Таймаут idle-загрузки (мс) |
+| `auto_collapse_after` | number | `0` | Авто-сворачивание через N секунд, `0` отключает |
+| `remember_expanded_state` | boolean | `false` | Запоминать состояние раскрытия |
+| `remember_mode_state` | boolean | `true` | Запоминать активную вкладку/слайд |
 | `show_expand_icon` | boolean | `true` | Показывать иконку раскрытия |
+| `expand_icon` | string | `mdi:chevron-down` | Иконка раскрытия. Если поле пустое в editor, используется встроенная иконка |
 | `sticky_header` | boolean | `false` | Фиксированный header |
+| `border_radius` | string | `var(--ha-card-border-radius, 12px)` | Скругление карточки |
+| `padding` | string | `16px` | Внутренние отступы карточки |
+| `enable_card_pool` | boolean | `true` | Включить пул карточек для ускорения |
+| `pool_scope` | string | `card` | Область пула: `card` / `dashboard` / `global` |
+| `pool_ttl_ms` | number | `600000` | Время жизни записей пула (мс) |
+| `pool_max_entries` | number | `32` | Лимит записей пула |
+| `carousel_autoplay` | boolean | `false` | Автопрокрутка в режиме `carousel` |
+| `carousel_interval` | number | `5000` | Интервал автопрокрутки карусели (мс) |
+| `section_visibility` | object | `{}` | Видимость секций `header`/`body`/`footer` |
+| `state_styles` | object | `{}` | Map состояний/диапазонов в style overrides карточки |
+| `theme_tokens` | object | `{}` | Переопределение CSS-переменных карточки |
+
+`debug` как config-поле удален. Для dev/debug surface используйте `window.UniversalCard.devtools.enable()` и `window.UniversalCard.devtools.disable()`.
+`state_styles_entity` удален. `state_styles` теперь использует только root `entity` и опциональный root `attribute`.
+Legacy `swipe.swipe_left` / `swipe.swipe_right` / `swipe.swipe_up` / `swipe.swipe_down` удалены. Используйте `swipe.left` / `swipe.right` / `swipe.up` / `swipe.down`.
+`badges[].text` удален. Используйте `badges[].value` для статического значения или `badges[].label` для подписи.
+Legacy `header.left` / `header.right` удалены. Используйте root `header_left.cards` / `header_right.cards`.
+Legacy `carousel.autoplay` / `carousel.interval` удалены. Используйте root `carousel_autoplay` / `carousel_interval`.
+Если `config_version` не указан, `normalize()` рассматривает config как legacy `v1`, применяет миграции и проставляет текущую версию.
+
+### Style параметры (`theme_tokens`)
+
+`theme_tokens` принимает объект вида `{ "--css-variable": "value" }`.
+
+Поддерживаемые переменные:
+
+| Токен | Назначение |
+|-------|------------|
+| `--uc-primary-color` | Основной цвет |
+| `--uc-secondary-color` | Вторичный цвет |
+| `--uc-accent-color` | Акцент |
+| `--uc-background-color` | Фон |
+| `--uc-surface-color` | Поверхность |
+| `--uc-text-color` | Основной текст |
+| `--uc-text-secondary-color` | Вторичный текст |
+| `--uc-border-color` | Цвет границы |
+| `--uc-border-radius` | Скругление |
+| `--uc-padding` | Внутренние отступы |
+| `--uc-gap` | Gap |
+| `--uc-shadow` | Тень |
+| `--uc-shadow-hover` | Тень при hover |
+| `--uc-transition-duration` | Длительность анимаций |
+| `--uc-transition-timing` | Тайминг-функция анимаций |
+
+Пример:
+
+```yaml
+type: custom:universal-card
+title: Стили
+padding: 0
+theme_tokens:
+  --uc-padding: 0
+  --uc-border-radius: 8px
+  --uc-primary-color: "#03a9f4"
+```
 
 ### Header параметры
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
-| `header.left` | array | Карточки слева в header |
-| `header.right` | array | Карточки справа в header |
+| `header_left.cards` | array | Карточки слева в header |
+| `header_right.cards` | array | Карточки справа в header |
 | `header.cards` | array | Карточки на всю ширину header |
 
 ### Footer параметры
@@ -977,6 +1147,8 @@ window.UniversalCard
 | `footer.hold_action` | object | Действие при удержании |
 
 ### Body параметры
+
+`body.cards` это единственный канонический способ задавать вложенные карточки. Root-level `cards` удален.
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
@@ -1018,19 +1190,45 @@ window.UniversalCard
 
 | Параметр | Тип | По умолчанию | Описание |
 |----------|-----|--------------|----------|
-| `carousel.autoplay` | boolean | `false` | Автопрокрутка |
-| `carousel.interval` | number | `5000` | Интервал (мс) |
-| `carousel.show_indicators` | boolean | `true` | Показать индикаторы |
-| `carousel.show_arrows` | boolean | `true` | Показать стрелки |
+| `carousel_autoplay` | boolean | `false` | Автопрокрутка |
+| `carousel_interval` | number | `5000` | Интервал (мс) |
 
 ### Badges параметры
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
+| `badges[].type` | string | `state` / `attribute` / `counter` / `custom` |
 | `badges[].entity` | string | Entity для значения |
+| `badges[].attribute` | string | Attribute для `type: attribute` |
 | `badges[].icon` | string | Иконка бейджа |
-| `badges[].text` | string | Статичный текст |
+| `badges[].value` | string/number | Статическое значение для `custom` или fallback |
+| `badges[].label` | string | Подпись бейджа |
 | `badges[].color` | string | Цвет бейджа |
+| `badges[].unit` | string | Единица измерения |
+| `badges[].show_name` | boolean | Подставить friendly name entity как label |
+| `badges[].show_progress` | boolean | Рендерить progress bar по `min` / `max` |
+| `badges[].min` / `badges[].max` | number | Границы progress bar |
+| `badges[].precision` | number | Количество знаков после запятой |
+| `badges[].format` | string | `none` / `time` / `date` / `duration` |
+| `badges[].entities` | string[] | Список entity IDs для `type: counter` |
+| `badges[].domain` | string | Domain для `type: counter` |
+| `badges[].count_state` | string | Считать только entity в этом состоянии |
+| `badges[].thresholds` | array | Threshold colors `{ value, color }` |
+| `badges[].tap_action` | object | Действие по клику на бейдж |
+
+### Swipe параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `swipe.enabled` | boolean | Включить swipe runtime |
+| `swipe.direction` | string | `horizontal` / `vertical` / `both` |
+| `swipe.threshold` | number | Минимальная дистанция свайпа в px |
+| `swipe.velocityThreshold` | number | Минимальная скорость свайпа |
+| `swipe.preventScroll` | boolean | Блокировать scroll при совпадающем направлении |
+| `swipe.left.action` | string | `none` / `expand` / `collapse` / `toggle` / `next` / `prev` |
+| `swipe.right.action` | string | `none` / `expand` / `collapse` / `toggle` / `next` / `prev` |
+| `swipe.up.action` | string | `none` / `expand` / `collapse` / `toggle` / `next` / `prev` |
+| `swipe.down.action` | string | `none` / `expand` / `collapse` / `toggle` / `next` / `prev` |
 
 ### Action параметры
 
@@ -1046,11 +1244,21 @@ window.UniversalCard
 |----------|-----|----------|
 | `visibility[].condition` | string | Тип условия |
 | `visibility[].entity` | string | Entity для проверки |
-| `visibility[].state` | string | Ожидаемое состояние |
+| `visibility[].attribute` | string | Attribute вместо основного state |
+| `visibility[].state` | string/array | Разрешённое состояние или список |
+| `visibility[].state_not` | string/array | Запрещённое состояние или список |
 | `visibility[].above` | number | Больше чем (numeric_state) |
 | `visibility[].below` | number | Меньше чем (numeric_state) |
 | `visibility[].users` | array | Список user ID |
+| `visibility[].is_admin` | boolean | Фильтр по admin-статусу |
+| `visibility[].is_owner` | boolean | Фильтр по owner-статусу |
+| `visibility[].after` | string | Показывать после `HH:MM` |
+| `visibility[].before` | string | Показывать до `HH:MM` |
+| `visibility[].weekday` | array | Дни недели (`mon..sun`) |
 | `visibility[].media_query` | string | CSS media query |
+| `visibility[].min_width` | number | Минимальная ширина viewport |
+| `visibility[].max_width` | number | Максимальная ширина viewport |
+| `visibility[].conditions` | array | Вложенные условия для `and` / `or` / `not` |
 
 ---
 
@@ -1058,39 +1266,37 @@ window.UniversalCard
 
 ### Структура проекта
 
-```
+```text
 universal_card/
-├── __init__.py           # Python интеграция с HA
-├── manifest.json         # Манифест для HACS
-├── hacs.json             # Конфигурация HACS
-├── universal-card.js     # Собранный бандл
-├── package.json          # Node.js зависимости
-├── build.js              # Скрипт сборки
+├── __init__.py
+├── manifest.json
+├── hacs.json
+├── universal-card.js
+├── lazy/
+├── package.json
+├── build.js
 ├── src/
-│   └── index.js          # Entry point
-├── core/
-│   ├── UniversalCard.js  # Основной компонент
-│   ├── UniversalCardEditor.js  # Визуальный редактор
-│   ├── config.js         # Валидация конфигурации
-│   └── constants.js      # Константы
-├── modes/
-│   ├── BaseMode.js       # Базовый класс режимов
-│   ├── ExpandMode.js     # Expand mode
-│   ├── ModalMode.js      # Modal mode
-│   ├── FullscreenMode.js # Fullscreen mode
-│   ├── TabsMode.js       # Tabs mode
-│   └── CarouselMode.js   # Carousel mode
-├── ui/
-│   ├── Header.js         # Компонент header
-│   ├── Footer.js         # Компонент footer
-│   └── Badges.js         # Компонент badges
-├── features/             # Функции (visibility, actions, etc.)
-├── styles/               # CSS стили
-├── themes/               # Темы оформления
-├── utils/                # Утилиты
-├── devtools/             # Инструменты разработчика
-└── docs/
-    └── img/              # Изображения для документации
+│   ├── index.ts
+│   ├── public-api-policy.ts
+│   ├── core/
+│   ├── modes/
+│   ├── ui/
+│   ├── features/
+│   ├── providers/
+│   ├── advanced/
+│   ├── widgets/
+│   ├── editor/
+│   ├── extensibility/
+│   ├── themes/
+│   ├── styles/
+│   ├── complex/
+│   ├── devtools/
+│   └── utils/
+├── tests/
+├── scripts/
+├── docs/
+├── .github/workflows/
+└── .devcontainer/
 ```
 
 ### Сборка
@@ -1098,17 +1304,30 @@ universal_card/
 ```bash
 # Установка зависимостей
 cd custom_components/universal_card
-npm install
+npm ci
 
 # Сборка для production
 npm run build
 
 # Сборка для разработки (с sourcemaps)
-npm run build:dev
+npm run dev
 
 # Watch mode
 npm run watch
+
+# Подготовка релизной версии локально
+npm run release:prepare
 ```
+
+### Публикация
+
+- CI: `.github/workflows/build.yml`
+- HACS validation: `.github/workflows/validate.yaml`
+- Hassfest: `.github/workflows/hassfest.yaml`
+- Release automation: `.github/workflows/release.yml`
+- Production source: `src/`
+- Tests: `tests/`
+- Коммитимые артефакты для HACS: `universal-card.js`, `lazy/*.js`
 
 ### Отладка
 

@@ -10,6 +10,22 @@ function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 }
 
+function readModule(relPathWithoutExtension) {
+  const candidates = [
+    `${relPathWithoutExtension}.ts`,
+    `${relPathWithoutExtension}.js`
+  ];
+
+  for (const candidate of candidates) {
+    const absolutePath = path.join(ROOT, candidate);
+    if (fs.existsSync(absolutePath)) {
+      return fs.readFileSync(absolutePath, 'utf8');
+    }
+  }
+
+  throw new Error(`Module source not found for ${relPathWithoutExtension}`);
+}
+
 function extractObjectBlock(text, marker) {
   const markerIndex = text.indexOf(marker);
   if (markerIndex === -1) {
@@ -56,10 +72,10 @@ function uniq(items) {
 }
 
 function main() {
-  const constantsText = read('core/constants.js');
-  const themesText = read('styles/themes.js');
-  const modesIndexText = read('modes/index.js');
-  const cardText = read('core/UniversalCard.js');
+  const constantsText = read('src/core/constants.ts');
+  const themesText = readModule('src/styles/themes');
+  const modesIndexText = readModule('src/modes/index');
+  const cardText = readModule('src/core/UniversalCard');
 
   const themesBlock = extractObjectBlock(constantsText, 'export const THEMES = Object.freeze(');
   const bodyModesBlock = extractObjectBlock(constantsText, 'export const BODY_MODES = Object.freeze(');
@@ -79,7 +95,7 @@ function main() {
       errors.push(`Missing preview style for theme "${theme}" in THEME_PREVIEW_STYLES.`);
     }
     if (theme !== 'default' && !themeCssClasses.has(theme)) {
-      errors.push(`Missing CSS class ".theme-${theme}" in styles/themes.js.`);
+      errors.push(`Missing CSS class ".theme-${theme}" in src/styles/themes source.`);
     }
   });
 

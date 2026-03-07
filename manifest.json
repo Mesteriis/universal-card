@@ -4,8 +4,13 @@
   "version": "1.0.3",
   "documentation": "https://github.com/Mesteriis/universal-card",
   "issue_tracker": "https://github.com/Mesteriis/universal-card/issues",
-  "codeowners": ["@Mesteriis"],
+  "codeowners": [
+    "@Mesteriis"
+  ],
   "requirements": [],
-  "dependencies": ["frontend"],
-  "iot_class": "local_push"
+  "dependencies": [
+    "frontend"
+  ],
+  "iot_class": "local_push",
+  "integration_type": "service"
 }

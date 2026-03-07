@@ -1,0 +1,62 @@
+name: Bug Report
+description: Report a runtime, editor, build, or release issue for Universal Card
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for runtime regressions, editor issues, HACS install problems, or release/build failures.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The released tag or manifest version you are using.
+      placeholder: 1.0.3
+    validations:
+      required: true
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Installation method
+      options:
+        - HACS
+        - Manual
+        - Local development checkout
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Card configuration
+      description: Minimal YAML needed to reproduce the issue.
+      render: yaml
+    validations:
+      required: false
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Exact sequence that triggers the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or console output
+      render: shell
+    validations:
+      required: false
