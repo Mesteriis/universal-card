@@ -11,6 +11,7 @@
 
 import { BaseMode } from './BaseMode.js';
 import { cardPool } from '../core/runtime.js';
+import { TAB_ALIGNMENTS } from '../core/constants.js';
 
 type UnknownRecord = Record<string, unknown>;
 type HomeAssistantLike = UnknownRecord;
@@ -46,6 +47,9 @@ interface TabsConfig extends UnknownRecord {
     position?: string;
     show_icons?: boolean;
     show_labels?: boolean;
+    content_padding?: string;
+    tab_min_width?: string;
+    tab_alignment?: string;
   } & UnknownRecord;
   grid?: TabGridConfig;
   skeleton_count?: number;
@@ -58,10 +62,6 @@ interface TabsModeOptions extends UnknownRecord {
 
 interface CardHelpers {
   createCardElement(config: ModeCardConfig): Promise<ModeCardElement>;
-}
-
-function isGridTemplate(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 export class TabsMode extends BaseMode {
@@ -81,6 +81,9 @@ export class TabsMode extends BaseMode {
   _tabPosition: string;
   _showIcons: boolean;
   _showLabels: boolean;
+  _contentPadding: string;
+  _tabMinWidth: string;
+  _tabAlignment: string;
 
   constructor(config: TabsConfig, options: TabsModeOptions = {}) {
     super(config, options);
@@ -105,6 +108,15 @@ export class TabsMode extends BaseMode {
       : 'top';
     this._showIcons = tabsConfig.show_icons !== false;
     this._showLabels = tabsConfig.show_labels !== false;
+    this._contentPadding = typeof tabsConfig.content_padding === 'string' && tabsConfig.content_padding
+      ? tabsConfig.content_padding
+      : '16px';
+    this._tabMinWidth = typeof tabsConfig.tab_min_width === 'string' && tabsConfig.tab_min_width
+      ? tabsConfig.tab_min_width
+      : '72px';
+    this._tabAlignment = typeof tabsConfig.tab_alignment === 'string' && tabsConfig.tab_alignment
+      ? tabsConfig.tab_alignment
+      : TAB_ALIGNMENTS.START;
   }
 
   override render(): HTMLElement {
@@ -112,6 +124,9 @@ export class TabsMode extends BaseMode {
     this._container.className = 'tabs-mode';
     this._container.dataset.state = this.active ? 'expanded' : 'collapsed';
     this._container.dataset.tabPosition = this._tabPosition;
+    this._container.dataset.tabAlignment = this._tabAlignment;
+    this._container.style.setProperty('--uc-tabs-content-padding', this._contentPadding);
+    this._container.style.setProperty('--uc-tabs-tab-min-width', this._tabMinWidth);
 
     this._tabBar = this._renderTabBar();
     this._tabContent = document.createElement('div');
@@ -191,18 +206,7 @@ export class TabsMode extends BaseMode {
     grid.className = 'tab-grid';
 
     const gridConfig = tab.grid || this._config.grid || {};
-    const columns = gridConfig.columns ?? 1;
-    const gap = typeof gridConfig.gap === 'string' && gridConfig.gap ? gridConfig.gap : '16px';
-
-    if (isGridTemplate(columns)) {
-      grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = columns;
-      grid.style.gap = gap;
-    } else if (typeof columns === 'number' && columns > 1) {
-      grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-      grid.style.gap = gap;
-    }
+    this._applyGridConfig(grid, gridConfig, { columns: 1, gap: '16px' });
 
     if (index === this._activeTab) {
       grid.appendChild(this._renderSkeleton());
@@ -476,6 +480,7 @@ export class TabsMode extends BaseMode {
         border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
         overflow-x: auto;
         scrollbar-width: none;
+        justify-content: flex-start;
       }
       
       .tabs-bar::-webkit-scrollbar {
@@ -498,7 +503,7 @@ export class TabsMode extends BaseMode {
         justify-content: center;
         gap: 4px;
         padding: 12px 16px;
-        min-width: 72px;
+        min-width: var(--uc-tabs-tab-min-width, 72px);
         background: none;
         border: none;
         cursor: pointer;
@@ -551,10 +556,10 @@ export class TabsMode extends BaseMode {
         position: relative;
         overflow: hidden;
       }
-      
+
       .tab-panel {
         display: none;
-        padding: var(--uc-padding, 16px);
+        padding: var(--uc-tabs-content-padding, var(--uc-padding, 16px));
       }
       
       .tab-panel.active {
@@ -608,9 +613,18 @@ export class TabsMode extends BaseMode {
       /* ============================= */
       
       .tab-grid {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: 16px;
+      }
+
+      .tabs-mode[data-tab-alignment="center"] .tabs-bar {
+        justify-content: center;
+      }
+
+      .tabs-mode[data-tab-alignment="stretch"] .tab-button {
+        flex: 1 1 0;
+        min-width: 0;
       }
       
       .tab-grid .card-wrapper {

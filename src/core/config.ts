@@ -34,6 +34,7 @@ import {
   SWIPE_DIRECTIONS,
   VALID_SWIPE_DIRECTIONS,
   VALID_SWIPE_ACTIONS,
+  VALID_TAB_ALIGNMENTS,
   LIMITS
 } from './constants.js';
 
@@ -284,6 +285,22 @@ export class ConfigManager {
 
     if (config.modal !== undefined) {
       this._validateModal(config.modal, 'modal');
+    }
+
+    if (config.fullscreen !== undefined) {
+      this._validateFullscreen(config.fullscreen, 'fullscreen');
+    }
+
+    if (config.tabs_config !== undefined) {
+      this._validateTabsUiConfig(config.tabs_config, 'tabs_config');
+    }
+
+    if (config.carousel_options !== undefined) {
+      this._validateCarouselOptions(config.carousel_options, 'carousel_options');
+    }
+
+    if (config.subview !== undefined) {
+      this._validateSubview(config.subview, 'subview');
     }
 
     // Validate lazy-load chunk tuning
@@ -1535,6 +1552,176 @@ export class ConfigManager {
   }
 
   /**
+   * Validate fullscreen configuration.
+   *
+   * @private
+   * @param {*} fullscreen
+   * @param {string} path
+   */
+  static _validateFullscreen(fullscreen, path) {
+    if (!isObject(fullscreen)) {
+      throw new ConfigValidationError(
+        'fullscreen must be an object',
+        path
+      );
+    }
+
+    ['width', 'height', 'max_width', 'max_height', 'padding', 'background'].forEach((field) => {
+      if (fullscreen[field] !== undefined && !isNonEmptyString(fullscreen[field])) {
+        throw new ConfigValidationError(
+          `fullscreen.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['show_close', 'close_on_escape'].forEach((field) => {
+      if (fullscreen[field] !== undefined && typeof fullscreen[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `fullscreen.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate tabs UI configuration.
+   *
+   * @private
+   * @param {*} tabsConfig
+   * @param {string} path
+   */
+  static _validateTabsUiConfig(tabsConfig, path) {
+    if (!isObject(tabsConfig)) {
+      throw new ConfigValidationError(
+        'tabs_config must be an object',
+        path
+      );
+    }
+
+    if (tabsConfig.position !== undefined && !isNonEmptyString(tabsConfig.position)) {
+      throw new ConfigValidationError(
+        'tabs_config.position must be a non-empty string',
+        `${path}.position`
+      );
+    }
+
+    ['show_icons', 'show_labels'].forEach((field) => {
+      if (tabsConfig[field] !== undefined && typeof tabsConfig[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `tabs_config.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['content_padding', 'tab_min_width'].forEach((field) => {
+      if (tabsConfig[field] !== undefined && !isNonEmptyString(tabsConfig[field])) {
+        throw new ConfigValidationError(
+          `tabs_config.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (
+      tabsConfig.tab_alignment !== undefined &&
+      (
+        typeof tabsConfig.tab_alignment !== 'string' ||
+        !VALID_TAB_ALIGNMENTS.includes(tabsConfig.tab_alignment)
+      )
+    ) {
+      throw new ConfigValidationError(
+        `tabs_config.tab_alignment must be one of: ${VALID_TAB_ALIGNMENTS.join(', ')}`,
+        `${path}.tab_alignment`
+      );
+    }
+  }
+
+  /**
+   * Validate carousel options configuration.
+   *
+   * @private
+   * @param {*} options
+   * @param {string} path
+   */
+  static _validateCarouselOptions(options, path) {
+    if (!isObject(options)) {
+      throw new ConfigValidationError(
+        'carousel_options must be an object',
+        path
+      );
+    }
+
+    ['show_arrows', 'show_indicators', 'loop'].forEach((field) => {
+      if (options[field] !== undefined && typeof options[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `carousel_options.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (options.swipe_threshold !== undefined) {
+      if (!isNumber(options.swipe_threshold)) {
+        throw new ConfigValidationError(
+          'carousel_options.swipe_threshold must be a number',
+          `${path}.swipe_threshold`
+        );
+      }
+
+      if (options.swipe_threshold < 0 || options.swipe_threshold > LIMITS.SWIPE_MAX_THRESHOLD_PX) {
+        throw new ConfigValidationError(
+          `carousel_options.swipe_threshold must be between 0 and ${LIMITS.SWIPE_MAX_THRESHOLD_PX}`,
+          `${path}.swipe_threshold`
+        );
+      }
+    }
+
+    if (options.height !== undefined && !isNonEmptyString(options.height)) {
+      throw new ConfigValidationError(
+        'carousel_options.height must be a non-empty string',
+        `${path}.height`
+      );
+    }
+  }
+
+  /**
+   * Validate subview configuration.
+   *
+   * @private
+   * @param {*} subview
+   * @param {string} path
+   */
+  static _validateSubview(subview, path) {
+    if (!isObject(subview)) {
+      throw new ConfigValidationError(
+        'subview must be an object',
+        path
+      );
+    }
+
+    ['path', 'navigation_path'].forEach((field) => {
+      if (subview[field] !== undefined && !isNonEmptyString(subview[field])) {
+        throw new ConfigValidationError(
+          `subview.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['replace_state', 'return_on_close'].forEach((field) => {
+      if (subview[field] !== undefined && typeof subview[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `subview.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+  }
+
+  /**
    * Validate badge thresholds.
    *
    * @private
@@ -1791,6 +1978,10 @@ export class ConfigManager {
     // Normalize grid
     normalized.grid = this._normalizeGrid(config.grid);
     normalized.modal = this._normalizeModal(config.modal);
+    normalized.fullscreen = this._normalizeFullscreen(config.fullscreen);
+    normalized.tabs_config = this._normalizeTabsConfig(config.tabs_config);
+    normalized.carousel_options = this._normalizeCarouselOptions(config.carousel_options);
+    normalized.subview = this._normalizeSubview(config.subview);
     
     // Для триггера раскрытия - не устанавливаем дефолт, пусть Header runtime обрабатывает
     // Для остальных триггеров - none
@@ -1921,6 +2112,125 @@ export class ConfigManager {
       close_on_backdrop: source.close_on_backdrop !== false,
       close_on_escape: source.close_on_escape !== false,
       show_close: source.show_close !== false
+    };
+  }
+
+  /**
+   * Normalize fullscreen configuration.
+   *
+   * @param {*} fullscreen
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeFullscreen(fullscreen) {
+    const source = isObject(fullscreen) ? fullscreen : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      width: normalizeString(source.width, DEFAULTS.fullscreen_width),
+      height: normalizeString(source.height, DEFAULTS.fullscreen_height),
+      max_width: normalizeString(source.max_width, DEFAULTS.fullscreen_max_width),
+      max_height: normalizeString(source.max_height, DEFAULTS.fullscreen_max_height),
+      padding: normalizeString(source.padding, DEFAULTS.fullscreen_padding),
+      background: normalizeString(source.background, DEFAULTS.fullscreen_background),
+      show_close: source.show_close !== false,
+      close_on_escape: source.close_on_escape !== false
+    };
+  }
+
+  /**
+   * Normalize tabs UI configuration.
+   *
+   * @param {*} tabsConfig
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeTabsConfig(tabsConfig) {
+    const source = isObject(tabsConfig) ? tabsConfig : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      position: normalizeString(source.position, 'top'),
+      show_icons: source.show_icons !== false,
+      show_labels: source.show_labels !== false,
+      content_padding: normalizeString(source.content_padding, DEFAULTS.tabs_content_padding),
+      tab_min_width: normalizeString(source.tab_min_width, DEFAULTS.tabs_tab_min_width),
+      tab_alignment:
+        typeof source.tab_alignment === 'string' && VALID_TAB_ALIGNMENTS.includes(source.tab_alignment)
+          ? source.tab_alignment
+          : DEFAULTS.tabs_tab_alignment
+    };
+  }
+
+  /**
+   * Normalize carousel options configuration.
+   *
+   * @param {*} options
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeCarouselOptions(options) {
+    const source = isObject(options) ? options : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      show_arrows: source.show_arrows !== false,
+      show_indicators: source.show_indicators !== false,
+      loop: source.loop !== false,
+      swipe_threshold: isNumber(source.swipe_threshold) ? source.swipe_threshold : DEFAULTS.swipe_threshold,
+      height: normalizeString(source.height, DEFAULTS.carousel_height)
+    };
+  }
+
+  /**
+   * Normalize subview configuration.
+   *
+   * @param {*} subview
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeSubview(subview) {
+    const source = isObject(subview) ? subview : {};
+
+    const normalizeOptionalString = (value) => {
+      if (typeof value !== 'string') {
+        return undefined;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || undefined;
+    };
+
+    return {
+      path: normalizeOptionalString(source.path),
+      navigation_path: normalizeOptionalString(source.navigation_path),
+      replace_state: source.replace_state === true,
+      return_on_close: source.return_on_close === true
     };
   }
   
@@ -2919,6 +3229,44 @@ export class ConfigManager {
             }
           }
         },
+        fullscreen: {
+          type: 'object',
+          description: 'Fullscreen body mode sizing and overlay behavior.',
+          properties: {
+            width: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_width
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_height
+            },
+            max_width: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_max_width
+            },
+            max_height: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_max_height
+            },
+            padding: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_padding
+            },
+            background: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_background
+            },
+            show_close: {
+              type: 'boolean',
+              default: true
+            },
+            close_on_escape: {
+              type: 'boolean',
+              default: true
+            }
+          }
+        },
         header: {
           ...slotSchema,
           description: 'Header region configuration.'
@@ -2949,6 +3297,75 @@ export class ConfigManager {
               icon: { type: 'string' },
               cards: cardCollectionSchema
             }
+          }
+        },
+        tabs_config: {
+          type: 'object',
+          description: 'Tabs body mode UI controls.',
+          properties: {
+            position: {
+              type: 'string',
+              default: 'top'
+            },
+            show_icons: {
+              type: 'boolean',
+              default: true
+            },
+            show_labels: {
+              type: 'boolean',
+              default: true
+            },
+            content_padding: {
+              type: 'string',
+              default: DEFAULTS.tabs_content_padding
+            },
+            tab_min_width: {
+              type: 'string',
+              default: DEFAULTS.tabs_tab_min_width
+            },
+            tab_alignment: {
+              type: 'string',
+              enum: VALID_TAB_ALIGNMENTS,
+              default: DEFAULTS.tabs_tab_alignment
+            }
+          }
+        },
+        carousel_options: {
+          type: 'object',
+          description: 'Carousel body mode layout and control options.',
+          properties: {
+            show_arrows: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_show_arrows
+            },
+            show_indicators: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_show_indicators
+            },
+            loop: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_loop
+            },
+            swipe_threshold: {
+              type: 'number',
+              minimum: 0,
+              maximum: LIMITS.SWIPE_MAX_THRESHOLD_PX,
+              default: DEFAULTS.swipe_threshold
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.carousel_height
+            }
+          }
+        },
+        subview: {
+          type: 'object',
+          description: 'Subview navigation settings used by subview body mode.',
+          properties: {
+            path: { type: 'string' },
+            navigation_path: { type: 'string' },
+            replace_state: { type: 'boolean', default: false },
+            return_on_close: { type: 'boolean', default: false }
           }
         },
         carousel_autoplay: {

@@ -47,6 +47,18 @@ export const BODY_MODES = Object.freeze({
 export const VALID_BODY_MODES = Object.values(BODY_MODES);
 
 // =============================================================================
+// TABS UI
+// =============================================================================
+
+export const TAB_ALIGNMENTS = Object.freeze({
+  START: 'start',
+  CENTER: 'center',
+  STRETCH: 'stretch'
+});
+
+export const VALID_TAB_ALIGNMENTS = Object.values(TAB_ALIGNMENTS);
+
+// =============================================================================
 // EXPAND TRIGGERS
 // =============================================================================
 
@@ -529,6 +541,25 @@ export const DEFAULTS = Object.freeze({
   modal_max_height: '85vh',
   modal_loading_strategy: MODAL_LOADING_STRATEGIES.LAZY,
   backdrop_color: 'rgba(0, 0, 0, 0.6)',
+
+  // Fullscreen
+  fullscreen_width: '100%',
+  fullscreen_height: '100%',
+  fullscreen_max_width: '1200px',
+  fullscreen_max_height: '100vh',
+  fullscreen_padding: '16px',
+  fullscreen_background: 'var(--primary-background-color, #fafafa)',
+
+  // Tabs
+  tabs_content_padding: '16px',
+  tabs_tab_min_width: '72px',
+  tabs_tab_alignment: TAB_ALIGNMENTS.START,
+
+  // Carousel options
+  carousel_show_arrows: true,
+  carousel_show_indicators: true,
+  carousel_loop: true,
+  carousel_height: 'auto',
   
   // Features
   lazy_load: true,

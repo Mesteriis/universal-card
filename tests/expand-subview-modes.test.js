@@ -40,7 +40,7 @@ describe('ExpandMode', () => {
 
     expect(container.dataset.expandAnimation).toBe('slide');
     expect(grid.classList.contains('has-grid')).toBe(true);
-    expect(grid.style.gridTemplateColumns).toBe('repeat(2, 1fr)');
+    expect(grid.style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))');
     expect(grid.innerHTML).toContain('skeleton-container');
   });
 

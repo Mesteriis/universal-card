@@ -69,12 +69,7 @@ export class ExpandMode extends BaseMode {
 
       if (hasMultipleColumns || gridConfig.display === 'grid') {
         grid.classList.add('has-grid');
-
-        if (isStringColumns) {
-          grid.style.gridTemplateColumns = String(gridConfig.columns);
-        } else if (typeof columns === 'number' && columns > 1) {
-          grid.style.gridTemplateColumns = 'repeat(' + columns + ', 1fr)';
-        }
+        this._applyGridConfig(grid, gridConfig, { columns: 1, gap: '16px' });
 
         if (gridConfig.rows) {
           if (typeof gridConfig.rows === 'string') {
@@ -83,18 +78,6 @@ export class ExpandMode extends BaseMode {
             grid.style.gridTemplateRows = 'repeat(' + gridConfig.rows + ', auto)';
           }
         }
-
-        if (gridConfig.auto_rows) grid.style.gridAutoRows = gridConfig.auto_rows;
-        if (gridConfig.auto_columns) grid.style.gridAutoColumns = gridConfig.auto_columns;
-        grid.style.gap = gridConfig.gap || '16px';
-        if (gridConfig.row_gap) grid.style.rowGap = gridConfig.row_gap;
-        if (gridConfig.column_gap) grid.style.columnGap = gridConfig.column_gap;
-        if (gridConfig.align_items) grid.style.alignItems = gridConfig.align_items;
-        if (gridConfig.justify_items) grid.style.justifyItems = gridConfig.justify_items;
-        if (gridConfig.place_items) grid.style.placeItems = gridConfig.place_items;
-        if (gridConfig.align_content) grid.style.alignContent = gridConfig.align_content;
-        if (gridConfig.justify_content) grid.style.justifyContent = gridConfig.justify_content;
-        if (gridConfig.place_content) grid.style.placeContent = gridConfig.place_content;
 
         if (gridConfig.direction) {
           if (gridConfig.direction === 'row' || gridConfig.direction === 'row-reverse') {

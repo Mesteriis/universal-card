@@ -101,3 +101,22 @@ Still YAML-only:
 - modal overlay behavior fields
 - badge `tap_action`
 - badge `icon_tap_action`
+
+## Fullscreen, tabs, carousel, and subview contracts
+
+New or expanded config blocks:
+
+- `fullscreen`
+- `tabs_config.content_padding`
+- `tabs_config.tab_min_width`
+- `tabs_config.tab_alignment`
+- `carousel_options`
+- `subview`
+
+Compatibility notes:
+
+- root `carousel_autoplay` and `carousel_interval` remain supported
+- the removed legacy `carousel` object is still not valid config
+- `fullscreen` and `subview` are now part of the shared normalized contract instead of only local runtime parsing
+- expand mode still uses shared `grid` instead of a dedicated nested `expand` object
+

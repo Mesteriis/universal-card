@@ -103,6 +103,90 @@ describe('ConfigManager', () => {
     }).toThrow(/icon_color/);
   });
 
+  it('normalizes and validates fullscreen tabs carousel and subview configs', () => {
+    const normalized = ConfigManager.normalize({
+      body_mode: 'fullscreen',
+      body: { cards: [] },
+      fullscreen: {
+        width: ' 88rem ',
+        height: ' 90vh ',
+        max_width: ' 96rem ',
+        max_height: ' 95vh ',
+        padding: ' 24px ',
+        background: ' var(--lovelace-background) ',
+        show_close: false
+      },
+      tabs_config: {
+        position: ' bottom ',
+        content_padding: ' 12px ',
+        tab_min_width: ' 96px ',
+        tab_alignment: 'center',
+        show_icons: false
+      },
+      carousel_options: {
+        show_arrows: false,
+        show_indicators: false,
+        loop: false,
+        swipe_threshold: 80,
+        height: ' 22rem '
+      },
+      subview: {
+        path: ' /lovelace/details ',
+        return_on_close: true
+      }
+    });
+
+    expect(normalized.fullscreen).toMatchObject({
+      width: '88rem',
+      height: '90vh',
+      max_width: '96rem',
+      max_height: '95vh',
+      padding: '24px',
+      background: 'var(--lovelace-background)',
+      show_close: false,
+      close_on_escape: true
+    });
+    expect(normalized.tabs_config).toMatchObject({
+      position: 'bottom',
+      content_padding: '12px',
+      tab_min_width: '96px',
+      tab_alignment: 'center',
+      show_icons: false,
+      show_labels: true
+    });
+    expect(normalized.carousel_options).toMatchObject({
+      show_arrows: false,
+      show_indicators: false,
+      loop: false,
+      swipe_threshold: 80,
+      height: '22rem'
+    });
+    expect(normalized.subview).toEqual({
+      path: '/lovelace/details',
+      navigation_path: undefined,
+      replace_state: false,
+      return_on_close: true
+    });
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        tabs_config: {
+          tab_alignment: 'end'
+        }
+      });
+    }).toThrow(/tabs_config\.tab_alignment/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        carousel_options: {
+          swipe_threshold: LIMITS.SWIPE_MAX_THRESHOLD_PX + 1
+        }
+      });
+    }).toThrow(/carousel_options\.swipe_threshold/);
+  });
+
   it('accepts grid template columns as string', () => {
     expect(() => {
       ConfigManager.validate({
@@ -365,6 +449,12 @@ describe('ConfigManager', () => {
     expect(props.modal.properties.height.default).toBe(DEFAULTS.modal_height);
     expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
     expect(props.modal.properties.loading_strategy.default).toBe(DEFAULTS.modal_loading_strategy);
+    expect(props.fullscreen.properties.max_width.default).toBe(DEFAULTS.fullscreen_max_width);
+    expect(props.tabs_config.properties.content_padding.default).toBe(DEFAULTS.tabs_content_padding);
+    expect(props.tabs_config.properties.tab_alignment.enum).toContain('stretch');
+    expect(props.carousel_options.properties.show_arrows.default).toBe(DEFAULTS.carousel_show_arrows);
+    expect(props.carousel_options.properties.swipe_threshold.maximum).toBe(LIMITS.SWIPE_MAX_THRESHOLD_PX);
+    expect(props.subview.properties.return_on_close.type).toBe('boolean');
     expect(props.visibility.items.properties.conditions.items).toBe(props.visibility.items);
     expect(props.state_styles.type).toBe('object');
     expect(props.swipe.properties.left.properties.action.enum).toContain('next');

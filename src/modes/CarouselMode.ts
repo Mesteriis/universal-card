@@ -26,6 +26,13 @@ interface CarouselConfig extends UnknownRecord {
   cards?: ModeCardConfig[];
   carousel_autoplay?: boolean;
   carousel_interval?: number;
+  carousel_options?: {
+    show_arrows?: boolean;
+    show_indicators?: boolean;
+    loop?: boolean;
+    swipe_threshold?: number;
+    height?: string;
+  } & UnknownRecord;
 }
 
 interface CarouselModeOptions extends UnknownRecord {
@@ -53,6 +60,7 @@ export class CarouselMode extends BaseMode {
   _showArrows: boolean;
   _loop: boolean;
   _swipeThreshold: number;
+  _height: string;
 
   constructor(config: CarouselConfig, options: CarouselModeOptions = {}) {
     super(config, options);
@@ -72,10 +80,16 @@ export class CarouselMode extends BaseMode {
     this._interval = typeof config.carousel_interval === 'number' && config.carousel_interval > 0
       ? config.carousel_interval
       : 5000;
-    this._showIndicators = true;
-    this._showArrows = true;
-    this._loop = true;
-    this._swipeThreshold = 50;
+    const carouselOptions = config.carousel_options || {};
+    this._showIndicators = carouselOptions.show_indicators !== false;
+    this._showArrows = carouselOptions.show_arrows !== false;
+    this._loop = carouselOptions.loop !== false;
+    this._swipeThreshold = typeof carouselOptions.swipe_threshold === 'number' && carouselOptions.swipe_threshold >= 0
+      ? carouselOptions.swipe_threshold
+      : 50;
+    this._height = typeof carouselOptions.height === 'string' && carouselOptions.height
+      ? carouselOptions.height
+      : 'auto';
   }
 
   override render(): HTMLElement {
@@ -85,6 +99,7 @@ export class CarouselMode extends BaseMode {
 
     const viewport = document.createElement('div');
     viewport.className = 'carousel-viewport';
+    viewport.style.height = this._height;
 
     if (this._showArrows) {
       viewport.appendChild(this._createArrowButton('carousel-arrow carousel-arrow-prev', 'mdi:chevron-left', () => {
@@ -487,6 +502,7 @@ export class CarouselMode extends BaseMode {
         position: relative;
         display: flex;
         align-items: stretch;
+        height: auto;
       }
       
       .carousel-track-wrapper {

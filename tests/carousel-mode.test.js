@@ -51,7 +51,15 @@ describe('CarouselMode', () => {
 
   it('opens, loads slides, and reports the current index', async () => {
     const onSlideChange = vi.fn();
-    const mode = new CarouselMode(createCarouselConfig(), { onSlideChange });
+    const mode = new CarouselMode(createCarouselConfig({
+      carousel_options: {
+        show_arrows: false,
+        show_indicators: false,
+        loop: false,
+        swipe_threshold: 80,
+        height: '22rem'
+      }
+    }), { onSlideChange });
     attachMockHelpers(mode);
 
     document.body.appendChild(mode.render());
@@ -59,6 +67,11 @@ describe('CarouselMode', () => {
 
     expect(mode._track.querySelectorAll('.carousel-slide')).toHaveLength(2);
     expect(onSlideChange).toHaveBeenCalledWith(0);
+    expect(mode._container.querySelector('.carousel-arrow')).toBeNull();
+    expect(mode._indicators).toBeNull();
+    expect(mode._loop).toBe(false);
+    expect(mode._swipeThreshold).toBe(80);
+    expect(mode._container.querySelector('.carousel-viewport').style.height).toBe('22rem');
   });
 
   it('retains loaded slides after close and reopen without duplicating content', async () => {
@@ -102,5 +115,11 @@ describe('CarouselMode', () => {
 
     await mode.open();
     expect(mode._autoplayTimer).not.toBeNull();
+  });
+
+  it('returns carousel mode styles string', () => {
+    const css = CarouselMode.getStyles();
+    expect(css).toContain('.carousel-mode');
+    expect(css).toContain('.carousel-viewport');
   });
 });

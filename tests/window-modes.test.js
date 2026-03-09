@@ -128,4 +128,37 @@ describe('window body modes', () => {
     const mode = new FullscreenMode(createModeConfig('fullscreen'));
     await expectWindowModeReopensWithContent(mode, '.uc-fullscreen-overlay', '.uc-fullscreen-grid');
   });
+
+  it('fullscreen mode applies normalized sizing and grid settings', () => {
+    const mode = new FullscreenMode({
+      ...createModeConfig('fullscreen'),
+      fullscreen: {
+        width: '88rem',
+        height: '90vh',
+        max_width: '96rem',
+        max_height: '95vh',
+        padding: '24px',
+        show_close: false
+      },
+      grid: {
+        columns: '1fr 2fr',
+        gap: '14px'
+      }
+    });
+
+    const overlay = mode._renderFullscreen();
+    const inner = overlay.querySelector('.uc-fullscreen-inner');
+    const content = overlay.querySelector('.uc-fullscreen-content');
+    const grid = overlay.querySelector('.uc-fullscreen-grid');
+
+    expect(inner.style.width).toBe('88rem');
+    expect(inner.style.height).toBe('90vh');
+    expect(inner.style.maxWidth).toBe('96rem');
+    expect(inner.style.maxHeight).toBe('95vh');
+    expect(content.style.padding).toBe('24px');
+    expect(overlay.querySelector('.uc-fullscreen-back')).toBeNull();
+    expect(grid.style.display).toBe('grid');
+    expect(grid.style.gridTemplateColumns).toBe('1fr 2fr');
+    expect(grid.style.gap).toBe('14px');
+  });
 });

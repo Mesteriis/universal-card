@@ -19,6 +19,7 @@ import {
   POOL_SCOPES,
   SWIPE_ACTIONS,
   SWIPE_DIRECTIONS,
+  TAB_ALIGNMENTS,
   WEEKDAYS
 } from './constants.js';
 import type { ActionConfig } from './action-hooks.js';
@@ -31,6 +32,7 @@ export type PoolScope = (typeof POOL_SCOPES)[keyof typeof POOL_SCOPES];
 export type CardsDirection = (typeof CARD_DIRECTIONS)[keyof typeof CARD_DIRECTIONS];
 export type SwipeAxis = (typeof SWIPE_DIRECTIONS)[keyof typeof SWIPE_DIRECTIONS];
 export type SwipeActionType = (typeof SWIPE_ACTIONS)[keyof typeof SWIPE_ACTIONS];
+export type TabAlignment = (typeof TAB_ALIGNMENTS)[keyof typeof TAB_ALIGNMENTS];
 export type BadgeType = (typeof BADGE_TYPES)[keyof typeof BADGE_TYPES];
 export type BadgeFormat = (typeof BADGE_FORMATS)[keyof typeof BADGE_FORMATS];
 export type BadgeComparisonOperator = (typeof BADGE_OPERATORS)[keyof typeof BADGE_OPERATORS];
@@ -62,6 +64,35 @@ export interface TabsUiConfig {
   position?: string;
   show_icons?: boolean;
   show_labels?: boolean;
+  content_padding?: string;
+  tab_min_width?: string;
+  tab_alignment?: TabAlignment;
+}
+
+export interface FullscreenConfig {
+  width?: string;
+  height?: string;
+  max_width?: string;
+  max_height?: string;
+  padding?: string;
+  background?: string;
+  show_close?: boolean;
+  close_on_escape?: boolean;
+}
+
+export interface CarouselOptionsConfig {
+  show_arrows?: boolean;
+  show_indicators?: boolean;
+  loop?: boolean;
+  swipe_threshold?: number;
+  height?: string;
+}
+
+export interface SubviewConfig {
+  path?: string;
+  navigation_path?: string;
+  replace_state?: boolean;
+  return_on_close?: boolean;
 }
 
 export interface TabConfig {
@@ -347,6 +378,9 @@ export interface UniversalCardConfig {
   modal?: ModalConfig;
   tabs?: TabConfig[];
   tabs_config?: TabsUiConfig;
+  fullscreen?: FullscreenConfig;
+  carousel_options?: CarouselOptionsConfig;
+  subview?: SubviewConfig;
   badges?: HeaderBadgeConfig[];
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
