@@ -68,6 +68,18 @@ export interface TabConfig {
   grid?: GridConfig;
 }
 
+export interface ModalConfig {
+  width?: string;
+  height?: string;
+  max_width?: string;
+  max_height?: string;
+  backdrop_blur?: boolean;
+  backdrop_color?: string;
+  close_on_backdrop?: boolean;
+  close_on_escape?: boolean;
+  show_close?: boolean;
+}
+
 export interface BadgeThreshold {
   value: number;
   color: string;
@@ -309,6 +321,7 @@ export interface UniversalCardConfig {
   body?: CardSlotSection;
   footer?: FooterConfig;
   grid?: GridConfig;
+  modal?: ModalConfig;
   tabs?: TabConfig[];
   tabs_config?: TabsUiConfig;
   badges?: HeaderBadgeConfig[];

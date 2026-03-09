@@ -271,6 +271,10 @@ export class ConfigManager {
       }
     }
 
+    if (config.modal !== undefined) {
+      this._validateModal(config.modal, 'modal');
+    }
+
     // Validate lazy-load chunk tuning
     if (config.lazy_initial_batch !== undefined) {
       if (!isNumber(config.lazy_initial_batch)) {
@@ -1454,6 +1458,40 @@ export class ConfigManager {
   }
 
   /**
+   * Validate modal configuration.
+   *
+   * @private
+   * @param {*} modal
+   * @param {string} path
+   */
+  static _validateModal(modal, path) {
+    if (!isObject(modal)) {
+      throw new ConfigValidationError(
+        'modal must be an object',
+        path
+      );
+    }
+
+    ['width', 'height', 'max_width', 'max_height', 'backdrop_color'].forEach((field) => {
+      if (modal[field] !== undefined && !isNonEmptyString(modal[field])) {
+        throw new ConfigValidationError(
+          `modal.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['backdrop_blur', 'close_on_backdrop', 'close_on_escape', 'show_close'].forEach((field) => {
+      if (modal[field] !== undefined && typeof modal[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `modal.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+  }
+
+  /**
    * Validate badge thresholds.
    *
    * @private
@@ -1630,6 +1668,7 @@ export class ConfigManager {
     
     // Normalize grid
     normalized.grid = this._normalizeGrid(config.grid);
+    normalized.modal = this._normalizeModal(config.modal);
     
     // Для триггера раскрытия - не устанавливаем дефолт, пусть Header runtime обрабатывает
     // Для остальных триггеров - none
@@ -1715,6 +1754,38 @@ export class ConfigManager {
       columns: grid.columns || DEFAULTS.grid_columns,
       gap: grid.gap || DEFAULTS.grid_gap,
       responsive: grid.responsive || null
+    };
+  }
+
+  /**
+   * Normalize modal configuration.
+   *
+   * @param {*} modal
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeModal(modal) {
+    const source = isObject(modal) ? modal : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      width: normalizeString(source.width, DEFAULTS.modal_width),
+      height: normalizeString(source.height, DEFAULTS.modal_height),
+      max_width: normalizeString(source.max_width, DEFAULTS.modal_max_width),
+      max_height: normalizeString(source.max_height, DEFAULTS.modal_max_height),
+      backdrop_blur: source.backdrop_blur !== false,
+      backdrop_color: normalizeString(source.backdrop_color, DEFAULTS.backdrop_color),
+      close_on_backdrop: source.close_on_backdrop !== false,
+      close_on_escape: source.close_on_escape !== false,
+      show_close: source.show_close !== false
     };
   }
   
@@ -2538,6 +2609,52 @@ export class ConfigManager {
               type: 'string',
               default: DEFAULTS.grid_gap,
               description: 'Gap between grid items.'
+            }
+          }
+        },
+        modal: {
+          type: 'object',
+          description: 'Modal body mode sizing and overlay behavior.',
+          properties: {
+            width: {
+              type: 'string',
+              default: DEFAULTS.modal_width,
+              description: 'Modal width. Use CSS lengths or auto.'
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.modal_height,
+              description: 'Modal height. Use CSS lengths or auto.'
+            },
+            max_width: {
+              type: 'string',
+              default: DEFAULTS.modal_max_width,
+              description: 'Maximum width cap applied to the modal dialog.'
+            },
+            max_height: {
+              type: 'string',
+              default: DEFAULTS.modal_max_height,
+              description: 'Maximum height cap applied to the modal dialog.'
+            },
+            backdrop_blur: {
+              type: 'boolean',
+              default: true
+            },
+            backdrop_color: {
+              type: 'string',
+              default: DEFAULTS.backdrop_color
+            },
+            close_on_backdrop: {
+              type: 'boolean',
+              default: true
+            },
+            close_on_escape: {
+              type: 'boolean',
+              default: true
+            },
+            show_close: {
+              type: 'boolean',
+              default: true
             }
           }
         },

@@ -87,6 +87,43 @@ describe('window body modes', () => {
     await expectWindowModeReopensWithContent(mode, '.uc-modal-overlay', '.uc-modal-grid');
   });
 
+  it('modal mode preserves grid layout config and sizing modes', () => {
+    const mode = new ModalMode({
+      ...createModeConfig('modal'),
+      title: '',
+      modal: {
+        width: 'auto',
+        height: '32rem',
+        max_width: '72rem',
+        max_height: '90vh',
+        show_close: false
+      },
+      grid: {
+        columns: 2,
+        gap: '12px',
+        column_gap: '20px',
+        row_gap: '10px'
+      }
+    });
+
+    const overlay = mode._renderModal();
+    const dialog = overlay.querySelector('.uc-modal-dialog');
+    const grid = overlay.querySelector('.uc-modal-grid');
+
+    expect(dialog.dataset.widthMode).toBe('auto');
+    expect(dialog.dataset.heightMode).toBe('manual');
+    expect(mode._height).toBe('32rem');
+    expect(mode._maxWidth).toBe('72rem');
+    expect(mode._maxHeight).toBe('90vh');
+    expect(overlay.querySelector('.uc-modal-header')).toBeNull();
+
+    expect(grid.style.display).toBe('grid');
+    expect(grid.style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))');
+    expect(grid.style.gap).toBe('12px');
+    expect(grid.style.columnGap).toBe('20px');
+    expect(grid.style.rowGap).toBe('10px');
+  });
+
   it('fullscreen mode remounts loaded cards after close and reopen', async () => {
     const mode = new FullscreenMode(createModeConfig('fullscreen'));
     await expectWindowModeReopensWithContent(mode, '.uc-fullscreen-overlay', '.uc-fullscreen-grid');

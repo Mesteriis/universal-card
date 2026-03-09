@@ -52,6 +52,36 @@ describe('ConfigManager', () => {
     expect(normalized.carousel_interval).toBe(8000);
   });
 
+  it('normalizes and validates modal sizing config', () => {
+    const normalized = ConfigManager.normalize({
+      body_mode: 'modal',
+      body: { cards: [] },
+      modal: {
+        width: ' auto ',
+        height: ' 32rem ',
+        max_width: ' 72rem ',
+        max_height: ' 90vh ',
+        backdrop_blur: false
+      }
+    });
+
+    expect(normalized.modal.width).toBe('auto');
+    expect(normalized.modal.height).toBe('32rem');
+    expect(normalized.modal.max_width).toBe('72rem');
+    expect(normalized.modal.max_height).toBe('90vh');
+    expect(normalized.modal.backdrop_blur).toBe(false);
+
+    expect(() => {
+      ConfigManager.validate({
+        body_mode: 'modal',
+        body: { cards: [] },
+        modal: {
+          height: 420
+        }
+      });
+    }).toThrow(/modal\.height/);
+  });
+
   it('accepts grid template columns as string', () => {
     expect(() => {
       ConfigManager.validate({
@@ -306,6 +336,8 @@ describe('ConfigManager', () => {
     expect(props.pool_max_entries.maximum).toBe(LIMITS.POOL_MAX_MAX_ENTRIES);
     expect(props.carousel_interval.maximum).toBe(LIMITS.CAROUSEL_MAX_INTERVAL_MS);
     expect(props.attribute.type).toBe('string');
+    expect(props.modal.properties.height.default).toBe(DEFAULTS.modal_height);
+    expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
     expect(props.visibility.items.properties.conditions.items).toBe(props.visibility.items);
     expect(props.state_styles.type).toBe('object');
     expect(props.swipe.properties.left.properties.action.enum).toContain('next');

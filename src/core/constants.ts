@@ -488,7 +488,9 @@ export const DEFAULTS = Object.freeze({
   
   // Modal
   modal_width: '90%',
+  modal_height: 'auto',
   modal_max_width: '600px',
+  modal_max_height: '85vh',
   backdrop_color: 'rgba(0, 0, 0, 0.6)',
   
   // Features
