@@ -30,3 +30,34 @@ Backward compatibility:
 - existing modal configs remain valid
 - existing custom `modal.width` and `modal.max_width` values remain supported
 - no legacy modal field was removed in this stage
+
+## Badge rules and icon actions
+
+The badge contract now supports rule-based visibility and rule-based dynamic colors.
+
+New fields on each badge:
+
+- `visibility`
+- `color_rules`
+- `icon_only`
+- `icon_tap_action`
+
+Supported operators in this stage:
+
+- `==`
+- `!=`
+- `>`
+- `<`
+- `>=`
+- `<=`
+
+Compatibility notes:
+
+- `color` still overrides every other badge color mechanism
+- `color_rules` are evaluated before legacy automatic state color / numeric thresholds
+- `tap_action` remains the whole-badge action
+- `icon_tap_action` adds a separate icon-only click target when an icon is present
+
+Known limitation:
+
+- badge rules use implicit `AND` and do not support nested logical groups in this stage

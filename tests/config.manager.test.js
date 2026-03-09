@@ -235,10 +235,14 @@ describe('ConfigManager', () => {
             entity: 'sensor.temperature',
             attribute: 'temperature',
             precision: 1,
+            icon_only: true,
             show_progress: true,
             min: 0,
             max: 100,
-            thresholds: [{ value: 30, color: '#f44336' }]
+            thresholds: [{ value: 30, color: '#f44336' }],
+            visibility: [{ operator: '>=', value: 20 }],
+            color_rules: [{ operator: '==', value: 20, color: '#ff9800' }],
+            icon_tap_action: { action: 'more-info' }
           },
           {
             type: 'counter',
@@ -343,6 +347,8 @@ describe('ConfigManager', () => {
     expect(props.swipe.properties.left.properties.action.enum).toContain('next');
     expect(props.badges.items.properties.type.enum).toContain('counter');
     expect(props.badges.items.properties.thresholds.items.properties.color.type).toBe('string');
+    expect(props.badges.items.properties.visibility.items.properties.operator.enum).toContain('>=');
+    expect(props.badges.items.properties.color_rules.items.properties.color.type).toBe('string');
   });
 
   it('normalizes nested conditions and state style classes', () => {
@@ -406,7 +412,13 @@ describe('ConfigManager', () => {
       badges: [
         {
           type: 'counter',
-          entities: [' light.kitchen ', 'switch.hall ', '', 'light.kitchen']
+          entities: [' light.kitchen ', 'switch.hall ', '', 'light.kitchen'],
+          visibility: [
+            { operator: '==', value: 'on', entity: ' light.kitchen ' }
+          ],
+          color_rules: [
+            { operator: '!=', value: 'off', color: ' #ff0 ' }
+          ]
         }
       ]
     });
@@ -414,6 +426,12 @@ describe('ConfigManager', () => {
     expect(normalized.swipe.direction).toBe(DEFAULTS.swipe_direction);
     expect(normalized.swipe.threshold).toBe(DEFAULTS.swipe_threshold);
     expect(normalized.badges[0].entities).toEqual(['light.kitchen', 'switch.hall']);
+    expect(normalized.badges[0].visibility).toEqual([
+      { operator: '==', value: 'on', entity: 'light.kitchen' }
+    ]);
+    expect(normalized.badges[0].color_rules).toEqual([
+      { operator: '!=', value: 'off', color: '#ff0' }
+    ]);
   });
 
   it('hasChanged reflects deep changes', () => {

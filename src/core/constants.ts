@@ -392,6 +392,26 @@ export const BADGE_TYPES = Object.freeze({
 export const VALID_BADGE_TYPES = Object.values(BADGE_TYPES);
 
 /**
+ * Badge comparison operators.
+ * @readonly
+ * @enum {string}
+ */
+export const BADGE_OPERATORS = Object.freeze({
+  EQUALS: '==',
+  NOT_EQUALS: '!=',
+  GREATER_THAN: '>',
+  LESS_THAN: '<',
+  GREATER_THAN_OR_EQUALS: '>=',
+  LESS_THAN_OR_EQUALS: '<='
+});
+
+/**
+ * Array of currently supported badge comparison operators.
+ * @type {string[]}
+ */
+export const VALID_BADGE_OPERATORS = Object.values(BADGE_OPERATORS);
+
+/**
  * Badge value formatting modes.
  * @readonly
  * @enum {string}

@@ -9,6 +9,7 @@
 
 import {
   BADGE_FORMATS,
+  BADGE_OPERATORS,
   BADGE_TYPES,
   BODY_MODES,
   CARD_DIRECTIONS,
@@ -31,6 +32,7 @@ export type SwipeAxis = (typeof SWIPE_DIRECTIONS)[keyof typeof SWIPE_DIRECTIONS]
 export type SwipeActionType = (typeof SWIPE_ACTIONS)[keyof typeof SWIPE_ACTIONS];
 export type BadgeType = (typeof BADGE_TYPES)[keyof typeof BADGE_TYPES];
 export type BadgeFormat = (typeof BADGE_FORMATS)[keyof typeof BADGE_FORMATS];
+export type BadgeComparisonOperator = (typeof BADGE_OPERATORS)[keyof typeof BADGE_OPERATORS];
 export type VisibilityConditionType = (typeof CONDITION_TYPES)[keyof typeof CONDITION_TYPES];
 export type VisibilityWeekday = (typeof WEEKDAYS)[keyof typeof WEEKDAYS];
 
@@ -85,6 +87,19 @@ export interface BadgeThreshold {
   color: string;
 }
 
+export type BadgeRuleValue = string | number | boolean;
+
+export interface BadgeConditionRule {
+  operator: BadgeComparisonOperator;
+  value: BadgeRuleValue;
+  entity?: string;
+  attribute?: string;
+}
+
+export interface BadgeColorRule extends BadgeConditionRule {
+  color: string;
+}
+
 export interface HeaderBadgeConfig {
   type?: BadgeType;
   entity?: string;
@@ -105,7 +120,11 @@ export interface HeaderBadgeConfig {
   state?: string;
   count_state?: string;
   thresholds?: BadgeThreshold[];
+  visibility?: BadgeConditionRule[];
+  color_rules?: BadgeColorRule[];
+  icon_only?: boolean;
   tap_action?: ActionConfig;
+  icon_tap_action?: ActionConfig;
 }
 
 export type ContextMenuHandlerContext = Record<string, unknown>;

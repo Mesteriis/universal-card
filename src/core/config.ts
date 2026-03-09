@@ -25,6 +25,8 @@ import {
   VALID_WEEKDAYS,
   BADGE_TYPES,
   VALID_BADGE_TYPES,
+  BADGE_OPERATORS,
+  VALID_BADGE_OPERATORS,
   BADGE_FORMATS,
   VALID_BADGE_FORMATS,
   SWIPE_DIRECTIONS,
@@ -1340,6 +1342,13 @@ export class ConfigManager {
         }
       });
 
+      if (badge.icon_only !== undefined && typeof badge.icon_only !== 'boolean') {
+        throw new ConfigValidationError(
+          'Badge icon_only must be a boolean',
+          `${badgePath}.icon_only`
+        );
+      }
+
       if (badge.precision !== undefined) {
         if (!Number.isInteger(badge.precision)) {
           throw new ConfigValidationError(
@@ -1410,8 +1419,20 @@ export class ConfigManager {
         this._validateBadgeThresholds(badge.thresholds, `${badgePath}.thresholds`);
       }
 
+      if (badge.visibility !== undefined) {
+        this._validateBadgeRules(badge.visibility, `${badgePath}.visibility`);
+      }
+
+      if (badge.color_rules !== undefined) {
+        this._validateBadgeColorRules(badge.color_rules, `${badgePath}.color_rules`);
+      }
+
       if (badge.tap_action !== undefined) {
         this._validateAction(badge.tap_action, `${badgePath}.tap_action`);
+      }
+
+      if (badge.icon_tap_action !== undefined) {
+        this._validateAction(badge.icon_tap_action, `${badgePath}.icon_tap_action`);
       }
 
       switch (type) {
@@ -1527,6 +1548,85 @@ export class ConfigManager {
         throw new ConfigValidationError(
           'Badge threshold color must be a non-empty string',
           `${thresholdPath}.color`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate badge comparison rules.
+   *
+   * @private
+   * @param {*} rules
+   * @param {string} path
+   */
+  static _validateBadgeRules(rules, path) {
+    if (!Array.isArray(rules)) {
+      throw new ConfigValidationError(
+        'Badge rules must be an array',
+        path
+      );
+    }
+
+    rules.forEach((rule, index) => {
+      const rulePath = `${path}[${index}]`;
+
+      if (!isObject(rule)) {
+        throw new ConfigValidationError(
+          'Badge rule must be an object',
+          rulePath
+        );
+      }
+
+      if (typeof rule.operator !== 'string' || !VALID_BADGE_OPERATORS.includes(rule.operator)) {
+        throw new ConfigValidationError(
+          `Badge rule operator must be one of: ${VALID_BADGE_OPERATORS.join(', ')}`,
+          `${rulePath}.operator`
+        );
+      }
+
+      const valueType = typeof rule.value;
+      if (rule.value === undefined || !['string', 'number', 'boolean'].includes(valueType)) {
+        throw new ConfigValidationError(
+          'Badge rule value must be a string, number, or boolean',
+          `${rulePath}.value`
+        );
+      }
+
+      if (rule.entity !== undefined) {
+        const entityId = typeof rule.entity === 'string' ? rule.entity.trim() : rule.entity;
+        if (!isValidEntityId(entityId)) {
+          throw new ConfigValidationError(
+            `Invalid entity format: "${rule.entity}"`,
+            `${rulePath}.entity`
+          );
+        }
+      }
+
+      if (rule.attribute !== undefined && !isNonEmptyString(rule.attribute)) {
+        throw new ConfigValidationError(
+          'Badge rule attribute must be a non-empty string',
+          `${rulePath}.attribute`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate badge color rules.
+   *
+   * @private
+   * @param {*} rules
+   * @param {string} path
+   */
+  static _validateBadgeColorRules(rules, path) {
+    this._validateBadgeRules(rules, path);
+
+    rules.forEach((rule, index) => {
+      if (!isNonEmptyString(rule.color)) {
+        throw new ConfigValidationError(
+          'Badge color rule color must be a non-empty string',
+          `${path}[${index}].color`
         );
       }
     });
@@ -2074,8 +2174,89 @@ export class ConfigManager {
           }
         }
 
+        if (Array.isArray(normalized.visibility)) {
+          normalized.visibility = normalized.visibility
+            .filter((rule) => isObject(rule) && VALID_BADGE_OPERATORS.includes(rule.operator))
+            .map((rule) => this._normalizeBadgeRule(rule))
+            .filter(Boolean);
+          if (normalized.visibility.length === 0) {
+            delete normalized.visibility;
+          }
+        }
+
+        if (Array.isArray(normalized.color_rules)) {
+          normalized.color_rules = normalized.color_rules
+            .filter((rule) => isObject(rule) && VALID_BADGE_OPERATORS.includes(rule.operator))
+            .map((rule) => this._normalizeBadgeColorRule(rule))
+            .filter(Boolean);
+          if (normalized.color_rules.length === 0) {
+            delete normalized.color_rules;
+          }
+        }
+
         return normalized;
       });
+  }
+
+  /**
+   * Normalize badge comparison rule.
+   *
+   * @private
+   * @param {*} rule
+   * @returns {Record<string, any> | null}
+   */
+  static _normalizeBadgeRule(rule) {
+    if (!isObject(rule)) {
+      return null;
+    }
+
+    const normalized: Record<string, any> = {
+      operator: rule.operator || BADGE_OPERATORS.EQUALS,
+      value: rule.value
+    };
+
+    if (typeof rule.entity === 'string') {
+      const entity = rule.entity.trim();
+      if (entity) {
+        normalized.entity = entity;
+      }
+    }
+
+    if (typeof rule.attribute === 'string') {
+      const attribute = rule.attribute.trim();
+      if (attribute) {
+        normalized.attribute = attribute;
+      }
+    }
+
+    if (typeof normalized.value === 'string') {
+      const trimmed = normalized.value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      normalized.value = trimmed;
+    }
+
+    return normalized;
+  }
+
+  /**
+   * Normalize badge color rule.
+   *
+   * @private
+   * @param {*} rule
+   * @returns {Record<string, any> | null}
+   */
+  static _normalizeBadgeColorRule(rule) {
+    const normalized = this._normalizeBadgeRule(rule);
+    if (!normalized || typeof rule.color !== 'string' || !rule.color.trim()) {
+      return null;
+    }
+
+    return {
+      ...normalized,
+      color: rule.color.trim()
+    };
   }
 
   /**
@@ -2335,6 +2516,7 @@ export class ConfigManager {
         unit: { type: 'string' },
         min: { type: 'number' },
         max: { type: 'number' },
+        icon_only: { type: 'boolean', default: false },
         show_name: { type: 'boolean', default: false },
         show_progress: { type: 'boolean', default: false },
         precision: {
@@ -2358,7 +2540,41 @@ export class ConfigManager {
           type: 'array',
           items: badgeThresholdSchema
         },
-        tap_action: actionSchema
+        visibility: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              operator: {
+                type: 'string',
+                enum: VALID_BADGE_OPERATORS,
+                default: BADGE_OPERATORS.EQUALS
+              },
+              value: { type: ['string', 'number', 'boolean'] },
+              entity: { type: 'string' },
+              attribute: { type: 'string' }
+            }
+          }
+        },
+        color_rules: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              operator: {
+                type: 'string',
+                enum: VALID_BADGE_OPERATORS,
+                default: BADGE_OPERATORS.EQUALS
+              },
+              value: { type: ['string', 'number', 'boolean'] },
+              entity: { type: 'string' },
+              attribute: { type: 'string' },
+              color: { type: 'string' }
+            }
+          }
+        },
+        tap_action: actionSchema,
+        icon_tap_action: actionSchema
       }
     };
 

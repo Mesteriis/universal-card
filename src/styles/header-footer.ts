@@ -204,6 +204,11 @@ export const HEADER_STYLES = `
     color: var(--badge-color, var(--primary-color));
     transition: background 0.2s ease;
   }
+
+  .badge.icon-only {
+    padding: 5px;
+    border-radius: 999px;
+  }
   
   .badge:hover {
     background: color-mix(in srgb, var(--badge-color, var(--primary-color)) 25%, transparent);
@@ -213,8 +218,21 @@ export const HEADER_STYLES = `
     cursor: pointer;
   }
   
+  .badge-icon,
   .badge ha-icon {
     --mdc-icon-size: 12px;
+  }
+
+  .badge-icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
   }
   
   .badge-label {

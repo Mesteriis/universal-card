@@ -30,6 +30,11 @@ import type {
 import { PLUGIN_HOOKS, type PluginContext, type PluginPayload } from '../extensibility/PluginSystem.js';
 import type { HomeAssistantLike, ProviderSource } from '../providers/ProviderContext.js';
 import { normalizeDerivedProviderContext } from '../providers/DerivedProviderContext.js';
+import {
+  evaluateBadgeVisibility,
+  resolveBadgeRuleColor,
+  type BadgeRuleValueReader
+} from './badge-rules.js';
 
 type HeaderOptions = {
   executePluginHookSync?: HookExecutor;
@@ -294,10 +299,20 @@ export class Header {
     if (!badges || !Array.isArray(badges) || badges.length === 0) {
       return '';
     }
-    
-    const badgesHtml = badges.map((badge, index) => this._renderBadge(badge, index)).join('');
-    
+
+    const badgesHtml = this._renderVisibleBadgesHtml();
+
     return `<div class="header-badges">${badgesHtml}</div>`;
+  }
+
+  _renderVisibleBadgesHtml() {
+    const badges = this._config.badges || [];
+
+    return badges
+      .map((badge, index) => ({ badge, index }))
+      .filter(({ badge }) => this._isBadgeVisible(badge))
+      .map(({ badge, index }) => this._renderBadge(badge, index))
+      .join('');
   }
   
   /**
@@ -311,18 +326,38 @@ export class Header {
   _renderBadge(badge: HeaderBadgeConfig, index: number) {
     const rawValue = this._getBadgeValue(badge);
     const displayValue = this._getBadgeDisplayValue(badge, rawValue);
-    const badgeColor = badge.color || this._getBadgeAutoColor(badge);
-    const iconHtml = badge.icon ? `<ha-icon icon="${badge.icon}"></ha-icon>` : '';
+    const badgeColor = this._getBadgeColor(badge, rawValue);
+    const iconOnly = badge.icon_only === true && Boolean(badge.icon);
+    const iconActionClickable = Boolean(
+      badge.icon_tap_action?.action && badge.icon_tap_action.action !== ACTION_TYPES.NONE
+    );
+    const iconHtml = badge.icon
+      ? (
+        iconActionClickable
+          ? `
+            <button
+              type="button"
+              class="badge-icon-action clickable"
+              data-badge-index="${index}"
+              aria-label="Badge icon action"
+            >
+              <ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon>
+            </button>
+          `
+          : `<span class="badge-icon"><ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon></span>`
+      )
+      : '';
     const badgeLabel = this._getBadgeLabel(badge);
-    const labelHtml = badgeLabel ? `<span class="badge-label">${badgeLabel}</span>` : '';
-    const valueHtml = displayValue !== null && displayValue !== undefined && displayValue !== ''
+    const labelHtml = !iconOnly && badgeLabel ? `<span class="badge-label">${badgeLabel}</span>` : '';
+    const valueHtml = !iconOnly && displayValue !== null && displayValue !== undefined && displayValue !== ''
       ? `<span class="badge-value">${displayValue}</span>${badge.unit ? `<span class="badge-unit">${badge.unit}</span>` : ''}`
       : '';
-    const progressHtml = this._renderBadgeProgress(badge, rawValue);
+    const progressHtml = !iconOnly ? this._renderBadgeProgress(badge, rawValue) : '';
     const clickable = badge.tap_action?.action && badge.tap_action.action !== 'none' ? ' clickable' : '';
+    const iconOnlyClass = iconOnly ? ' icon-only' : '';
 
     return `
-      <div class="badge${clickable}" data-badge-index="${index}" style="--badge-color: ${badgeColor}">
+      <div class="badge${clickable}${iconOnlyClass}" data-badge-index="${index}" style="--badge-color: ${badgeColor}">
         ${iconHtml}${labelHtml}${valueHtml}${progressHtml}
       </div>
     `;
@@ -526,6 +561,15 @@ export class Header {
    */
   _handleClick(event: Event) {
     debug('[UC-Header] click!', event.target);
+
+    const badgeIconActionElement = this._findBadgeActionElement(event.target, 'badge-icon-action');
+    if (badgeIconActionElement?.classList?.contains('clickable')) {
+      debug('[UC-Header] badge icon tap');
+      event.preventDefault();
+      event.stopPropagation();
+      this._handleBadgeIconClick(badgeIconActionElement);
+      return;
+    }
 
     const badgeElement = this._findBadgeElement(event.target);
     if (badgeElement?.classList?.contains('clickable')) {
@@ -777,6 +821,7 @@ export class Header {
         'select',
         'textarea',
         '.badge.clickable',
+        '.badge-icon-action.clickable',
         '.quick-action'
       ];
       
@@ -951,39 +996,13 @@ export class Header {
   _updateBadges() {
     const { badges } = this._config;
     if (!badges || !Array.isArray(badges)) return;
-    
-    const badgeElements = this._element.querySelectorAll<HTMLElement>('.badge');
-    
-    badges.forEach((badge, index) => {
-      if (!badgeElements[index]) return;
 
-      const rawValue = this._getBadgeValue(badge);
-      const displayValue = this._getBadgeDisplayValue(badge, rawValue);
-      const valueEl = badgeElements[index].querySelector('.badge-value');
-      
-      if (valueEl) {
-        valueEl.textContent = displayValue ?? '';
-      }
+    const badgesContainer = this._element.querySelector('.header-badges');
+    if (!badgesContainer) {
+      return;
+    }
 
-      const labelEl = badgeElements[index].querySelector('.badge-label');
-      if (labelEl) {
-        labelEl.textContent = this._getBadgeLabel(badge) || '';
-      }
-
-      const unitEl = badgeElements[index].querySelector('.badge-unit');
-      if (unitEl) {
-        unitEl.textContent = badge.unit || '';
-      }
-
-      const color = badge.color || this._getBadgeAutoColor(badge);
-      badgeElements[index].style.setProperty('--badge-color', color);
-
-      const progressBar = badgeElements[index].querySelector<HTMLElement>('.badge-progress-bar');
-      if (progressBar) {
-        const percentage = this._getBadgeProgressPercentage(badge, rawValue);
-        progressBar.style.width = percentage !== null ? `${percentage}%` : '0%';
-      }
-    });
+    badgesContainer.innerHTML = this._renderVisibleBadgesHtml();
   }
 
   /**
@@ -1018,6 +1037,42 @@ export class Header {
     }
 
     return '';
+  }
+
+  _isBadgeVisible(badge: HeaderBadgeConfig, rawValue = this._getBadgeValue(badge)) {
+    return evaluateBadgeVisibility(
+      badge.visibility,
+      rawValue,
+      this._getBadgeRuleValueReader()
+    );
+  }
+
+  _getBadgeColor(badge: HeaderBadgeConfig, rawValue = this._getBadgeValue(badge)) {
+    if (badge.color) {
+      return badge.color;
+    }
+
+    const colorFromRules = resolveBadgeRuleColor(
+      badge.color_rules,
+      rawValue,
+      this._getBadgeRuleValueReader()
+    );
+    if (colorFromRules) {
+      return colorFromRules;
+    }
+
+    return this._getBadgeAutoColor(badge, rawValue);
+  }
+
+  _getBadgeRuleValueReader(): BadgeRuleValueReader | undefined {
+    const providers = this._getProviders();
+    if (!providers) {
+      return undefined;
+    }
+
+    return (entity: string, attribute?: string) => (
+      providers.derived.entities.getValue(entity, attribute)
+    );
   }
 
   /**
@@ -1138,8 +1193,7 @@ export class Header {
    * @param {Object} badge
    * @returns {string}
    */
-  _getBadgeAutoColor(badge: HeaderBadgeConfig) {
-    const rawValue = this._getBadgeValue(badge);
+  _getBadgeAutoColor(badge: HeaderBadgeConfig, rawValue = this._getBadgeValue(badge)) {
     const providers = this._getProviders();
 
     if (badge.entity && providers) {
@@ -1229,6 +1283,19 @@ export class Header {
     return null;
   }
 
+  _findBadgeActionElement(target: EventTarget | null, className: string) {
+    let element = target instanceof HTMLElement ? target : null;
+
+    while (element && element !== this._element) {
+      if (element.classList?.contains(className)) {
+        return element;
+      }
+      element = element.parentElement;
+    }
+
+    return null;
+  }
+
   /**
    * Execute badge tap action.
    *
@@ -1236,29 +1303,44 @@ export class Header {
    * @param {HTMLElement} badgeElement
    */
   _handleBadgeClick(badgeElement: HTMLElement) {
-    const badgeIndex = parseInt(badgeElement.dataset.badgeIndex, 10);
+    this._executeBadgeAction(badgeElement, 'tap_action', 'badge_tap', 'badge');
+  }
+
+  _handleBadgeIconClick(iconElement: HTMLElement) {
+    this._executeBadgeAction(iconElement, 'icon_tap_action', 'badge_icon_tap', 'badge-icon');
+  }
+
+  _executeBadgeAction(
+    triggerElement: HTMLElement,
+    actionField: 'tap_action' | 'icon_tap_action',
+    interaction: 'badge_tap' | 'badge_icon_tap',
+    source: 'badge' | 'badge-icon'
+  ) {
+    const badgeIndex = parseInt(triggerElement.dataset.badgeIndex, 10);
     if (Number.isNaN(badgeIndex)) {
       return;
     }
 
     const badge = this._config.badges?.[badgeIndex];
-    if (!badge?.tap_action || badge.tap_action.action === 'none') {
+    const action = badge?.[actionField];
+    if (!action || action.action === ACTION_TYPES.NONE) {
       return;
     }
 
-    const actionConfig = badge.entity && !badge.tap_action.entity
-      ? { ...badge.tap_action, entity: badge.entity }
-      : badge.tap_action;
+    const actionConfig = badge.entity && !action.entity
+      ? { ...action, entity: badge.entity }
+      : action;
+    const actionKey = `badges[${badgeIndex}].${actionField}`;
 
     const clickResult = runInteractionHook({
       actionConfig,
-      actionKey: `badges[${badgeIndex}].tap_action`,
-      element: badgeElement,
+      actionKey,
+      element: triggerElement,
       executePluginHookSync: this._executePluginHookSync.bind(this),
       extra: { badge, badgeIndex },
       hookName: PLUGIN_HOOKS.CLICK,
-      interaction: 'badge_tap',
-      source: 'badge'
+      interaction,
+      source
     });
 
     if (shouldStopPluginResult(clickResult)) {
@@ -1267,15 +1349,15 @@ export class Header {
 
     Promise.resolve(executeAction(
       this._getProviders() || this._hass,
-      badgeElement,
+      triggerElement,
       actionConfig,
       buildActionExecutionOptions({
-        actionKey: `badges[${badgeIndex}].tap_action`,
+        actionKey,
         executePluginHookSync: this._options.executePluginHookSync,
-        interaction: 'badge_tap',
+        interaction,
         meta: { badge, badgeIndex },
         section: 'header',
-        source: 'badge'
+        source
       })
     )).catch((error) => {
       console.error('[UniversalCard] Badge action failed:', error);
