@@ -18,6 +18,7 @@ import {
   CARD_VERSION, 
   DEFAULTS, 
   BODY_MODES, 
+  MODAL_LOADING_STRATEGIES,
   EVENTS,
   LIMITS 
 } from './constants.js';
@@ -809,6 +810,8 @@ export class UniversalCard extends HTMLElement {
         debug('[UC] body cards loaded');
       }
 
+      void this._preloadModalModeContent();
+
       if (isStale()) return;
       
       // Bind events
@@ -928,6 +931,37 @@ export class UniversalCard extends HTMLElement {
     }
 
     this._subviewMode = bodyMode === BODY_MODES.SUBVIEW ? this._mode : null;
+  }
+
+  _getModalLoadingStrategy() {
+    return this._config.modal?.loading_strategy === MODAL_LOADING_STRATEGIES.PRELOAD
+      ? MODAL_LOADING_STRATEGIES.PRELOAD
+      : MODAL_LOADING_STRATEGIES.LAZY;
+  }
+
+  async _preloadModalModeContent() {
+    if (this._config.body_mode !== BODY_MODES.MODAL) {
+      return;
+    }
+
+    if (this._getModalLoadingStrategy() !== MODAL_LOADING_STRATEGIES.PRELOAD) {
+      return;
+    }
+
+    if (!this._mode || this._mode.loaded) {
+      return;
+    }
+
+    const cards = this._config.body?.cards || [];
+    if (cards.length === 0) {
+      return;
+    }
+
+    try {
+      await this._mode.loadCards(cards);
+    } catch (error) {
+      console.error('[UniversalCard] Failed to preload modal content:', error);
+    }
   }
   
   /**

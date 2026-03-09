@@ -61,6 +61,7 @@ describe('ConfigManager', () => {
         height: ' 32rem ',
         max_width: ' 72rem ',
         max_height: ' 90vh ',
+        loading_strategy: 'preload',
         backdrop_blur: false
       }
     });
@@ -69,6 +70,7 @@ describe('ConfigManager', () => {
     expect(normalized.modal.height).toBe('32rem');
     expect(normalized.modal.max_width).toBe('72rem');
     expect(normalized.modal.max_height).toBe('90vh');
+    expect(normalized.modal.loading_strategy).toBe('preload');
     expect(normalized.modal.backdrop_blur).toBe(false);
 
     expect(() => {
@@ -80,6 +82,16 @@ describe('ConfigManager', () => {
         }
       });
     }).toThrow(/modal\.height/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body_mode: 'modal',
+        body: { cards: [] },
+        modal: {
+          loading_strategy: 'eager'
+        }
+      });
+    }).toThrow(/modal\.loading_strategy/);
   });
 
   it('accepts grid template columns as string', () => {
@@ -342,6 +354,7 @@ describe('ConfigManager', () => {
     expect(props.attribute.type).toBe('string');
     expect(props.modal.properties.height.default).toBe(DEFAULTS.modal_height);
     expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
+    expect(props.modal.properties.loading_strategy.default).toBe(DEFAULTS.modal_loading_strategy);
     expect(props.visibility.items.properties.conditions.items).toBe(props.visibility.items);
     expect(props.state_styles.type).toBe('object');
     expect(props.swipe.properties.left.properties.action.enum).toContain('next');

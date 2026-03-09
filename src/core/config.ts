@@ -29,6 +29,8 @@ import {
   VALID_BADGE_OPERATORS,
   BADGE_FORMATS,
   VALID_BADGE_FORMATS,
+  MODAL_LOADING_STRATEGIES,
+  VALID_MODAL_LOADING_STRATEGIES,
   SWIPE_DIRECTIONS,
   VALID_SWIPE_DIRECTIONS,
   VALID_SWIPE_ACTIONS,
@@ -1510,6 +1512,19 @@ export class ConfigManager {
         );
       }
     });
+
+    if (
+      modal.loading_strategy !== undefined &&
+      (
+        typeof modal.loading_strategy !== 'string' ||
+        !VALID_MODAL_LOADING_STRATEGIES.includes(modal.loading_strategy)
+      )
+    ) {
+      throw new ConfigValidationError(
+        `modal.loading_strategy must be one of: ${VALID_MODAL_LOADING_STRATEGIES.join(', ')}`,
+        `${path}.loading_strategy`
+      );
+    }
   }
 
   /**
@@ -1881,6 +1896,10 @@ export class ConfigManager {
       height: normalizeString(source.height, DEFAULTS.modal_height),
       max_width: normalizeString(source.max_width, DEFAULTS.modal_max_width),
       max_height: normalizeString(source.max_height, DEFAULTS.modal_max_height),
+      loading_strategy:
+        typeof source.loading_strategy === 'string' && VALID_MODAL_LOADING_STRATEGIES.includes(source.loading_strategy)
+          ? source.loading_strategy
+          : DEFAULTS.modal_loading_strategy,
       backdrop_blur: source.backdrop_blur !== false,
       backdrop_color: normalizeString(source.backdrop_color, DEFAULTS.backdrop_color),
       close_on_backdrop: source.close_on_backdrop !== false,
@@ -2851,6 +2870,12 @@ export class ConfigManager {
               type: 'string',
               default: DEFAULTS.modal_max_height,
               description: 'Maximum height cap applied to the modal dialog.'
+            },
+            loading_strategy: {
+              type: 'string',
+              enum: VALID_MODAL_LOADING_STRATEGIES,
+              default: DEFAULTS.modal_loading_strategy,
+              description: 'Modal content loading strategy.'
             },
             backdrop_blur: {
               type: 'boolean',

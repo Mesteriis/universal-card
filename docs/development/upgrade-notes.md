@@ -61,3 +61,23 @@ Compatibility notes:
 Known limitation:
 
 - badge rules use implicit `AND` and do not support nested logical groups in this stage
+
+## Modal loading strategy
+
+New field:
+
+- `modal.loading_strategy`
+
+Supported values:
+
+- `lazy` (default)
+- `preload`
+
+Important compatibility note:
+
+- existing `lazy_load` keeps its previous meaning for inline expand-body loading
+- modal preload is a separate feature and does not reinterpret `lazy_load`
+
+Performance note:
+
+- `preload` can increase startup cost for heavy modal content and should be used selectively

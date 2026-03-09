@@ -429,6 +429,22 @@ export const BADGE_FORMATS = Object.freeze({
  */
 export const VALID_BADGE_FORMATS = Object.values(BADGE_FORMATS);
 
+/**
+ * Modal content loading strategies.
+ * @readonly
+ * @enum {string}
+ */
+export const MODAL_LOADING_STRATEGIES = Object.freeze({
+  LAZY: 'lazy',
+  PRELOAD: 'preload'
+});
+
+/**
+ * Array of valid modal loading strategies.
+ * @type {string[]}
+ */
+export const VALID_MODAL_LOADING_STRATEGIES = Object.values(MODAL_LOADING_STRATEGIES);
+
 // =============================================================================
 // EVENTS
 // =============================================================================
@@ -511,6 +527,7 @@ export const DEFAULTS = Object.freeze({
   modal_height: 'auto',
   modal_max_width: '600px',
   modal_max_height: '85vh',
+  modal_loading_strategy: MODAL_LOADING_STRATEGIES.LAZY,
   backdrop_color: 'rgba(0, 0, 0, 0.6)',
   
   // Features

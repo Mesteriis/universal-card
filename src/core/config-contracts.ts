@@ -15,6 +15,7 @@ import {
   CARD_DIRECTIONS,
   CONDITION_TYPES,
   EXPAND_TRIGGERS,
+  MODAL_LOADING_STRATEGIES,
   POOL_SCOPES,
   SWIPE_ACTIONS,
   SWIPE_DIRECTIONS,
@@ -33,6 +34,7 @@ export type SwipeActionType = (typeof SWIPE_ACTIONS)[keyof typeof SWIPE_ACTIONS]
 export type BadgeType = (typeof BADGE_TYPES)[keyof typeof BADGE_TYPES];
 export type BadgeFormat = (typeof BADGE_FORMATS)[keyof typeof BADGE_FORMATS];
 export type BadgeComparisonOperator = (typeof BADGE_OPERATORS)[keyof typeof BADGE_OPERATORS];
+export type ModalLoadingStrategy = (typeof MODAL_LOADING_STRATEGIES)[keyof typeof MODAL_LOADING_STRATEGIES];
 export type VisibilityConditionType = (typeof CONDITION_TYPES)[keyof typeof CONDITION_TYPES];
 export type VisibilityWeekday = (typeof WEEKDAYS)[keyof typeof WEEKDAYS];
 
@@ -75,6 +77,7 @@ export interface ModalConfig {
   height?: string;
   max_width?: string;
   max_height?: string;
+  loading_strategy?: ModalLoadingStrategy;
   backdrop_blur?: boolean;
   backdrop_color?: string;
   close_on_backdrop?: boolean;

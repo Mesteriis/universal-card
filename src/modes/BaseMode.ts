@@ -93,6 +93,7 @@ export class BaseMode {
   _cards: ModeCardElement[];
   _hass: HomeAssistantLike | null;
   _loaded: boolean;
+  _loadPromise: Promise<void> | null;
   _active: boolean;
   _poolEnabled: boolean;
   _poolNamespace: string;
@@ -109,6 +110,7 @@ export class BaseMode {
     this._cards = [];
     this._hass = null;
     this._loaded = false;
+    this._loadPromise = null;
     this._active = false;
     this._poolEnabled = config?.enable_card_pool !== false;
     this._poolNamespace = typeof options.poolNamespace === 'string' && options.poolNamespace
@@ -156,29 +158,39 @@ export class BaseMode {
       return;
     }
 
-    const poolKey = this._buildCardsPoolKey(configs);
-    this._cardsPoolKey = poolKey;
+    if (this._loadPromise) {
+      return this._loadPromise;
+    }
 
-    if (poolKey) {
-      const pooledCards = cardPool.acquire(poolKey) as ModeCardElement[] | null;
-      if (pooledCards && pooledCards.length === configs.length) {
-        this._cards = pooledCards;
-        this._updateCardsHass(this._hass);
-        this._loaded = true;
-        return;
+    this._loadPromise = (async () => {
+      const poolKey = this._buildCardsPoolKey(configs);
+      this._cardsPoolKey = poolKey;
+
+      if (poolKey) {
+        const pooledCards = cardPool.acquire(poolKey) as ModeCardElement[] | null;
+        if (pooledCards && pooledCards.length === configs.length) {
+          this._cards = pooledCards;
+          this._updateCardsHass(this._hass);
+          this._loaded = true;
+          return;
+        }
       }
-    }
 
-    try {
-      const helpers = await this._getCardHelpers();
-      this._cards = await Promise.all(
-        configs.map((config) => this._createCard(config, helpers))
-      );
-      this._loaded = true;
-    } catch (error) {
-      console.error('[UniversalCard] Failed to load cards:', error);
-      this._loaded = true;
-    }
+      try {
+        const helpers = await this._getCardHelpers();
+        this._cards = await Promise.all(
+          configs.map((config) => this._createCard(config, helpers))
+        );
+        this._loaded = true;
+      } catch (error) {
+        console.error('[UniversalCard] Failed to load cards:', error);
+        this._loaded = true;
+      }
+    })().finally(() => {
+      this._loadPromise = null;
+    });
+
+    return this._loadPromise;
   }
 
   async _createCard(config: ModeCardConfig, helpers: ModeCardHelpers | null): Promise<ModeCardElement> {
@@ -401,6 +413,7 @@ export class BaseMode {
     this._cards = [];
     this._container = null;
     this._loaded = false;
+    this._loadPromise = null;
     this._active = false;
     this._cardsPoolKey = null;
   }
