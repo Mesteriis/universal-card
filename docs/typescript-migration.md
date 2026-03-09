@@ -1,3 +1,9 @@
+---
+title: TypeScript Migration
+description: Project migration notes for the TypeScript transition and related implementation strategy.
+section_label: Project Notes
+permalink: /typescript-migration/
+---
 # TypeScript Migration Strategy
 
 ## Why This Migration Is Incremental

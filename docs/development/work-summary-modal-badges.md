@@ -1,3 +1,9 @@
+---
+title: Work Summary
+description: Branch-level summary of modal, badges, body modes, header, loading strategy, and editor work.
+section_label: Project Notes
+permalink: /development/work-summary/
+---
 # Work Summary: Modal, Badges, Body Modes, Header, Loading, Editor
 
 ## What Was Done

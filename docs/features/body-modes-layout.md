@@ -1,3 +1,9 @@
+---
+title: Body Modes Layout
+description: Shared layout contracts for fullscreen, tabs, carousel, expand, and subview modes.
+section_label: Features
+permalink: /features/body-modes-layout/
+---
 # Body Mode Layouts
 
 ## Overview

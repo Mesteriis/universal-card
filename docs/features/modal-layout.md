@@ -1,3 +1,9 @@
+---
+title: Modal Layout
+description: Layout, sizing, spacing, and grid behavior for body_mode: modal.
+section_label: Features
+permalink: /features/modal-layout/
+---
 # Modal Layout
 
 ## Overview

@@ -1,3 +1,9 @@
+---
+title: Loading Strategy
+description: Lazy versus preload behavior for modal content and guidance for performance-sensitive cards.
+section_label: Features
+permalink: /features/loading-strategy/
+---
 # Loading Strategy
 
 ## Overview

@@ -1,3 +1,9 @@
+---
+title: Header Layout
+description: Preset-based header layouts, spacing, alignment, and badge placement options.
+section_label: Features
+permalink: /features/header-layout/
+---
 # Header Layout
 
 ## Overview

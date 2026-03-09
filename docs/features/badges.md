@@ -1,3 +1,9 @@
+---
+title: Badges
+description: Badge types, visibility rules, comparison operators, colors, and icon-only rendering.
+section_label: Features
+permalink: /features/badges/
+---
 # Badges
 
 ## Overview
