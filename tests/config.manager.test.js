@@ -187,6 +187,44 @@ describe('ConfigManager', () => {
     }).toThrow(/carousel_options\.swipe_threshold/);
   });
 
+  it('normalizes and validates header layout config', () => {
+    const normalized = ConfigManager.normalize({
+      body: { cards: [] },
+      header: {
+        sticky: true,
+        clickable: false,
+        layout: {
+          variant: 'stacked',
+          gap: ' 18px ',
+          content_gap: ' 6px ',
+          align: 'center',
+          badges_position: 'below_content'
+        }
+      }
+    });
+
+    expect(normalized.header.sticky).toBe(true);
+    expect(normalized.header.clickable).toBe(false);
+    expect(normalized.header.layout).toEqual({
+      variant: 'stacked',
+      gap: '18px',
+      content_gap: '6px',
+      align: 'center',
+      badges_position: 'below_content'
+    });
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        header: {
+          layout: {
+            variant: 'grid'
+          }
+        }
+      });
+    }).toThrow(/header\.layout\.variant/);
+  });
+
   it('accepts grid template columns as string', () => {
     expect(() => {
       ConfigManager.validate({
@@ -450,6 +488,8 @@ describe('ConfigManager', () => {
     expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
     expect(props.modal.properties.loading_strategy.default).toBe(DEFAULTS.modal_loading_strategy);
     expect(props.fullscreen.properties.max_width.default).toBe(DEFAULTS.fullscreen_max_width);
+    expect(props.header.properties.layout.properties.variant.default).toBe(DEFAULTS.header_layout_variant);
+    expect(props.header.properties.layout.properties.badges_position.enum).toContain('below_content');
     expect(props.tabs_config.properties.content_padding.default).toBe(DEFAULTS.tabs_content_padding);
     expect(props.tabs_config.properties.tab_alignment.enum).toContain('stretch');
     expect(props.carousel_options.properties.show_arrows.default).toBe(DEFAULTS.carousel_show_arrows);

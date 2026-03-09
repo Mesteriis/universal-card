@@ -120,3 +120,23 @@ Compatibility notes:
 - `fullscreen` and `subview` are now part of the shared normalized contract instead of only local runtime parsing
 - expand mode still uses shared `grid` instead of a dedicated nested `expand` object
 
+
+## Header layout presets
+
+New nested config block:
+
+- `header.layout`
+
+New fields:
+
+- `header.layout.variant`
+- `header.layout.gap`
+- `header.layout.content_gap`
+- `header.layout.align`
+- `header.layout.badges_position`
+
+Compatibility notes:
+
+- the current row-based header stays the default preset
+- badges remain in the right zone unless `badges_position: below_content` is set
+- this stage adds presets, not arbitrary free-form element ordering

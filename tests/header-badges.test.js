@@ -78,4 +78,36 @@ describe('Header badges', () => {
     expect(header._handleBadgeIconClick).toHaveBeenCalledTimes(1);
     expect(header._handleBadgeClick).not.toHaveBeenCalled();
   });
+
+  it('applies header layout presets and can move badges below content', async () => {
+    const header = await createHeader({
+      title: 'Kitchen',
+      subtitle: 'Lights',
+      badges: [
+        {
+          type: 'custom',
+          value: 'on',
+          label: 'Active'
+        }
+      ],
+      header: {},
+      layout: {
+        variant: 'stacked',
+        gap: '18px',
+        content_gap: '6px',
+        align: 'center',
+        badges_position: 'below_content'
+      }
+    });
+
+    const element = header.render();
+
+    expect(element.dataset.layoutVariant).toBe('stacked');
+    expect(element.dataset.contentAlign).toBe('center');
+    expect(element.dataset.badgesPosition).toBe('below_content');
+    expect(element.style['--uc-header-gap']).toBe('18px');
+    expect(element.style['--uc-header-content-gap']).toBe('6px');
+    expect(element.innerHTML).toContain('header-content-badges');
+    expect(element.innerHTML).not.toContain('header-right">\n        <div class="header-badges">');
+  });
 });

@@ -11,7 +11,12 @@
 
 import { fireEvent, generateId, debug } from '../utils/helpers.js';
 import { createCardElements, executeAction } from '../utils/ha-helpers.js';
-import { ACTION_TYPES } from '../core/constants.js';
+import {
+  ACTION_TYPES,
+  HEADER_BADGES_POSITIONS,
+  HEADER_CONTENT_ALIGNMENTS,
+  HEADER_LAYOUT_VARIANTS
+} from '../core/constants.js';
 import {
   type ActionConfig,
   type ActionTriggerMeta as HookActionTriggerMeta,
@@ -179,6 +184,8 @@ export class Header {
    */
   render() {
     const config = this._config;
+    const layout = this._getHeaderLayout();
+    const badgesBelowContent = layout.badges_position === HEADER_BADGES_POSITIONS.BELOW_CONTENT;
     
     // Create header element
     this._element = document.createElement('div');
@@ -186,6 +193,11 @@ export class Header {
     this._element.setAttribute('role', 'button');
     this._element.setAttribute('tabindex', '0');
     this._element.setAttribute('aria-expanded', String(this._expanded));
+    this._element.dataset.layoutVariant = layout.variant;
+    this._element.dataset.contentAlign = layout.align;
+    this._element.dataset.badgesPosition = layout.badges_position;
+    this._element.style.setProperty('--uc-header-gap', layout.gap);
+    this._element.style.setProperty('--uc-header-content-gap', layout.content_gap);
     
     // Build inner HTML
     this._element.innerHTML = `
@@ -197,9 +209,10 @@ export class Header {
         ${this._renderTitle()}
         ${this._renderSubtitle()}
         <div class="header-cards-slot"></div>
+        ${badgesBelowContent ? this._renderBadgesContainer('header-content-badges') : ''}
       </div>
       <div class="header-right">
-        ${this._renderBadges()}
+        ${badgesBelowContent ? '' : this._renderBadges()}
         <div class="header-right-slot"></div>
         ${this._renderExpandIcon()}
       </div>
@@ -305,6 +318,17 @@ export class Header {
     return `<div class="header-badges">${badgesHtml}</div>`;
   }
 
+  _renderBadgesContainer(className: string) {
+    const { badges } = this._config;
+
+    if (!badges || !Array.isArray(badges) || badges.length === 0) {
+      return '';
+    }
+
+    const badgesHtml = this._renderVisibleBadgesHtml();
+    return `<div class="${className}">${badgesHtml}</div>`;
+  }
+
   _renderVisibleBadgesHtml() {
     const badges = this._config.badges || [];
 
@@ -408,6 +432,18 @@ export class Header {
     }
     
     return classes.join(' ');
+  }
+
+  _getHeaderLayout() {
+    const layout = this._config.layout || {};
+
+    return {
+      variant: layout.variant || HEADER_LAYOUT_VARIANTS.DEFAULT,
+      gap: layout.gap || '12px',
+      content_gap: layout.content_gap || '2px',
+      align: layout.align || HEADER_CONTENT_ALIGNMENTS.START,
+      badges_position: layout.badges_position || HEADER_BADGES_POSITIONS.RIGHT
+    };
   }
   
   // ===========================================================================

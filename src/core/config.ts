@@ -18,6 +18,9 @@ import {
   VALID_COLLAPSE_ANIMATIONS,
   VALID_CARD_ANIMATIONS,
   VALID_CARD_DIRECTIONS,
+  VALID_HEADER_BADGES_POSITIONS,
+  VALID_HEADER_CONTENT_ALIGNMENTS,
+  VALID_HEADER_LAYOUT_VARIANTS,
   THEMES,
   ACTION_TYPES,
   CONDITION_TYPES,
@@ -246,6 +249,10 @@ export class ConfigManager {
         'Legacy header.left/header.right were removed. Use root header_left/header_right sections.',
         'header'
       );
+    }
+
+    if (config.header !== undefined) {
+      this._validateHeaderConfig(config.header, 'header');
     }
 
     if (config.carousel !== undefined) {
@@ -704,6 +711,99 @@ export class ConfigManager {
         );
       }
     });
+  }
+
+  /**
+   * Validate header configuration.
+   *
+   * @param {*} header
+   * @param {string} path
+   * @private
+   * @static
+   */
+  static _validateHeaderConfig(header, path) {
+    if (!isObject(header)) {
+      throw new ConfigValidationError(
+        'header must be an object',
+        path
+      );
+    }
+
+    this._validateCardCollection(header.cards, `${path}.cards`);
+
+    if (header.sticky !== undefined && typeof header.sticky !== 'boolean') {
+      throw new ConfigValidationError(
+        'header.sticky must be a boolean',
+        `${path}.sticky`
+      );
+    }
+
+    if (header.clickable !== undefined && typeof header.clickable !== 'boolean') {
+      throw new ConfigValidationError(
+        'header.clickable must be a boolean',
+        `${path}.clickable`
+      );
+    }
+
+    if (header.layout !== undefined) {
+      this._validateHeaderLayout(header.layout, `${path}.layout`);
+    }
+  }
+
+  /**
+   * Validate header layout configuration.
+   *
+   * @param {*} layout
+   * @param {string} path
+   * @private
+   * @static
+   */
+  static _validateHeaderLayout(layout, path) {
+    if (!isObject(layout)) {
+      throw new ConfigValidationError(
+        'header.layout must be an object',
+        path
+      );
+    }
+
+    ['gap', 'content_gap'].forEach((field) => {
+      if (layout[field] !== undefined && !isNonEmptyString(layout[field])) {
+        throw new ConfigValidationError(
+          `header.layout.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (
+      layout.variant !== undefined &&
+      (typeof layout.variant !== 'string' || !VALID_HEADER_LAYOUT_VARIANTS.includes(layout.variant))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.variant must be one of: ${VALID_HEADER_LAYOUT_VARIANTS.join(', ')}`,
+        `${path}.variant`
+      );
+    }
+
+    if (
+      layout.align !== undefined &&
+      (typeof layout.align !== 'string' || !VALID_HEADER_CONTENT_ALIGNMENTS.includes(layout.align))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.align must be one of: ${VALID_HEADER_CONTENT_ALIGNMENTS.join(', ')}`,
+        `${path}.align`
+      );
+    }
+
+    if (
+      layout.badges_position !== undefined &&
+      (typeof layout.badges_position !== 'string' || !VALID_HEADER_BADGES_POSITIONS.includes(layout.badges_position))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.badges_position must be one of: ${VALID_HEADER_BADGES_POSITIONS.join(', ')}`,
+        `${path}.badges_position`
+      );
+    }
   }
   
   /**
@@ -1943,7 +2043,7 @@ export class ConfigManager {
     }
     
     // Normalize header
-    normalized.header = this._normalizeSection(config.header, 'header');
+    normalized.header = this._normalizeHeader(config.header);
 
     if (config.header_left) {
       normalized.header_left = this._normalizeSection(config.header_left, 'header_left');
@@ -2053,6 +2153,67 @@ export class ConfigManager {
     return {
       cards: section.cards || [],
       ...section
+    };
+  }
+
+  /**
+   * Normalize header configuration.
+   *
+   * @param {*} header
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeHeader(header) {
+    const normalized = this._normalizeSection(header, 'header');
+
+    if (typeof normalized.sticky !== 'boolean') {
+      delete normalized.sticky;
+    }
+
+    if (typeof normalized.clickable !== 'boolean') {
+      delete normalized.clickable;
+    }
+
+    normalized.layout = this._normalizeHeaderLayout(header?.layout);
+
+    return normalized;
+  }
+
+  /**
+   * Normalize header layout configuration.
+   *
+   * @param {*} layout
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeHeaderLayout(layout) {
+    const source = isObject(layout) ? layout : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      variant:
+        typeof source.variant === 'string' && VALID_HEADER_LAYOUT_VARIANTS.includes(source.variant)
+          ? source.variant
+          : DEFAULTS.header_layout_variant,
+      gap: normalizeString(source.gap, DEFAULTS.header_gap),
+      content_gap: normalizeString(source.content_gap, DEFAULTS.header_content_gap),
+      align:
+        typeof source.align === 'string' && VALID_HEADER_CONTENT_ALIGNMENTS.includes(source.align)
+          ? source.align
+          : DEFAULTS.header_content_align,
+      badges_position:
+        typeof source.badges_position === 'string' && VALID_HEADER_BADGES_POSITIONS.includes(source.badges_position)
+          ? source.badges_position
+          : DEFAULTS.header_badges_position
     };
   }
   
@@ -3268,8 +3429,47 @@ export class ConfigManager {
           }
         },
         header: {
-          ...slotSchema,
-          description: 'Header region configuration.'
+          type: 'object',
+          description: 'Header region configuration.',
+          properties: {
+            cards: cardCollectionSchema,
+            sticky: {
+              type: 'boolean',
+              default: false
+            },
+            clickable: {
+              type: 'boolean',
+              default: true
+            },
+            layout: {
+              type: 'object',
+              properties: {
+                variant: {
+                  type: 'string',
+                  enum: VALID_HEADER_LAYOUT_VARIANTS,
+                  default: DEFAULTS.header_layout_variant
+                },
+                gap: {
+                  type: 'string',
+                  default: DEFAULTS.header_gap
+                },
+                content_gap: {
+                  type: 'string',
+                  default: DEFAULTS.header_content_gap
+                },
+                align: {
+                  type: 'string',
+                  enum: VALID_HEADER_CONTENT_ALIGNMENTS,
+                  default: DEFAULTS.header_content_align
+                },
+                badges_position: {
+                  type: 'string',
+                  enum: VALID_HEADER_BADGES_POSITIONS,
+                  default: DEFAULTS.header_badges_position
+                }
+              }
+            }
+          }
         },
         header_left: {
           ...slotSchema,

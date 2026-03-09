@@ -15,6 +15,9 @@ import {
   CARD_DIRECTIONS,
   CONDITION_TYPES,
   EXPAND_TRIGGERS,
+  HEADER_BADGES_POSITIONS,
+  HEADER_CONTENT_ALIGNMENTS,
+  HEADER_LAYOUT_VARIANTS,
   MODAL_LOADING_STRATEGIES,
   POOL_SCOPES,
   SWIPE_ACTIONS,
@@ -33,6 +36,9 @@ export type CardsDirection = (typeof CARD_DIRECTIONS)[keyof typeof CARD_DIRECTIO
 export type SwipeAxis = (typeof SWIPE_DIRECTIONS)[keyof typeof SWIPE_DIRECTIONS];
 export type SwipeActionType = (typeof SWIPE_ACTIONS)[keyof typeof SWIPE_ACTIONS];
 export type TabAlignment = (typeof TAB_ALIGNMENTS)[keyof typeof TAB_ALIGNMENTS];
+export type HeaderLayoutVariant = (typeof HEADER_LAYOUT_VARIANTS)[keyof typeof HEADER_LAYOUT_VARIANTS];
+export type HeaderContentAlignment = (typeof HEADER_CONTENT_ALIGNMENTS)[keyof typeof HEADER_CONTENT_ALIGNMENTS];
+export type HeaderBadgesPosition = (typeof HEADER_BADGES_POSITIONS)[keyof typeof HEADER_BADGES_POSITIONS];
 export type BadgeType = (typeof BADGE_TYPES)[keyof typeof BADGE_TYPES];
 export type BadgeFormat = (typeof BADGE_FORMATS)[keyof typeof BADGE_FORMATS];
 export type BadgeComparisonOperator = (typeof BADGE_OPERATORS)[keyof typeof BADGE_OPERATORS];
@@ -93,6 +99,14 @@ export interface SubviewConfig {
   navigation_path?: string;
   replace_state?: boolean;
   return_on_close?: boolean;
+}
+
+export interface HeaderLayoutConfig {
+  variant?: HeaderLayoutVariant;
+  gap?: string;
+  content_gap?: string;
+  align?: HeaderContentAlignment;
+  badges_position?: HeaderBadgesPosition;
 }
 
 export interface TabConfig {
@@ -199,6 +213,7 @@ export interface HeaderConfig extends CardSlotSection {
   sticky_header?: boolean;
   sticky?: boolean;
   clickable?: boolean;
+  layout?: HeaderLayoutConfig;
   expand_trigger?: ExpandTrigger;
   header_left?: CardSlotSection;
   header_right?: CardSlotSection;

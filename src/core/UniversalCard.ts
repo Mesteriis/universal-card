@@ -866,6 +866,7 @@ export class UniversalCard extends HTMLElement {
       sticky_header: this._config.sticky_header,
       sticky: headerOverrides.sticky,
       clickable: headerOverrides.clickable,
+      layout: headerOverrides.layout,
       expand_trigger: this._config.expand_trigger,
       badges: this._config.badges,
       tap_action: this._config.tap_action,

@@ -59,6 +59,33 @@ export const TAB_ALIGNMENTS = Object.freeze({
 export const VALID_TAB_ALIGNMENTS = Object.values(TAB_ALIGNMENTS);
 
 // =============================================================================
+// HEADER LAYOUT
+// =============================================================================
+
+export const HEADER_LAYOUT_VARIANTS = Object.freeze({
+  DEFAULT: 'default',
+  STACKED: 'stacked',
+  CENTERED: 'centered'
+});
+
+export const VALID_HEADER_LAYOUT_VARIANTS = Object.values(HEADER_LAYOUT_VARIANTS);
+
+export const HEADER_CONTENT_ALIGNMENTS = Object.freeze({
+  START: 'start',
+  CENTER: 'center',
+  END: 'end'
+});
+
+export const VALID_HEADER_CONTENT_ALIGNMENTS = Object.values(HEADER_CONTENT_ALIGNMENTS);
+
+export const HEADER_BADGES_POSITIONS = Object.freeze({
+  RIGHT: 'right',
+  BELOW_CONTENT: 'below_content'
+});
+
+export const VALID_HEADER_BADGES_POSITIONS = Object.values(HEADER_BADGES_POSITIONS);
+
+// =============================================================================
 // EXPAND TRIGGERS
 // =============================================================================
 
@@ -554,6 +581,13 @@ export const DEFAULTS = Object.freeze({
   tabs_content_padding: '16px',
   tabs_tab_min_width: '72px',
   tabs_tab_alignment: TAB_ALIGNMENTS.START,
+
+  // Header layout
+  header_layout_variant: HEADER_LAYOUT_VARIANTS.DEFAULT,
+  header_gap: '12px',
+  header_content_gap: '2px',
+  header_content_align: HEADER_CONTENT_ALIGNMENTS.START,
+  header_badges_position: HEADER_BADGES_POSITIONS.RIGHT,
 
   // Carousel options
   carousel_show_arrows: true,
