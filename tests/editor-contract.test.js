@@ -24,6 +24,9 @@ describe('EditorContract', () => {
     const iconField = getEditorFieldDescriptor('icon');
     const iconColorField = getEditorFieldDescriptor('icon_color');
     const modalWidthField = getEditorFieldDescriptor('modal.width');
+    const fullscreenWidthField = getEditorFieldDescriptor('fullscreen.width');
+    const tabsAlignmentField = getEditorFieldDescriptor('tabs_config.tab_alignment');
+    const headerLayoutField = getEditorFieldDescriptor('header.layout.variant');
     const expandIconField = getEditorFieldDescriptor('expand_icon');
     const expandTriggerOptions = getEditorFieldOptions('expand_trigger');
     const actionOptions = getEditorFieldOptions('tap_action.action');
@@ -38,6 +41,9 @@ describe('EditorContract', () => {
     expect(iconField?.control).toBe('icon');
     expect(iconColorField?.label).toBe('Цвет основной иконки');
     expect(modalWidthField?.placeholder).toContain('32rem');
+    expect(fullscreenWidthField?.path).toBe('fullscreen.width');
+    expect(tabsAlignmentField?.options?.map((option) => option.value)).toEqual(expect.arrayContaining(['start', 'center', 'stretch']));
+    expect(headerLayoutField?.options?.map((option) => option.value)).toEqual(expect.arrayContaining(['default', 'stacked', 'centered']));
     expect(expandIconField?.control).toBe('icon');
     expect(expandTriggerOptions.find((option) => option.value === 'tap')?.icon).toBe('mdi:gesture-tap');
     expect(actionOptions.find((option) => option.value === 'call-service')?.label).toBe('Вызвать сервис');

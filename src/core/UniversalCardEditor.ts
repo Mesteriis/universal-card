@@ -16,13 +16,19 @@ import type {
   BadgeColorRule,
   BadgeConditionRule,
   BadgeThreshold,
+  CarouselOptionsConfig,
   FooterConfig,
+  FullscreenConfig,
   HeaderBadgeConfig,
+  HeaderConfig,
+  HeaderLayoutConfig,
   ModalConfig,
   SectionVisibilityConfig,
   StateStyleRule,
+  SubviewConfig,
   SwipeConfig,
   TabConfig,
+  TabsUiConfig,
   TimeVisibilityCondition,
   VisibilityCondition
 } from './config-contracts.js';
@@ -202,6 +208,11 @@ type EditorStateStyleMap = Record<string, EditorStateStyleRule>;
 type EditorCardSection = {
   cards?: CardConfigLike[];
 };
+type EditorHeaderLayoutConfig = Partial<HeaderLayoutConfig>;
+type EditorHeaderConfig = Partial<Omit<HeaderConfig, 'cards' | 'layout'>> & {
+  cards?: CardConfigLike[];
+  layout?: EditorHeaderLayoutConfig;
+};
 type EditorFooterConfig = Partial<Omit<FooterConfig, 'cards' | 'footer_left' | 'footer_right'>> & {
   cards?: CardConfigLike[];
   footer_left?: EditorCardSection;
@@ -217,6 +228,10 @@ type EditorTabConfig = Omit<Partial<TabConfig>, 'cards'> & {
   cards?: CardConfigLike[];
 };
 type EditorModalConfig = Partial<ModalConfig>;
+type EditorFullscreenConfig = Partial<FullscreenConfig>;
+type EditorTabsUiConfig = Partial<TabsUiConfig>;
+type EditorCarouselOptionsConfig = Partial<CarouselOptionsConfig>;
+type EditorSubviewConfig = Partial<SubviewConfig>;
 type EditorSectionVisibilityConfig = {
   [K in EditorSectionVisibilityKey]?: EditorVisibilityCondition[];
 };
@@ -232,9 +247,13 @@ type EditorConfig = CardConfigLike & {
   body_mode?: string;
   expanded?: boolean;
   expand_trigger?: string;
-  header?: EditorCardSection;
+  header?: EditorHeaderConfig;
   body?: EditorCardSection;
   modal?: EditorModalConfig;
+  fullscreen?: EditorFullscreenConfig;
+  tabs_config?: EditorTabsUiConfig;
+  carousel_options?: EditorCarouselOptionsConfig;
+  subview?: EditorSubviewConfig;
   footer?: EditorFooterConfig;
   tabs?: EditorTabConfig[];
   visibility?: EditorVisibilityCondition[];
@@ -1037,6 +1056,17 @@ export class UniversalCardEditor extends HTMLElement {
         <h3>Настройки заголовка</h3>
 
         ${this._renderSchemaFields(EDITOR_FIELD_GROUPS.header)}
+
+        <div class="subsection">
+          <h4>Header Layout</h4>
+
+          ${this._renderSchemaFields([
+            ['header.sticky', 'header.clickable'],
+            'header.layout.variant',
+            ['header.layout.gap', 'header.layout.content_gap'],
+            ['header.layout.align', 'header.layout.badges_position']
+          ])}
+        </div>
         
         <div class="subsection">
           <h4>Карточки в заголовке</h4>
@@ -1063,6 +1093,10 @@ export class UniversalCardEditor extends HTMLElement {
    */
   _renderBodySection() {
     const showModalSettings = this._config.body_mode === BODY_MODES.MODAL;
+    const showFullscreenSettings = this._config.body_mode === BODY_MODES.FULLSCREEN;
+    const showTabsSettings = this._config.body_mode === BODY_MODES.TABS;
+    const showCarouselSettings = this._config.body_mode === BODY_MODES.CAROUSEL;
+    const showSubviewSettings = this._config.body_mode === BODY_MODES.SUBVIEW;
 
     return `
       <div class="section">
@@ -1086,6 +1120,42 @@ export class UniversalCardEditor extends HTMLElement {
             ])}
           </div>
         ` : ''}
+
+        ${showFullscreenSettings ? `
+          <div class="subsection">
+            <h4>Fullscreen Layout</h4>
+
+            ${this._renderSchemaFields([
+              ['fullscreen.width', 'fullscreen.height'],
+              ['fullscreen.max_width', 'fullscreen.max_height'],
+              ['fullscreen.padding', 'fullscreen.background'],
+              ['fullscreen.show_close', 'fullscreen.close_on_escape']
+            ])}
+          </div>
+        ` : ''}
+
+        ${showTabsSettings ? `
+          <div class="subsection">
+            <h4>Tabs Layout</h4>
+
+            ${this._renderSchemaFields([
+              ['tabs_config.position', 'tabs_config.tab_alignment'],
+              ['tabs_config.show_icons', 'tabs_config.show_labels'],
+              ['tabs_config.content_padding', 'tabs_config.tab_min_width']
+            ])}
+          </div>
+        ` : ''}
+
+        ${showSubviewSettings ? `
+          <div class="subsection">
+            <h4>Subview Settings</h4>
+
+            ${this._renderSchemaFields([
+              ['subview.path', 'subview.navigation_path'],
+              ['subview.replace_state', 'subview.return_on_close']
+            ])}
+          </div>
+        ` : ''}
         
         <div class="subsection">
           <h4>Карточки в body</h4>
@@ -1101,8 +1171,8 @@ export class UniversalCardEditor extends HTMLElement {
           </button>
         </div>
         
-        ${this._config.body_mode === BODY_MODES.TABS ? this._renderTabsEditor() : ''}
-        ${this._config.body_mode === BODY_MODES.CAROUSEL ? this._renderCarouselEditor() : ''}
+        ${showTabsSettings ? this._renderTabsEditor() : ''}
+        ${showCarouselSettings ? this._renderCarouselEditor() : ''}
       </div>
     `;
   }

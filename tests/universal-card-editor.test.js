@@ -302,6 +302,39 @@ describe('UniversalCardEditor helper paths and bind flows', () => {
     expect(styleSection).toContain('name="icon_color"');
   });
 
+  it('renders fullscreen tabs carousel subview and header layout fields from shared schema descriptors', async () => {
+    const fullscreenEditor = await createEditor({
+      body_mode: 'fullscreen'
+    });
+    const tabsEditor = await createEditor({
+      body_mode: 'tabs'
+    });
+    const carouselEditor = await createEditor({
+      body_mode: 'carousel'
+    });
+    const subviewEditor = await createEditor({
+      body_mode: 'subview'
+    });
+    const headerEditor = await createEditor({});
+
+    const fullscreenBody = fullscreenEditor._renderBodySection();
+    const tabsBody = tabsEditor._renderBodySection();
+    const carouselBody = carouselEditor._renderBodySection();
+    const subviewBody = subviewEditor._renderBodySection();
+    const headerSection = headerEditor._renderHeaderSection();
+
+    expect(fullscreenBody).toContain('name="fullscreen.width"');
+    expect(fullscreenBody).toContain('name="fullscreen.max_height"');
+    expect(tabsBody).toContain('name="tabs_config.tab_alignment"');
+    expect(tabsBody).toContain('name="tabs_config.content_padding"');
+    expect(carouselBody).toContain('name="carousel_options.show_arrows"');
+    expect(carouselBody).toContain('name="carousel_options.height"');
+    expect(subviewBody).toContain('name="subview.path"');
+    expect(subviewBody).toContain('name="subview.return_on_close"');
+    expect(headerSection).toContain('name="header.layout.variant"');
+    expect(headerSection).toContain('name="header.layout.badges_position"');
+  });
+
   it('binds badge visibility and color rule editor flows', async () => {
     const editor = await createEditor({
       badges: [

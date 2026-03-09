@@ -163,16 +163,16 @@ subview:
 
 ## Editor support
 
-Current editor-friendly fields in this stage are the scalar layout fields that fit well into form controls.
+The visual editor now exposes:
 
-Best candidates for editor exposure:
-
-- `fullscreen.*` sizing and behavior fields
+- `fullscreen.*`
 - `tabs_config.*`
+- `carousel_autoplay`
+- `carousel_interval`
 - `carousel_options.*`
 - `subview.*`
 
-If a field is not exposed yet in the editor, it remains available in YAML.
+If a field is not exposed in the editor, it remains available in YAML.
 
 ## Compatibility notes
 

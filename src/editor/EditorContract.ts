@@ -19,9 +19,13 @@ import {
   CONDITION_TYPES,
   EXPAND_TRIGGERS,
   EXPAND_ANIMATIONS,
+  HEADER_BADGES_POSITIONS,
+  HEADER_CONTENT_ALIGNMENTS,
+  HEADER_LAYOUT_VARIANTS,
   POOL_SCOPES,
   SWIPE_ACTIONS,
   SWIPE_DIRECTIONS,
+  TAB_ALIGNMENTS,
   THEMES,
   VALID_WEEKDAYS
 } from '../core/constants.js';
@@ -158,6 +162,134 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     optionLabels: {
       [MODAL_LOADING_STRATEGIES.LAZY]: 'Lazy: при открытии',
       [MODAL_LOADING_STRATEGIES.PRELOAD]: 'Preload: заранее'
+    }
+  },
+  'fullscreen.width': {
+    label: 'Ширина fullscreen',
+    placeholder: '100%, 88rem'
+  },
+  'fullscreen.height': {
+    label: 'Высота fullscreen',
+    placeholder: '100%, 90vh'
+  },
+  'fullscreen.max_width': {
+    label: 'Макс. ширина fullscreen',
+    placeholder: '1200px, 96rem'
+  },
+  'fullscreen.max_height': {
+    label: 'Макс. высота fullscreen',
+    placeholder: '100vh'
+  },
+  'fullscreen.padding': {
+    label: 'Внутренние отступы fullscreen',
+    placeholder: '16px, 24px'
+  },
+  'fullscreen.background': {
+    label: 'Фон fullscreen',
+    placeholder: 'var(--lovelace-background)'
+  },
+  'fullscreen.show_close': {
+    label: 'Показывать кнопку закрытия'
+  },
+  'fullscreen.close_on_escape': {
+    label: 'Закрывать по Escape'
+  },
+  'tabs_config.position': {
+    label: 'Позиция табов',
+    control: 'select',
+    options: [
+      { value: 'top', label: 'Сверху' },
+      { value: 'bottom', label: 'Снизу' }
+    ]
+  },
+  'tabs_config.show_icons': {
+    label: 'Показывать иконки вкладок'
+  },
+  'tabs_config.show_labels': {
+    label: 'Показывать подписи вкладок'
+  },
+  'tabs_config.content_padding': {
+    label: 'Отступы контента tab',
+    placeholder: '16px, 12px'
+  },
+  'tabs_config.tab_min_width': {
+    label: 'Мин. ширина tab',
+    placeholder: '72px, 96px'
+  },
+  'tabs_config.tab_alignment': {
+    label: 'Выравнивание tab bar',
+    optionLabels: {
+      [TAB_ALIGNMENTS.START]: 'Слева',
+      [TAB_ALIGNMENTS.CENTER]: 'По центру',
+      [TAB_ALIGNMENTS.STRETCH]: 'Растянуть'
+    }
+  },
+  'carousel_options.show_arrows': {
+    label: 'Показывать стрелки'
+  },
+  'carousel_options.show_indicators': {
+    label: 'Показывать индикаторы'
+  },
+  'carousel_options.loop': {
+    label: 'Зацикливать карусель'
+  },
+  'carousel_options.swipe_threshold': {
+    label: 'Порог свайпа',
+    control: 'number'
+  },
+  'carousel_options.height': {
+    label: 'Высота карусели',
+    placeholder: 'auto, 22rem, 50vh'
+  },
+  'subview.path': {
+    label: 'Subview path',
+    placeholder: '/lovelace/details'
+  },
+  'subview.navigation_path': {
+    label: 'Альтернативный navigation path',
+    placeholder: '/lovelace/details'
+  },
+  'subview.replace_state': {
+    label: 'Использовать replaceState'
+  },
+  'subview.return_on_close': {
+    label: 'Вернуться при закрытии'
+  },
+  'header.sticky': {
+    label: 'Sticky header override'
+  },
+  'header.clickable': {
+    label: 'Header clickable'
+  },
+  'header.layout.variant': {
+    label: 'Header layout',
+    optionLabels: {
+      [HEADER_LAYOUT_VARIANTS.DEFAULT]: 'Default',
+      [HEADER_LAYOUT_VARIANTS.STACKED]: 'Stacked',
+      [HEADER_LAYOUT_VARIANTS.CENTERED]: 'Centered'
+    }
+  },
+  'header.layout.gap': {
+    label: 'Отступ между зонами header',
+    placeholder: '12px, 18px'
+  },
+  'header.layout.content_gap': {
+    label: 'Отступ внутри content',
+    placeholder: '2px, 6px'
+  },
+  'header.layout.align': {
+    label: 'Выравнивание content',
+    optionLabels: {
+      [HEADER_CONTENT_ALIGNMENTS.START]: 'Слева',
+      [HEADER_CONTENT_ALIGNMENTS.CENTER]: 'По центру',
+      [HEADER_CONTENT_ALIGNMENTS.END]: 'Справа'
+    }
+  },
+  'header.layout.badges_position': {
+    label: 'Позиция badges',
+    optionLabels: {
+      [HEADER_BADGES_POSITIONS.RIGHT]: 'Справа',
+      [HEADER_BADGES_POSITIONS.BELOW_CONTENT]: 'Под content'
     }
   },
   theme: {
@@ -673,7 +805,13 @@ export const EDITOR_FIELD_GROUPS = Object.freeze({
     'pool_max_entries'
   ],
   advanced: ['card_id'],
-  carousel: ['carousel_autoplay', 'carousel_interval']
+  carousel: [
+    'carousel_autoplay',
+    'carousel_interval',
+    ['carousel_options.show_arrows', 'carousel_options.show_indicators'],
+    ['carousel_options.loop', 'carousel_options.swipe_threshold'],
+    'carousel_options.height'
+  ]
 } as const);
 
 const SWIPE_FIELD_PATHS = Object.freeze([

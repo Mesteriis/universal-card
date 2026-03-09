@@ -116,6 +116,18 @@ The new layout system keeps existing header features intact:
 - expand icon behavior is unchanged
 - badge actions and visibility rules are unchanged
 
+## Editor Support
+
+The visual editor now exposes:
+
+- `header.sticky`
+- `header.clickable`
+- `header.layout.variant`
+- `header.layout.gap`
+- `header.layout.content_gap`
+- `header.layout.align`
+- `header.layout.badges_position`
+
 ## Limitations
 
 - header layout uses presets, not arbitrary free-form element ordering
