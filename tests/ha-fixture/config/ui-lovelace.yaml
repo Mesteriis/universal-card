@@ -1,0 +1,232 @@
+title: Universal Card Fixture
+views:
+  - title: Overview
+    path: overview
+    icon: mdi:view-dashboard
+    badges: []
+    cards:
+      - type: custom:universal-card
+        title: Living Room
+        subtitle: Lights and comfort
+        icon: mdi:sofa
+        entity: input_boolean.kitchen_light
+        theme: glass
+        badges:
+          - type: state
+            entity: input_boolean.kitchen_light
+            icon: mdi:lightbulb
+            label: Light
+            color_rules:
+              - operator: ==
+                value: on
+                color: var(--warning-color)
+              - operator: ==
+                value: off
+                color: var(--secondary-text-color)
+          - type: state
+            entity: sensor.demo_temperature
+            icon: mdi:thermometer
+            label: Temp
+        body:
+          cards:
+            - type: entities
+              entities:
+                - entity: input_boolean.kitchen_light
+                - entity: sensor.demo_temperature
+                - entity: sensor.demo_humidity
+      - type: custom:universal-card
+        title: Energy Grid
+        subtitle: Grid layout demo
+        icon: mdi:flash
+        grid:
+          columns: 2
+          gap: 12px
+        body:
+          cards:
+            - type: gauge
+              entity: sensor.demo_temperature
+            - type: gauge
+              entity: sensor.demo_humidity
+            - type: entities
+              colspan: 2
+              entities:
+                - entity: sensor.security_status
+                - entity: sensor.network_health_sensor
+
+  - title: Modes
+    path: modes
+    icon: mdi:view-carousel
+    badges: []
+    cards:
+      - type: custom:universal-card
+        title: Security Controls
+        body_mode: modal
+        icon: mdi:shield-home
+        modal:
+          width: auto
+          max_width: 72rem
+          max_height: 85vh
+        grid:
+          columns: 2
+          gap: 12px
+        body:
+          cards:
+            - type: entities
+              entities:
+                - entity: input_boolean.security_armed
+                - entity: sensor.security_status
+            - type: vertical-stack
+              cards:
+                - type: entities
+                  entities:
+                    - entity: sensor.demo_temperature
+                    - entity: sensor.demo_humidity
+      - type: custom:universal-card
+        title: Climate Tabs
+        body_mode: tabs
+        tabs_config:
+          content_padding: 12px
+          tab_min_width: 96px
+          tab_alignment: center
+        tabs:
+          - label: Climate
+            icon: mdi:home-thermometer
+            cards:
+              - type: entities
+                entities:
+                  - entity: sensor.demo_temperature
+                  - entity: sensor.demo_humidity
+          - label: Security
+            icon: mdi:shield-lock
+            cards:
+              - type: entities
+                entities:
+                  - entity: input_boolean.security_armed
+                  - entity: sensor.security_status
+      - type: custom:universal-card
+        title: Mode Carousel
+        body_mode: carousel
+        carousel_autoplay: true
+        carousel_interval: 4500
+        carousel_options:
+          show_arrows: true
+          show_indicators: true
+          loop: true
+          height: 20rem
+        body:
+          cards:
+            - type: entities
+              title: Status
+              entities:
+                - entity: sensor.network_health_sensor
+                - entity: sensor.house_mode_sensor
+            - type: entities
+              title: Comfort
+              entities:
+                - entity: sensor.demo_temperature
+                - entity: sensor.demo_humidity
+      - type: custom:universal-card
+        title: Fullscreen Detail
+        body_mode: fullscreen
+        fullscreen:
+          width: 92vw
+          max_width: 96rem
+          max_height: 94vh
+          padding: 20px
+        body:
+          cards:
+            - type: markdown
+              content: |
+                ## Fullscreen demo
+                This fixture uses a real Home Assistant Lovelace view.
+      - type: custom:universal-card
+        title: Route Detail
+        body_mode: subview
+        subview:
+          path: /lovelace/details
+          return_on_close: true
+
+  - title: Details
+    path: details
+    subview: true
+    badges: []
+    cards:
+      - type: custom:universal-card
+        title: Advanced Details
+        subtitle: Subview target
+        theme: tokyo-night
+        expanded: true
+        body:
+          cards:
+            - type: entities
+              entities:
+                - entity: input_select.house_mode
+                - entity: sensor.network_health_sensor
+                - entity: counter.notifications
+
+  - title: Header And Badges
+    path: header
+    icon: mdi:badge-account-horizontal
+    badges: []
+    cards:
+      - type: custom:universal-card
+        title: Climate Center
+        subtitle: Main floor
+        icon: mdi:home-thermometer
+        icon_color: var(--accent-color)
+        header:
+          layout:
+            variant: centered
+            gap: 16px
+            content_gap: 4px
+            badges_position: below_content
+        badges:
+          - type: state
+            entity: sensor.security_status
+            icon: mdi:shield
+            label: Security
+            color_rules:
+              - operator: ==
+                value: armed
+                color: var(--warning-color)
+              - operator: ==
+                value: disarmed
+                color: var(--secondary-text-color)
+          - type: state
+            entity: input_boolean.kitchen_light
+            icon: mdi:lightbulb
+            icon_only: true
+            icon_tap_action:
+              action: toggle
+            color_rules:
+              - operator: ==
+                value: on
+                color: gold
+              - operator: ==
+                value: off
+                color: var(--secondary-text-color)
+        body:
+          cards:
+            - type: entities
+              entities:
+                - entity: sensor.demo_temperature
+                - entity: sensor.demo_humidity
+      - type: custom:universal-card
+        title: Footer Actions
+        body_mode: modal
+        modal:
+          width: 80vw
+          max_width: 96rem
+          loading_strategy: preload
+        footer:
+          cards:
+            - type: button
+              name: Archive
+            - type: button
+              name: Snapshot
+        body:
+          cards:
+            - type: entities
+              entities:
+                - entity: counter.notifications
+                - entity: sensor.house_mode_sensor

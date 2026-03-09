@@ -27,6 +27,7 @@ Implemented areas:
 - first-class `subview` config normalization and editor coverage
 - preset-based header layout configuration with controllable spacing, alignment, and badge placement
 - visual editor support for fullscreen, tabs, carousel, subview, and header layout options
+- local Home Assistant fixture workflow for real screenshot capture against the built card bundle
 - development documentation for architecture audits, implementation plans, feature behavior, upgrade notes, editor coverage, and this summary
 
 ## New And Expanded Configuration Fields
@@ -119,6 +120,14 @@ Executed during the final stage:
 - theme and body-mode smoke matrix
 - runtime smoke checks
 
+Additional verification for the documentation pipeline:
+
+- `npm run ha:fixture:bootstrap`
+- `npm run screenshots:ha`
+- `npm run ha:fixture:down`
+
+The Home Assistant screenshot workflow completed successfully on March 9, 2026 and produced real UI captures for the fixture dashboard views.
+
 Tracked build artifacts were regenerated as part of the final verification:
 
 - `universal-card.js`
@@ -148,6 +157,8 @@ This branch is organized as the following commit series:
 - `feat: add shared layout contracts for body modes`
 - `feat: add configurable header layout presets`
 - `feat: expose body mode and header layout options in editor`
+- `docs: add rendered pages docs and examples gallery`
+- `feat: add local Home Assistant screenshot fixture workflow`
 
 ## PR Notes
 
@@ -167,6 +178,7 @@ Recommended PR structure:
    - `docs/features/header-layout.md`
    - `docs/development/editor-support-modal-badges.md`
    - `docs/development/editor-support-body-modes-header.md`
+   - `docs/development/local-ha-screenshots.md`
    - `docs/development/upgrade-notes.md`
 4. Mention that badge actions, complex YAML-only layout cases, and free-form header ordering remain intentionally out of scope.
 5. Include the final verification result: `npm run test` passed on March 9, 2026.
