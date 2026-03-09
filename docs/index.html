@@ -274,6 +274,8 @@
             border-radius: 16px;
             padding: 2rem;
             transition: all 0.3s;
+            color: inherit;
+            text-decoration: none;
         }
 
         .feature-card:hover {
@@ -734,14 +736,15 @@
                 <li><a href="#modes">Режимы</a></li>
                 <li><a href="#themes">Темы</a></li>
                 <li><a href="#examples">Примеры</a></li>
+                <li><a href="features/">Docs</a></li>
                 <li><a href="#installation">Установка</a></li>
             </ul>
             <div class="nav-cta">
-                <a href="https://github.com/Mesteriis/universal-card" class="btn btn-secondary" target="_blank">
-                    ⭐ GitHub
+                <a href="features/" class="btn btn-secondary">
+                    📚 Docs
                 </a>
-                <a href="#installation" class="btn btn-primary">
-                    Установить
+                <a href="https://github.com/Mesteriis/universal-card" class="btn btn-primary" target="_blank">
+                    ⭐ GitHub
                 </a>
             </div>
         </div>
@@ -765,8 +768,8 @@
                     <a href="#installation" class="btn btn-primary btn-large">
                         📦 Установить через HACS
                     </a>
-                    <a href="https://github.com/Mesteriis/universal-card" class="btn btn-secondary btn-large" target="_blank">
-                        📖 Документация
+                    <a href="examples/" class="btn btn-secondary btn-large">
+                        💻 Примеры и YAML
                     </a>
                 </div>
             </div>
@@ -832,6 +835,41 @@
                     <h3>Визуальный редактор</h3>
                     <p>Полноценный GUI редактор прямо в Lovelace — без необходимости писать YAML.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="docs-hub">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>📚 Полная документация</h2>
+                <p>Pages-site теперь включает feature docs, capability map, upgrade notes и отдельную gallery примеров с YAML.</p>
+            </div>
+
+            <div class="features-grid">
+                <a class="feature-card" href="features/">
+                    <div class="feature-icon blue">🧭</div>
+                    <h3>Feature Map</h3>
+                    <p>Полная карта возможностей: body modes, badges, header layout, loading, themes, footer и editor coverage.</p>
+                </a>
+
+                <a class="feature-card" href="examples/">
+                    <div class="feature-icon green">🧪</div>
+                    <h3>Examples Gallery</h3>
+                    <p>Preview-скриншоты и GIF рядом с копируемым YAML для типовых конфигураций и layout-сценариев.</p>
+                </a>
+
+                <a class="feature-card" href="configuration/">
+                    <div class="feature-icon orange">⚙️</div>
+                    <h3>Configuration Guide</h3>
+                    <p>Структура конфигурации, anatomy карточки и быстрый маршрут от minimal card к продвинутому dashboard.</p>
+                </a>
+
+                <a class="feature-card" href="development/upgrade-notes/">
+                    <div class="feature-icon purple">📝</div>
+                    <h3>Upgrade Notes</h3>
+                    <p>Новые поля, обратная совместимость и зафиксированные ограничения по этапам реализации.</p>
+                </a>
             </div>
         </div>
     </section>
@@ -1096,9 +1134,9 @@ body:
                 <div class="footer-links">
                     <h4>Документация</h4>
                     <ul>
-                        <li><a href="https://github.com/Mesteriis/universal-card#readme">README</a></li>
-                        <li><a href="https://github.com/Mesteriis/universal-card/blob/main/CHANGELOG.md">Changelog</a></li>
-                        <li><a href="https://github.com/Mesteriis/universal-card#-faq">FAQ</a></li>
+                        <li><a href="features/">Feature Map</a></li>
+                        <li><a href="examples/">Examples Gallery</a></li>
+                        <li><a href="configuration/">Configuration</a></li>
                     </ul>
                 </div>
                 
