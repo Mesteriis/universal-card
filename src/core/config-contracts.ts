@@ -304,6 +304,7 @@ export interface UniversalCardConfig {
   title?: string;
   subtitle?: string;
   icon?: string;
+  icon_color?: string;
   entity?: string;
   attribute?: string;
   theme?: string;

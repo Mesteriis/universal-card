@@ -56,6 +56,7 @@ describe('ConfigManager', () => {
     const normalized = ConfigManager.normalize({
       body_mode: 'modal',
       body: { cards: [] },
+      icon_color: ' var(--accent-color) ',
       modal: {
         width: ' auto ',
         height: ' 32rem ',
@@ -72,6 +73,7 @@ describe('ConfigManager', () => {
     expect(normalized.modal.max_height).toBe('90vh');
     expect(normalized.modal.loading_strategy).toBe('preload');
     expect(normalized.modal.backdrop_blur).toBe(false);
+    expect(normalized.icon_color).toBe('var(--accent-color)');
 
     expect(() => {
       ConfigManager.validate({
@@ -92,6 +94,13 @@ describe('ConfigManager', () => {
         }
       });
     }).toThrow(/modal\.loading_strategy/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        icon_color: 42
+      });
+    }).toThrow(/icon_color/);
   });
 
   it('accepts grid template columns as string', () => {
@@ -352,6 +361,7 @@ describe('ConfigManager', () => {
     expect(props.pool_max_entries.maximum).toBe(LIMITS.POOL_MAX_MAX_ENTRIES);
     expect(props.carousel_interval.maximum).toBe(LIMITS.CAROUSEL_MAX_INTERVAL_MS);
     expect(props.attribute.type).toBe('string');
+    expect(props.icon_color.type).toBe('string');
     expect(props.modal.properties.height.default).toBe(DEFAULTS.modal_height);
     expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
     expect(props.modal.properties.loading_strategy.default).toBe(DEFAULTS.modal_loading_strategy);

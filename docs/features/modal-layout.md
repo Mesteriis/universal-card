@@ -38,6 +38,24 @@ Supported fields:
 - `close_on_escape`: close on `Escape`
 - `show_close`: show the close button in the dialog header
 
+## Editor support
+
+The visual editor now exposes the modal fields most users need for layout work:
+
+- `modal.width`
+- `modal.height`
+- `modal.max_width`
+- `modal.max_height`
+- `modal.loading_strategy`
+
+Overlay behavior fields remain YAML-only in this stage:
+
+- `modal.backdrop_blur`
+- `modal.backdrop_color`
+- `modal.close_on_backdrop`
+- `modal.close_on_escape`
+- `modal.show_close`
+
 ## Auto vs manual sizing
 
 The modal supports both responsive auto sizing and manual sizing.

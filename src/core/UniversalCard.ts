@@ -2118,6 +2118,7 @@ export class UniversalCard extends HTMLElement {
         --uc-transition-duration: ${this._config.animation_duration}ms;
         --uc-border-radius: ${this._config.border_radius};
         --uc-padding: ${this._config.padding};
+        ${this._config.icon_color ? `--uc-icon-color: ${this._config.icon_color};` : ''}
         ${this._getThemeTokenDeclarations()}
       }
       

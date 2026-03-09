@@ -81,3 +81,23 @@ Important compatibility note:
 Performance note:
 
 - `preload` can increase startup cost for heavy modal content and should be used selectively
+
+## Header icon color and editor coverage
+
+New root field:
+
+- `icon_color`
+
+Editor coverage added in this stage:
+
+- modal sizing fields and modal loading strategy
+- badge visibility rules
+- badge color rules
+- badge `icon_only`
+- root `icon_color`
+
+Still YAML-only:
+
+- modal overlay behavior fields
+- badge `tap_action`
+- badge `icon_tap_action`

@@ -162,6 +162,20 @@ Behavior:
 - when `icon_tap_action` is not configured, clicking the icon behaves like a normal badge click
 - if the badge has an `entity` and the action does not specify one, the badge entity is used automatically
 
+## Editor support
+
+The visual editor now supports:
+
+- base badge fields, including static `color`
+- `icon_only`
+- `visibility` rules with comparison operators
+- `color_rules`
+
+Still YAML-only in this stage:
+
+- `tap_action`
+- `icon_tap_action`
+
 ## Examples
 
 ### Visibility on badge value
@@ -229,7 +243,7 @@ badges:
 
 - rule arrays currently use implicit `AND`; nested logical groups are not supported for badges in this stage
 - future operators `in`, `not_in`, `contains`, and `matches` are planned but not yet available
-- badge rules currently live in YAML/runtime first; full editor coverage is added separately
+- badge actions currently remain YAML-only in the editor
 - the active runtime path is the header badge renderer in `src/ui/Header.ts`
 
 ## Compatibility notes

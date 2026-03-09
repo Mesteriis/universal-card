@@ -198,6 +198,13 @@ export class ConfigManager {
       );
     }
 
+    if (config.icon_color !== undefined && typeof config.icon_color !== 'string') {
+      throw new ConfigValidationError(
+        'icon_color must be a string',
+        'icon_color'
+      );
+    }
+
     if (config.attribute !== undefined && !isNonEmptyString(config.attribute)) {
       throw new ConfigValidationError(
         'attribute must be a non-empty string',
@@ -1808,6 +1815,15 @@ export class ConfigManager {
       }
     }
 
+    if (typeof config.icon_color === 'string') {
+      const iconColor = config.icon_color.trim();
+      if (iconColor) {
+        normalized.icon_color = iconColor;
+      } else {
+        delete normalized.icon_color;
+      }
+    }
+
     normalized.state_styles = this._normalizeStateStyles(config.state_styles);
     normalized.swipe = this._normalizeSwipe(config.swipe);
     normalized.badges = this._normalizeBadges(config.badges);
@@ -2657,6 +2673,10 @@ export class ConfigManager {
         icon: {
           type: 'string',
           description: 'Header icon in mdi format.'
+        },
+        icon_color: {
+          type: 'string',
+          description: 'Optional CSS color value for the primary header icon.'
         },
         entity: {
           type: 'string',

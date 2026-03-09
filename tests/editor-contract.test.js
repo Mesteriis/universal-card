@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   EDITOR_FIELD_GROUPS,
+  getBadgeColorRuleFieldDescriptors,
   getBadgeFieldDescriptors,
   getBadgeThresholdFieldDescriptors,
+  getBadgeVisibilityRuleFieldDescriptors,
   getEditorFieldDescriptor,
   getEditorFieldOptions,
   getSwipeActionFieldDescriptors,
@@ -20,19 +22,26 @@ describe('EditorContract', () => {
     const gridColumns = getEditorFieldDescriptor('grid.columns');
     const cardId = getEditorFieldDescriptor('card_id');
     const iconField = getEditorFieldDescriptor('icon');
+    const iconColorField = getEditorFieldDescriptor('icon_color');
+    const modalWidthField = getEditorFieldDescriptor('modal.width');
     const expandIconField = getEditorFieldDescriptor('expand_icon');
     const expandTriggerOptions = getEditorFieldOptions('expand_trigger');
     const actionOptions = getEditorFieldOptions('tap_action.action');
+    const modalLoadingOptions = getEditorFieldOptions('modal.loading_strategy');
 
     expect(EDITOR_FIELD_GROUPS.runtime).toContain('pool_scope');
+    expect(EDITOR_FIELD_GROUPS.style).toContain('icon_color');
     expect(poolScope?.control).toBe('select');
     expect(poolScope?.options?.map((option) => option.value)).toContain('dashboard');
     expect(gridColumns?.control).toBe('number');
     expect(cardId?.label).toBe('ID карточки');
     expect(iconField?.control).toBe('icon');
+    expect(iconColorField?.label).toBe('Цвет основной иконки');
+    expect(modalWidthField?.placeholder).toContain('32rem');
     expect(expandIconField?.control).toBe('icon');
     expect(expandTriggerOptions.find((option) => option.value === 'tap')?.icon).toBe('mdi:gesture-tap');
     expect(actionOptions.find((option) => option.value === 'call-service')?.label).toBe('Вызвать сервис');
+    expect(modalLoadingOptions.map((option) => option.value)).toEqual(expect.arrayContaining(['lazy', 'preload']));
   });
 
   it('does not expose removed debug config as a contract field', () => {
@@ -66,6 +75,8 @@ describe('EditorContract', () => {
     const counterBadgeFields = getBadgeFieldDescriptors('counter');
     const customBadgeFields = getBadgeFieldDescriptors('custom');
     const thresholdFields = getBadgeThresholdFieldDescriptors();
+    const visibilityRuleFields = getBadgeVisibilityRuleFieldDescriptors();
+    const colorRuleFields = getBadgeColorRuleFieldDescriptors();
 
     expect(swipeFields.map((field) => field.path)).toEqual([
       'swipe.enabled',
@@ -78,13 +89,26 @@ describe('EditorContract', () => {
       expect.arrayContaining(['none', 'next', 'prev'])
     );
     expect(counterBadgeFields.map((field) => field.path)).toEqual(
-      expect.arrayContaining(['badges.type', 'badges.domain', 'badges.entities', 'badges.count_state'])
+      expect.arrayContaining(['badges.type', 'badges.domain', 'badges.entities', 'badges.count_state', 'badges.icon_only'])
     );
     expect(customBadgeFields.some((field) => field.path === 'badges.value')).toBe(true);
     expect(customBadgeFields.some((field) => field.path === 'badges.entity')).toBe(false);
     expect(thresholdFields.map((field) => field.path)).toEqual([
       'badges.thresholds.value',
       'badges.thresholds.color'
+    ]);
+    expect(visibilityRuleFields.map((field) => field.path)).toEqual([
+      'badges.visibility.operator',
+      'badges.visibility.value',
+      'badges.visibility.entity',
+      'badges.visibility.attribute'
+    ]);
+    expect(colorRuleFields.map((field) => field.path)).toEqual([
+      'badges.color_rules.operator',
+      'badges.color_rules.value',
+      'badges.color_rules.color',
+      'badges.color_rules.entity',
+      'badges.color_rules.attribute'
     ]);
   });
 });

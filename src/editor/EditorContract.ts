@@ -11,6 +11,7 @@ import {
   ACTION_TYPES,
   BADGE_FORMATS,
   BADGE_TYPES,
+  MODAL_LOADING_STRATEGIES,
   BODY_MODES,
   CARD_ANIMATIONS,
   CARD_DIRECTIONS,
@@ -88,6 +89,11 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     placeholder: 'mdi:home',
     helper: 'Оставьте пустым, чтобы не показывать иконку.'
   },
+  icon_color: {
+    label: 'Цвет основной иконки',
+    placeholder: 'var(--primary-color)',
+    helper: 'Поддерживаются CSS-цвета и переменные темы.'
+  },
   entity: {
     label: 'Entity (опционально)',
     placeholder: 'light.room'
@@ -130,6 +136,29 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
   'grid.gap': {
     label: 'Отступы',
     placeholder: '16px'
+  },
+  'modal.width': {
+    label: 'Ширина modal',
+    placeholder: 'auto, 90%, 32rem'
+  },
+  'modal.height': {
+    label: 'Высота modal',
+    placeholder: 'auto, 70vh, 32rem'
+  },
+  'modal.max_width': {
+    label: 'Макс. ширина',
+    placeholder: '600px, 72rem'
+  },
+  'modal.max_height': {
+    label: 'Макс. высота',
+    placeholder: '85vh'
+  },
+  'modal.loading_strategy': {
+    label: 'Загрузка modal',
+    optionLabels: {
+      [MODAL_LOADING_STRATEGIES.LAZY]: 'Lazy: при открытии',
+      [MODAL_LOADING_STRATEGIES.PRELOAD]: 'Preload: заранее'
+    }
   },
   theme: {
     label: 'Тема',
@@ -499,6 +528,9 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     label: 'Цвет',
     placeholder: 'var(--warning-color)'
   },
+  'badges.icon_only': {
+    label: 'Только иконка'
+  },
   'badges.value': {
     label: 'Значение',
     placeholder: 'Online / 42'
@@ -562,6 +594,62 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
   'badges.thresholds.color': {
     label: 'Цвет порога',
     placeholder: '#f44336'
+  },
+  'badges.visibility.operator': {
+    label: 'Оператор',
+    optionLabels: {
+      '==': '== равно',
+      '!=': '!= не равно',
+      '>': '> больше',
+      '<': '< меньше',
+      '>=': '>= больше или равно',
+      '<=': '<= меньше или равно'
+    }
+  },
+  'badges.visibility.value': {
+    label: 'Значение',
+    placeholder: 'on, 25, true',
+    control: 'text',
+    helper: 'Строка, число или boolean. true/false и числа распознаются автоматически.'
+  },
+  'badges.visibility.entity': {
+    label: 'Entity (override)',
+    placeholder: 'sensor.temperature',
+    control: 'entity'
+  },
+  'badges.visibility.attribute': {
+    label: 'Attribute',
+    placeholder: 'brightness'
+  },
+  'badges.color_rules.operator': {
+    label: 'Оператор',
+    optionLabels: {
+      '==': '== равно',
+      '!=': '!= не равно',
+      '>': '> больше',
+      '<': '< меньше',
+      '>=': '>= больше или равно',
+      '<=': '<= меньше или равно'
+    }
+  },
+  'badges.color_rules.value': {
+    label: 'Значение',
+    placeholder: 'on, unavailable, 50',
+    control: 'text',
+    helper: 'Строка, число или boolean. Цвет применяется при совпадении условия.'
+  },
+  'badges.color_rules.color': {
+    label: 'Цвет',
+    placeholder: '#fdd835'
+  },
+  'badges.color_rules.entity': {
+    label: 'Entity (override)',
+    placeholder: 'sensor.temperature',
+    control: 'entity'
+  },
+  'badges.color_rules.attribute': {
+    label: 'Attribute',
+    placeholder: 'brightness'
   }
 };
 
@@ -569,7 +657,7 @@ export const EDITOR_FIELD_GROUPS = Object.freeze({
   basic: ['title', 'subtitle', 'icon', 'entity', 'body_mode', 'expanded'],
   header: ['show_expand_icon', 'expand_icon', 'sticky_header'],
   body: ['grid.columns', 'grid.gap'],
-  style: ['theme', 'border_radius', 'padding', 'animation'],
+  style: ['theme', 'icon_color', 'border_radius', 'padding', 'animation'],
   runtime: [
     'lazy_load',
     'lazy_initial_batch',
@@ -608,6 +696,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
     'badges.entity',
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.show_name',
@@ -622,6 +711,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
     'badges.attribute',
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.show_name',
@@ -634,6 +724,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
   [BADGE_TYPES.COUNTER]: [
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.entities',
@@ -646,6 +737,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
   [BADGE_TYPES.CUSTOM]: [
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.value',
     'badges.unit',
@@ -980,4 +1072,23 @@ export function getBadgeFieldDescriptors(type: string): EditorFieldDescriptor[] 
 
 export function getBadgeThresholdFieldDescriptors(): EditorFieldDescriptor[] {
   return getEditorFieldDescriptors(['badges.thresholds.value', 'badges.thresholds.color']);
+}
+
+export function getBadgeVisibilityRuleFieldDescriptors(): EditorFieldDescriptor[] {
+  return getEditorFieldDescriptors([
+    'badges.visibility.operator',
+    'badges.visibility.value',
+    'badges.visibility.entity',
+    'badges.visibility.attribute'
+  ]);
+}
+
+export function getBadgeColorRuleFieldDescriptors(): EditorFieldDescriptor[] {
+  return getEditorFieldDescriptors([
+    'badges.color_rules.operator',
+    'badges.color_rules.value',
+    'badges.color_rules.color',
+    'badges.color_rules.entity',
+    'badges.color_rules.attribute'
+  ]);
 }
