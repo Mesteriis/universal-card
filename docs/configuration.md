@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: Core YAML structure, config anatomy, and the shortest path from a minimal card to advanced layouts.
+description: Core YAML structure, config anatomy, and the shortest path from a minimal card to the full Universal Card feature surface.
 section_label: Configuration
 permalink: /configuration/
 ---
@@ -8,6 +8,7 @@ permalink: /configuration/
 # Configuration
 
 `Universal Card` is a frontend-only Lovelace custom card.
+The configuration surface is intentionally layered: start with the shell, then choose a body mode, then add layout, rules, styling, and runtime knobs only where they solve a real need.
 
 ## Core anatomy
 
@@ -15,13 +16,14 @@ A typical card is built from these layers:
 
 | Layer | Purpose |
 | --- | --- |
-| root fields | title, subtitle, icon, entity, theme, actions, expansion state |
+| root fields | title, subtitle, icon, entity, theme, actions, expansion state, runtime flags |
 | `header` | slot cards, sticky/clickable behavior, layout presets |
-| `badges` | small state chips with rules, colors, and actions |
+| `badges` | state chips with thresholds, visibility rules, color rules, and actions |
 | `body` | nested Lovelace cards |
 | `body_mode` | how the body is opened and laid out |
-| `grid` | shared layout rules for nested cards |
-| `footer` | action area or supporting cards |
+| `grid` | shared column and spacing rules for nested cards |
+| `footer` | supporting cards and action zones |
+| feature surfaces | visibility, swipe, state styles, theme tokens, custom CSS, loading |
 
 ## Minimal example
 
@@ -34,13 +36,14 @@ body:
       content: Hello
 ```
 
-## Common build path
+## Recommended build path
 
-1. Start with `title`, `icon`, and `body.cards`.
-2. Pick `body_mode` based on how content should open.
-3. Add `grid` when the body needs columns, gaps, or spans.
-4. Add `badges` and `header.layout` when the header needs status and density.
-5. Add `theme`, visibility rules, and actions after the structure is stable.
+1. Set `title`, `icon`, optional `entity`, and `body.cards`.
+2. Pick a `body_mode` based on how content should open.
+3. Add `grid` when the body needs structure.
+4. Add `header.layout` and `badges` when the header becomes dense.
+5. Add actions, visibility, and styling once the structure is stable.
+6. Add runtime tuning only if you have a concrete performance or UX reason.
 
 ## Body mode map
 
@@ -52,18 +55,56 @@ body:
 | `tabs` | grouped content | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | `carousel` | sequential cards and quick swipes | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | `subview` | navigation to a separate Lovelace view | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `none` | header-only cards | [Feature Map]({{ '/features/' | relative_url }}) |
+| `none` | header-only cards | [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) |
 
-## Detailed capability map
+## Major config families
+
+### Layout and composition
+
+- root shell fields
+- `body_mode`
+- `body.cards`
+- `grid.*`
+- `tabs[]`, `tabs_config.*`
+- `carousel_autoplay`, `carousel_interval`, `carousel_options.*`
+- `modal.*`, `fullscreen.*`, `subview.*`
+- `header.*`, `header_left.*`, `header_right.*`
+- `footer.*`
+
+### Rules and interaction
+
+- root `tap_action`, `hold_action`, `double_tap_action`
+- `badges[]` including `visibility` and `color_rules`
+- root `visibility`
+- `section_visibility`
+- `swipe.*`
+- `context_menu.*`
+
+### Styling and runtime
+
+- `theme`
+- `icon_color`
+- `theme_tokens`
+- `state_styles`
+- `custom_css`
+- `lazy_load`
+- `modal.loading_strategy`
+- persistence, pooling, animation, and stability fields
+
+## Docs map for the full surface
 
 <div class="docs-link-grid">
-  <a class="docs-link-card" href="{{ '/features/' | relative_url }}">
-    <h3>Feature Map</h3>
-    <p>Full capability overview: layout, actions, visibility, themes, footer, and editor coverage.</p>
+  <a class="docs-link-card" href="{{ '/features/capability-reference/' | relative_url }}">
+    <h3>Capability Reference</h3>
+    <p>The complete public inventory across layout, styling, interactions, runtime, editor, and platform API surfaces.</p>
   </a>
   <a class="docs-link-card" href="{{ '/examples/' | relative_url }}">
     <h3>Examples Gallery</h3>
-    <p>Preview screenshots and GIFs paired with YAML that can be copied into Lovelace.</p>
+    <p>Dark-theme screenshots and GIFs captured from a real Home Assistant fixture, paired with exact YAML.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
+    <h3>Editor</h3>
+    <p>Visual editor coverage, section breakdown, and where YAML remains the better tool.</p>
   </a>
   <a class="docs-link-card" href="{{ '/development/upgrade-notes/' | relative_url }}">
     <h3>Upgrade Notes</h3>
@@ -71,15 +112,16 @@ body:
   </a>
 </div>
 
-## Configuration files in this repository
+## Repository map
 
-- Production source: `src/`
-- Tests: `tests/`
-- Bundles: `universal-card.js`, `lazy/*.js`
-- Release automation: `.github/workflows/release.yml`
+- production source: `src/`
+- tests and fixtures: `tests/`
+- production bundles: `universal-card.js`, `lazy/*.js`
+- docs site: `docs/`
+- release automation: `.github/workflows/`
 
 ## Next steps
 
-- [Install the card]({{ '/installation/' | relative_url }}) if it is not loaded yet.
-- [Open the feature map]({{ '/features/' | relative_url }}) for a capability-by-capability guide.
-- [Open examples]({{ '/examples/' | relative_url }}) when you want starting YAML for real dashboards.
+- [Installation]({{ '/installation/' | relative_url }}) if the resource is not loaded yet
+- [Examples Gallery]({{ '/examples/' | relative_url }}) if you want starting YAML and real renders
+- [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) when you need the full public inventory

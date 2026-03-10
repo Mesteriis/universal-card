@@ -28,6 +28,9 @@ Implemented areas:
 - preset-based header layout configuration with controllable spacing, alignment, and badge placement
 - visual editor support for fullscreen, tabs, carousel, subview, and header layout options
 - local Home Assistant fixture workflow for real screenshot capture against the built card bundle
+- production Pages documentation with a complete capability reference and a dedicated editor page
+- full examples gallery backed by real Home Assistant dark-theme renders, cropped screenshots, and modal GIF capture
+- automated docs asset export into `docs/img/` for the public Pages site
 - development documentation for architecture audits, implementation plans, feature behavior, upgrade notes, editor coverage, and this summary
 
 ## New And Expanded Configuration Fields
@@ -125,8 +128,15 @@ Additional verification for the documentation pipeline:
 - `npm run ha:fixture:bootstrap`
 - `npm run screenshots:ha`
 - `npm run ha:fixture:down`
+- `npm run docs:assets:refresh`
 
 The Home Assistant screenshot workflow completed successfully on March 9, 2026 and produced real UI captures for the fixture dashboard views.
+
+The docs asset export workflow completed successfully on March 10, 2026 and refreshed:
+
+- dark-theme card screenshots for the major visual feature groups
+- modal open GIF assets for Pages and README surfaces
+- editor screenshots for the visual editor documentation
 
 Tracked build artifacts were regenerated as part of the final verification:
 
@@ -142,6 +152,7 @@ Tracked build artifacts were regenerated as part of the final verification:
 4. Add richer editor controls for mixed string and CSS layout values.
 5. Add a structured header builder only if preset-based layout stops being sufficient for real dashboards.
 6. Add dedicated visual or e2e coverage for fullscreen, tabs, carousel, subview, and header-layout editor flows.
+7. Add CI artifact upload or manual workflow dispatch for screenshot refresh if docs asset generation needs to move into GitHub Actions later.
 
 ## Commit History
 
@@ -159,6 +170,8 @@ This branch is organized as the following commit series:
 - `feat: expose body mode and header layout options in editor`
 - `docs: add rendered pages docs and examples gallery`
 - `feat: add local Home Assistant screenshot fixture workflow`
+- `feat: expand docs asset pipeline for full pages coverage`
+- `docs: add complete pages reference and rendered examples`
 
 ## PR Notes
 

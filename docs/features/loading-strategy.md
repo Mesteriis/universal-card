@@ -1,6 +1,6 @@
 ---
 title: Loading Strategy
-description: Lazy versus preload behavior for modal content and guidance for performance-sensitive cards.
+description: Lazy versus preload behavior for modal content, plus guidance for inline lazy loading and runtime-safety features.
 section_label: Features
 permalink: /features/loading-strategy/
 ---
@@ -8,16 +8,16 @@ permalink: /features/loading-strategy/
 
 ## Overview
 
-`universal_card` now separates two different loading concerns:
+`Universal Card` exposes two related but distinct loading surfaces:
 
-- `lazy_load`: inline expand-body loading for regular body content
-- `modal.loading_strategy`: modal content preparation strategy for `body_mode: modal`
+- `lazy_load` and its inline batching controls for the regular expandable body pipeline
+- `modal.loading_strategy` for `body_mode: modal`
 
-This distinction matters because modal content is rendered through `ModalMode`, not through the inline body pipeline used by `expand` mode.
+These are intentionally separate because modal content is managed by the modal mode lifecycle, not by the inline expand-body lifecycle.
 
 ## Modal loading strategies
 
-Configure modal content loading under `modal:`.
+Configure modal content under `modal:`.
 
 ```yaml
 modal:
@@ -36,39 +36,83 @@ Supported values:
 Behavior:
 
 - modal cards are created when the modal is opened for the first time
-- after the first load, card instances are reused by the existing mode/card lifecycle
 - initial dashboard render stays lighter
+- after first load, the existing mode lifecycle reuses built cards
 
 Use `lazy` when:
 
-- modal content contains camera cards
-- modal content is heavy or expensive to initialize
-- the modal is used occasionally
-- slower devices or wall tablets are a priority
+- modal content contains heavy cards
+- the modal is opened occasionally
+- low-power tablets are a priority
+- first-open latency is acceptable
 
 ## `preload`
 
-`preload` prepares modal cards ahead of the first open.
+`preload` prepares modal content ahead of the first open.
 
-Behavior in this stage:
+Behavior:
 
-- `UniversalCard` starts modal content preparation during initialization
-- the preload call uses the same `BaseMode.loadCards()` path as normal opening
-- concurrent preload/open calls are deduplicated so cards are not built twice
+- the card starts modal preparation during initialization
+- the preload path reuses the same mode card-loading flow as a real open
+- concurrent preload and open calls are deduplicated
 
 Use `preload` when:
 
-- first-open latency matters more than initial render cost
-- the modal is opened frequently
-- modal content is relatively light and predictable
+- first-open latency matters more than startup cost
+- modal content is relatively light
+- the modal is opened often enough to justify precomputation
 
-## Examples
+## Inline lazy loading
 
-### Safe default
+The regular expandable body still supports inline lazy loading through root fields:
+
+- `lazy_load`
+- `lazy_initial_batch`
+- `lazy_batch_size`
+- `lazy_idle_timeout`
+- `skeleton_count`
+
+Example:
 
 ```yaml
 type: custom:universal-card
-title: Lights
+title: Inline lazy body
+lazy_load: true
+lazy_initial_batch: 1
+lazy_batch_size: 2
+lazy_idle_timeout: 120
+skeleton_count: 2
+body:
+  cards:
+    - type: entities
+      entities:
+        - sensor.demo_temperature
+    - type: entities
+      entities:
+        - sensor.demo_humidity
+```
+
+## Runtime-safety controls
+
+For weaker devices or highly dynamic dashboards, the runtime also exposes:
+
+- `stability_mode`
+- `remember_expanded_state`
+- `remember_mode_state`
+- `enable_card_pool`
+- `pool_scope`
+- `pool_ttl_ms`
+- `pool_max_entries`
+
+These are not modal-specific, but they often matter in the same performance-tuning conversations.
+
+## Examples
+
+### Safe default modal
+
+```yaml
+type: custom:universal-card
+title: Safe modal
 body_mode: modal
 modal:
   loading_strategy: lazy
@@ -80,7 +124,7 @@ body:
         - light.hall
 ```
 
-### Preload for fast first open
+### Fast first open
 
 ```yaml
 type: custom:universal-card
@@ -102,28 +146,27 @@ body:
 
 Reasons:
 
-- modal content may include heavy custom cards
-- cameras and media cards can initialize network or rendering work early
-- multiple cards with `preload` can increase startup cost on low-power devices
+- modal content may include cameras, media, or heavy custom cards
+- early initialization can increase startup cost
+- multiple preloaded cards on one dashboard can add up quickly
 
-Practical recommendation:
+Practical guidance:
 
-- keep `lazy` as the default unless you have measured a real first-open UX problem
-- use `preload` selectively, not on every modal in a large dashboard
+- keep `lazy` as the default unless you have measured a first-open problem
+- use `preload` selectively rather than globally
+- use `stability_mode` when you need predictable behavior more than aggressive optimization
 
-## Relationship to existing `lazy_load`
+## Editor support
 
-`lazy_load` still means inline body lazy loading for the regular expandable card body.
+The visual editor now exposes:
 
-It does not replace or override `modal.loading_strategy`.
+- `modal.loading_strategy`
+- modal size fields that usually need to be tuned together with loading behavior
 
-Examples:
-
-- `body_mode: expand` uses `lazy_load`
-- `body_mode: modal` uses `modal.loading_strategy`
+Inline batching controls such as `lazy_initial_batch` and `lazy_batch_size` remain better suited to YAML.
 
 ## Limitations
 
 - loading strategy is modal-specific in this stage; fullscreen and subview are unchanged
-- preload prepares cards but does not force the modal open
-- there is no editor UI for `modal.loading_strategy` yet in this stage
+- `preload` prepares content but does not force the modal open
+- the visual difference is timing-based, so documentation uses YAML and guidance instead of a fake screenshot
