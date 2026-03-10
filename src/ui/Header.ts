@@ -352,10 +352,12 @@ export class Header {
     const rawValue = this._getBadgeValue(badge);
     const displayValue = this._getBadgeDisplayValue(badge, rawValue);
     const badgeColor = this._getBadgeColor(badge, rawValue);
+    const badgeLabel = this._getBadgeLabel(badge);
     const iconOnly = badge.icon_only === true && Boolean(badge.icon);
     const iconActionClickable = Boolean(
       badge.icon_tap_action?.action && badge.icon_tap_action.action !== ACTION_TYPES.NONE
     );
+    const iconActionLabel = this._escapeAttributeValue(`Action for ${badgeLabel || badge.entity || 'badge'}`);
     const iconHtml = badge.icon
       ? (
         iconActionClickable
@@ -365,7 +367,7 @@ export class Header {
               class="badge-icon-action clickable"
               data-badge-index="${index}"
               data-uc-role="badge-icon-action"
-              aria-label="Badge icon action"
+              aria-label="${iconActionLabel}"
             >
               <ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon>
             </button>
@@ -373,7 +375,6 @@ export class Header {
           : `<span class="badge-icon" data-uc-role="badge-icon"><ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon></span>`
       )
       : '';
-    const badgeLabel = this._getBadgeLabel(badge);
     const labelHtml = !iconOnly && badgeLabel ? `<span class="badge-label" data-uc-role="badge-label">${badgeLabel}</span>` : '';
     const valueHtml = !iconOnly && displayValue !== null && displayValue !== undefined && displayValue !== ''
       ? `<span class="badge-value" data-uc-role="badge-value">${displayValue}</span>${badge.unit ? `<span class="badge-unit" data-uc-role="badge-unit">${badge.unit}</span>` : ''}`
@@ -1278,6 +1279,14 @@ export class Header {
         <div class="badge-progress-bar" data-uc-role="badge-progress-bar" style="width: ${percentage}%"></div>
       </div>
     `;
+  }
+
+  _escapeAttributeValue(value: unknown) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   /**

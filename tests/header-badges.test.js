@@ -53,6 +53,7 @@ describe('Header badges', () => {
     expect(badgesHtml).toContain('badge clickable icon-only');
     expect(badgesHtml).toContain('--badge-color: yellow');
     expect(badgesHtml).toContain('badge-icon-action clickable');
+    expect(badgesHtml).toContain('aria-label="Action for badge"');
     expect(badgesHtml).not.toContain('Hidden');
     expect(badgesHtml).not.toContain('badge-label');
     expect(badgesHtml).not.toContain('badge-value');
