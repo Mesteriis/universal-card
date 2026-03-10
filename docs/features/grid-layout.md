@@ -28,7 +28,7 @@ Use it when the card should contain more than one nested Lovelace card and the v
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Compact summary layout with two balanced columns.</p>
-    <img class="docs-showcase__media" src="{{ '/img/grid-layout-1.png' | relative_url }}" alt="Two-column grid screenshot">
+    <img class="docs-showcase__media" src="{{ '/img/grid-layout-basic-dark.png' | relative_url }}" alt="Two-column grid screenshot">
   </div>
   <div class="docs-showcase__panel">
     <h3>YAML</h3>
@@ -55,8 +55,15 @@ body:
 
 Use a string for `grid.columns` when equal-width columns are not enough.
 
-```yaml
-type: custom:universal-card
+<div class="docs-showcase">
+  <div class="docs-showcase__panel">
+    <h3>Rendered preview</h3>
+    <p class="docs-showcase__meta">Mixed column sizing with hero spans and denser card composition.</p>
+    <img class="docs-showcase__media" src="{{ '/img/grid-layout-advanced-dark.png' | relative_url }}" alt="Advanced grid screenshot">
+  </div>
+  <div class="docs-showcase__panel">
+    <h3>YAML</h3>
+    <pre><code class="language-yaml">type: custom:universal-card
 title: Advanced Grid
 grid:
   columns: "1.4fr 0.8fr 1fr"
@@ -73,8 +80,9 @@ body:
     - type: entities
       rowspan: 2
       entities:
-        - entity: sensor.network_health_sensor
-```
+        - entity: sensor.network_health_sensor</code></pre>
+  </div>
+</div>
 
 ## Where grid is used
 

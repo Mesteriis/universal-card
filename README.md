@@ -55,6 +55,7 @@
 - [Configuration](docs/configuration.md)
 - [Examples Gallery](docs/examples.md)
 - [YAML Block Reference](docs/features/yaml-block-reference.md)
+- [Field Matrix](docs/features/field-matrix.md)
 - [Grid Layout](docs/features/grid-layout.md)
 - [Footer](docs/features/footer.md)
 - [Visibility](docs/features/visibility.md)

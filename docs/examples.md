@@ -45,9 +45,12 @@ Focused guides for the main recipe families:
 | Header redesign | [Header layout presets](#recipe-header-layout-presets) |
 | Compact status row | [Badge rules and icon-only mode](#recipe-badge-rules-and-icon-only-mode) |
 | Footer actions | [Footer cards and actions](#recipe-footer-cards-and-actions) |
+| Footer helper zones | [Footer slot cards](#recipe-footer-slot-cards) |
 | Card shell actions | [Root actions and context menu](#recipe-root-actions-and-context-menu) |
 | Conditional UI | [Visibility and section visibility](#recipe-visibility-and-section-visibility) |
+| Badge-only visibility | [Badge visibility on a separate entity](#recipe-badge-visibility-on-a-separate-entity) |
 | Swipe navigation | [Swipe gestures](#recipe-swipe-gestures) |
+| Combined gesture surface | [Control surface with swipe and footer actions](#recipe-control-surface-with-swipe-and-footer-actions) |
 | Themed card | [Themes, tokens, and state styles](#recipe-themes-tokens-and-state-styles) |
 | Stable wall panel | [Loading strategy and stable wall panel setup](#recipe-loading-strategy-and-stable-wall-panel-setup) |
 | Nested dashboard | [Nested cards](#recipe-nested-cards) |
@@ -85,6 +88,31 @@ body:
         - entity: sensor.demo_humidity</code></pre>
   </div>
 </div>
+
+### Recipe: Dense grid with explicit row and column gaps
+
+```yaml
+type: custom:universal-card
+title: Dense Summary
+grid:
+  columns: 3
+  gap: 8px
+  row_gap: 10px
+  column_gap: 14px
+body:
+  cards:
+    - type: button
+      entity: input_boolean.kitchen_light
+    - type: button
+      entity: input_boolean.security_armed
+    - type: button
+      entity: script.evening_scene
+    - type: entities
+      colspan: 3
+      entities:
+        - entity: sensor.network_health_sensor
+        - entity: sensor.house_mode_sensor
+```
 
 ### Recipe: Grid layout
 
@@ -535,6 +563,8 @@ body:
 
 ### Recipe: Footer slot cards
 
+<div id="recipe-footer-slot-cards"></div>
+
 ```yaml
 type: custom:universal-card
 title: Media Room
@@ -552,6 +582,24 @@ body:
   cards:
     - type: media-control
       entity: media_player.living_room
+```
+
+### Recipe: Footer helper text with hold action
+
+```yaml
+type: custom:universal-card
+title: Network Summary
+footer:
+  icon: mdi:clock-outline
+  text: Refreshed 2 min ago
+  hold_action:
+    action: more-info
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: sensor.network_health_sensor
+        - entity: counter.notifications
 ```
 
 ### Recipe: Root actions and context menu
@@ -592,6 +640,29 @@ body:
   </div>
 </div>
 
+### Recipe: Badge visibility on a separate entity
+
+<div id="recipe-badge-visibility-on-a-separate-entity"></div>
+
+```yaml
+type: custom:universal-card
+title: Patio Status
+badges:
+  - type: custom
+    icon: mdi:door
+    label: Patio
+    value: Open
+    visibility:
+      - entity: binary_sensor.patio_door
+        operator: ==
+        value: 'on'
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: binary_sensor.patio_door
+```
+
 ### Recipe: Visibility and section visibility
 
 <div id="recipe-visibility-and-section-visibility" class="docs-showcase">
@@ -619,6 +690,62 @@ body:
         - entity: sensor.security_status
 footer:
   text: Admin-only footer actions</code></pre>
+  </div>
+</div>
+
+### Recipe: Control surface with swipe and footer actions
+
+<div id="recipe-control-surface-with-swipe-and-footer-actions" class="docs-showcase">
+  <div class="docs-showcase__panel">
+    <h3>Rendered preview</h3>
+    <p class="docs-showcase__meta">One card combining swipe navigation, footer actions, and a contextual control surface.</p>
+    <img class="docs-showcase__media" src="{{ '/img/interactions-dark.png' | relative_url }}" alt="Interaction control surface screenshot">
+  </div>
+  <div class="docs-showcase__panel">
+    <h3>YAML</h3>
+    <pre><code class="language-yaml">type: custom:universal-card
+title: Control Surface
+subtitle: Swipe and context hooks
+icon: mdi:gesture-double-tap
+entity: input_boolean.security_armed
+context_menu:
+  items:
+    - label: Open details
+      icon: mdi:open-in-app
+      action:
+        action: navigate
+        navigation_path: /fixture-dashboard/details
+    - type: separator
+    - label: Toggle alarm
+      icon: mdi:shield
+      action:
+        action: toggle
+        entity: input_boolean.security_armed
+swipe:
+  enabled: true
+  direction: both
+  threshold: 48
+  velocityThreshold: 0.2
+  preventScroll: true
+  left:
+    action: next
+  right:
+    action: prev
+footer:
+  actions:
+    - icon: mdi:open-in-app
+      label: Details
+      action: navigate
+      navigation_path: /fixture-dashboard/details
+    - icon: mdi:shield-check
+      label: Toggle
+      action: toggle
+      entity: input_boolean.security_armed
+body:
+  cards:
+    - type: markdown
+      content: |
+        Interactions such as `swipe` and `context_menu` are configured in YAML.</code></pre>
   </div>
 </div>
 
@@ -871,6 +998,7 @@ body:
 
 - [Configuration]({{ '/configuration/' | relative_url }})
 - [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
+- [Field Matrix]({{ '/features/field-matrix/' | relative_url }})
 - [Grid Layout]({{ '/features/grid-layout/' | relative_url }})
 - [Footer]({{ '/features/footer/' | relative_url }})
 - [Visibility]({{ '/features/visibility/' | relative_url }})

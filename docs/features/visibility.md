@@ -51,7 +51,7 @@ Use `section_visibility` when the card shell should remain visible but some regi
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Visibility can affect body, footer, and badges independently.</p>
-    <img class="docs-showcase__media" src="{{ '/img/visibility.png' | relative_url }}" alt="Visibility rules screenshot">
+    <img class="docs-showcase__media" src="{{ '/img/visibility-guide-dark.png' | relative_url }}" alt="Visibility rules screenshot">
   </div>
   <div class="docs-showcase__panel">
     <h3>YAML</h3>

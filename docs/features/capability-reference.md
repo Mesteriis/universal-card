@@ -125,6 +125,7 @@ YAML remains the better tool for:
 
 - [Examples Gallery]({{ '/examples/' | relative_url }})
 - [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
+- [Field Matrix]({{ '/features/field-matrix/' | relative_url }})
 - [Grid Layout]({{ '/features/grid-layout/' | relative_url }})
 - [Footer]({{ '/features/footer/' | relative_url }})
 - [Visibility]({{ '/features/visibility/' | relative_url }})

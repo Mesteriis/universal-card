@@ -48,7 +48,7 @@ Main config blocks:
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Footer text, slot content, and secondary actions.</p>
-    <img class="docs-showcase__media" src="{{ '/img/footer.png' | relative_url }}" alt="Footer actions screenshot">
+    <img class="docs-showcase__media" src="{{ '/img/footer-guide-dark.png' | relative_url }}" alt="Footer actions screenshot">
   </div>
   <div class="docs-showcase__panel">
     <h3>YAML</h3>

@@ -538,17 +538,22 @@ async function exportHaAssets(browser) {
 
   await screenshotCard(page, 'overview', 0, 'basic-card-dark.png', { expand: true });
   await screenshotCard(page, 'overview', 1, 'grid-layout-1.png', { expand: true });
+  await screenshotCard(page, 'overview', 1, 'grid-layout-basic-dark.png', { expand: true });
   await screenshotCard(page, 'overview', 2, 'grid-layout-2.png', { expand: true, openDelayMs: 1800 });
+  await screenshotCard(page, 'overview', 2, 'grid-layout-advanced-dark.png', { expand: true, openDelayMs: 1800 });
   await screenshotCard(page, 'modes', 1, 'tabs-mode-dark.png', { expand: true, openDelayMs: 1800 });
   await screenshotCard(page, 'modes', 2, 'carousel-mode-dark.png', { expand: true, openDelayMs: 1800 });
   await captureFullscreen(page);
   await captureSubview(page);
   await screenshotCard(page, 'header', 0, 'header-options.png');
   await screenshotCard(page, 'header', 1, 'footer.png');
+  await screenshotCard(page, 'header', 1, 'footer-guide-dark.png');
   await screenshotCard(page, 'header', 2, 'visibility.png', { expand: true });
+  await screenshotCard(page, 'header', 2, 'visibility-guide-dark.png', { expand: true });
   await screenshotCard(page, 'header', 3, 'nested-cards.png', { expand: true });
   await screenshotCard(page, 'styling', 0, 'themes.png', { expand: true });
   await screenshotCard(page, 'styling', 1, 'actions.png', { expand: true });
+  await screenshotCard(page, 'styling', 1, 'interactions-dark.png', { expand: true });
   await captureModalGif(page);
 
   await page.close();

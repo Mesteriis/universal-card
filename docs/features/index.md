@@ -32,6 +32,10 @@ This page answers three practical questions:
     <h3>YAML Block Reference</h3>
     <p>Block-by-block reference for root fields, badges, body mode blocks, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/field-matrix/' | relative_url }}">
+    <h3>Field Matrix</h3>
+    <p>Fast lookup for field groups, editor coverage, and the best doc or example to follow.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/grid-layout/' | relative_url }}">
     <h3>Grid Layout</h3>
     <p>How to use columns, gaps, colspan, and rowspan for expandable, modal, fullscreen, and tabbed layouts.</p>
@@ -97,6 +101,7 @@ This page answers three practical questions:
 | Basic card setup | [Configuration]({{ '/configuration/' | relative_url }}) |
 | Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
 | Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
+| Fast field support lookup | [Field Matrix]({{ '/features/field-matrix/' | relative_url }}) |
 | Grid composition | [Grid Layout]({{ '/features/grid-layout/' | relative_url }}) |
 | Footer actions and support content | [Footer]({{ '/features/footer/' | relative_url }}) |
 | Conditional rendering | [Visibility]({{ '/features/visibility/' | relative_url }}) |

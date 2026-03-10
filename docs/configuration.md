@@ -182,6 +182,10 @@ Use [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) if you are 
     <h3>YAML Block Reference</h3>
     <p>Block-by-block YAML guidance for root fields, badges, grid, body modes, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-link-card" href="{{ '/features/field-matrix/' | relative_url }}">
+    <h3>Field Matrix</h3>
+    <p>Fast lookup for field groups, editor support, and the best example page.</p>
+  </a>
   <a class="docs-link-card" href="{{ '/features/grid-layout/' | relative_url }}">
     <h3>Grid Layout</h3>
     <p>Columns, gaps, colspan, rowspan, and practical layout guidance.</p>

@@ -82,7 +82,7 @@ Use `swipe` for directional shortcuts.
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Swipe and action surfaces are usually combined with normal card content.</p>
-    <img class="docs-showcase__media" src="{{ '/img/actions.png' | relative_url }}" alt="Actions and gestures screenshot">
+    <img class="docs-showcase__media" src="{{ '/img/interactions-dark.png' | relative_url }}" alt="Actions and gestures screenshot">
   </div>
   <div class="docs-showcase__panel">
     <h3>YAML</h3>
