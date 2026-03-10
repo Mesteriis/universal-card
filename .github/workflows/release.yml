@@ -34,59 +34,60 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Prepare release version
-        id: prepare_release
-        run: npm run release:prepare
+      - name: Determine release target
+        id: release_meta
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG_NAME="v${VERSION}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${TAG_NAME} already exists. Skipping release."
+            exit 0
+          fi
+
+          echo "release_needed=true" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
+        if: steps.release_meta.outputs.release_needed == 'true'
         run: npm ci
 
       - name: Validate package metadata
+        if: steps.release_meta.outputs.release_needed == 'true'
         run: |
           python3 -m json.tool hacs.json >/dev/null
           node -e "const pkg=require('./package.json'); if(!pkg.version) throw new Error('package.json version is missing');"
 
       - name: Run quality gates
+        if: steps.release_meta.outputs.release_needed == 'true'
         run: |
           npm run test
           npm run test:coverage
           npm run test:coverage:expanded
 
-      - name: Commit release artifacts
-        id: commit_release
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if git diff --quiet; then
-            echo "commit_created=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git add package.json package-lock.json universal-card.js lazy/
-          git commit -m "chore: release v${{ steps.prepare_release.outputs.release_version }} [skip ci]"
-          git push origin HEAD:main
-          echo "commit_created=true" >> "$GITHUB_OUTPUT"
+      - name: Verify generated artifacts are up to date
+        if: steps.release_meta.outputs.release_needed == 'true'
+        run: git diff --exit-code -- package.json package-lock.json universal-card.js lazy/
 
       - name: Create and push release tag
+        if: steps.release_meta.outputs.release_needed == 'true'
         run: |
           set -euo pipefail
-          TAG_NAME="${{ steps.prepare_release.outputs.tag_name }}"
-
-          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Tag $TAG_NAME already exists"
-            exit 0
-          fi
+          TAG_NAME="${{ steps.release_meta.outputs.tag_name }}"
 
           git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
           git push origin "$TAG_NAME"
 
       - name: Create GitHub release
+        if: steps.release_meta.outputs.release_needed == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.prepare_release.outputs.tag_name }}
-          name: ${{ steps.prepare_release.outputs.tag_name }}
+          tag_name: ${{ steps.release_meta.outputs.tag_name }}
+          name: ${{ steps.release_meta.outputs.tag_name }}
           generate_release_notes: true
           files: |
             universal-card.js
