@@ -1,17 +1,17 @@
 :root {
   --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --bg-elevated: rgba(22, 27, 34, 0.92);
-  --accent: #58a6ff;
-  --accent-secondary: #7ee787;
-  --accent-tertiary: #f78166;
-  --accent-soft: rgba(88, 166, 255, 0.14);
+  --bg-secondary: #101816;
+  --bg-tertiary: #17231f;
+  --bg-elevated: rgba(16, 24, 22, 0.94);
+  --accent: #7ce7a7;
+  --accent-secondary: #3cd48b;
+  --accent-tertiary: #78d8ff;
+  --accent-soft: rgba(124, 231, 167, 0.16);
   --text-primary: #f0f6fc;
   --text-secondary: #b5bec8;
   --text-muted: #7d8590;
   --border: #30363d;
-  --border-strong: rgba(88, 166, 255, 0.28);
+  --border-strong: rgba(124, 231, 167, 0.28);
   --shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
   --radius-lg: 24px;
   --radius-md: 16px;
@@ -30,8 +30,8 @@ body.docs-page-body {
   margin: 0;
   font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(88, 166, 255, 0.16), transparent 32%),
-    radial-gradient(circle at top right, rgba(126, 231, 135, 0.12), transparent 28%),
+    radial-gradient(circle at top left, rgba(124, 231, 167, 0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(120, 216, 255, 0.12), transparent 26%),
     var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.7;
@@ -46,7 +46,7 @@ a {
   top: 0;
   z-index: 30;
   backdrop-filter: blur(18px);
-  background: rgba(13, 17, 23, 0.78);
+  background: rgba(9, 16, 14, 0.84);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -64,18 +64,38 @@ a {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.9rem;
   min-width: 0;
 }
 
-.docs-brand__mark {
-  display: inline-grid;
-  place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(88, 166, 255, 0.25), rgba(126, 231, 135, 0.18));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+.docs-brand__art {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(4.1rem, 8vw, 5.2rem);
+  height: 3rem;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(124, 231, 167, 0.16), rgba(120, 216, 255, 0.08)),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(124, 231, 167, 0.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 30px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.docs-brand__logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.06);
+}
+
+.docs-brand__text {
+  min-width: 0;
 }
 
 .docs-brand strong,
@@ -86,6 +106,10 @@ a {
 .docs-brand small {
   color: var(--text-muted);
   font-size: 0.78rem;
+}
+
+.docs-brand strong {
+  letter-spacing: 0.01em;
 }
 
 .docs-toplinks {
@@ -102,7 +126,7 @@ a {
 }
 
 .docs-toplinks a:hover {
-  color: var(--text-primary);
+  color: var(--accent);
 }
 
 .docs-nav-toggle {
@@ -162,7 +186,7 @@ a {
 .docs-nav-link:hover,
 .docs-nav-link.is-active {
   color: var(--text-primary);
-  background: rgba(88, 166, 255, 0.12);
+  background: rgba(124, 231, 167, 0.12);
 }
 
 .docs-main {
@@ -181,7 +205,7 @@ a {
   padding: 2rem 2.2rem;
   margin-bottom: 1rem;
   background:
-    linear-gradient(135deg, rgba(88, 166, 255, 0.16), rgba(126, 231, 135, 0.08)),
+    linear-gradient(135deg, rgba(124, 231, 167, 0.16), rgba(120, 216, 255, 0.08)),
     var(--bg-elevated);
 }
 
@@ -252,7 +276,7 @@ a {
   margin: 1.4rem 0;
   padding: 1rem 1.1rem;
   border-left: 4px solid var(--accent);
-  background: rgba(88, 166, 255, 0.08);
+  background: rgba(124, 231, 167, 0.08);
   color: var(--text-secondary);
   border-radius: 14px;
 }
@@ -274,7 +298,7 @@ a {
 }
 
 .docs-content th {
-  background: rgba(88, 166, 255, 0.1);
+  background: rgba(124, 231, 167, 0.1);
   color: var(--text-primary);
 }
 
@@ -303,7 +327,7 @@ a {
   border-radius: 18px;
   overflow: auto;
   background: #0b1020;
-  border: 1px solid rgba(88, 166, 255, 0.18);
+  border: 1px solid rgba(124, 231, 167, 0.18);
 }
 
 .docs-copy-button {
@@ -320,7 +344,7 @@ a {
 }
 
 .docs-copy-button:hover {
-  background: rgba(88, 166, 255, 0.14);
+  background: rgba(124, 231, 167, 0.14);
 }
 
 .docs-content img {
@@ -370,8 +394,8 @@ a {
   margin: 1.2rem 0 1.6rem;
   padding: 1rem 1.1rem;
   border-radius: 18px;
-  border: 1px solid rgba(126, 231, 135, 0.16);
-  background: rgba(126, 231, 135, 0.08);
+  border: 1px solid rgba(124, 231, 167, 0.16);
+  background: rgba(124, 231, 167, 0.08);
 }
 
 .docs-callout--warning {
@@ -443,6 +467,20 @@ a {
   .docs-shell {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .docs-brand {
+    gap: 0.7rem;
+  }
+
+  .docs-brand__art {
+    width: 3.6rem;
+    height: 2.65rem;
+    border-radius: 14px;
+  }
+
+  .docs-brand small {
+    font-size: 0.72rem;
   }
 
   .docs-hero-panel,

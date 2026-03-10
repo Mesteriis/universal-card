@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="icon" type="image/png" href="{{ '/assets/logo.png' | relative_url }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,8 +15,10 @@
   <header class="docs-topbar">
     <div class="docs-topbar__inner">
       <a class="docs-brand" href="{{ '/' | relative_url }}">
-        <span class="docs-brand__mark">🎴</span>
-        <span>
+        <span class="docs-brand__art" aria-hidden="true">
+          <img class="docs-brand__logo" src="{{ '/assets/logo.png' | relative_url }}" alt="">
+        </span>
+        <span class="docs-brand__text">
           <strong>Universal Card</strong>
           <small>GitHub Pages Docs</small>
         </span>

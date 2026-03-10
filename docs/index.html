@@ -10,7 +10,7 @@
     <meta property="og:description" content="Продвинутая карточка Lovelace для Home Assistant">
     <meta property="og:image" content="img/body-modes-demo.gif">
     <meta property="og:type" content="website">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>">
+    <link rel="icon" type="image/png" href="assets/logo.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,20 +25,20 @@
     <style>
         :root {
             --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #21262d;
-            --accent: #58a6ff;
-            --accent-secondary: #7ee787;
-            --accent-tertiary: #f78166;
-            --accent-purple: #a371f7;
+            --bg-secondary: #101816;
+            --bg-tertiary: #17231f;
+            --accent: #7ce7a7;
+            --accent-secondary: #3cd48b;
+            --accent-tertiary: #78d8ff;
+            --accent-purple: #2f9f7a;
             --text-primary: #f0f6fc;
             --text-secondary: #8b949e;
             --text-muted: #6e7681;
             --border: #30363d;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-hero: linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(163, 113, 247, 0.15) 100%);
+            --gradient-1: linear-gradient(135deg, #16483e 0%, #2f9f7a 100%);
+            --gradient-2: linear-gradient(135deg, #12756f 0%, #2f9f7a 100%);
+            --gradient-3: linear-gradient(135deg, #1b6c78 0%, #78d8ff 100%);
+            --gradient-hero: linear-gradient(135deg, rgba(124, 231, 167, 0.14) 0%, rgba(120, 216, 255, 0.12) 100%);
         }
 
         * {
@@ -66,7 +66,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(13, 17, 23, 0.8);
+            background: rgba(9, 16, 14, 0.84);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             padding: 1rem 2rem;
@@ -83,15 +83,51 @@
         .nav-logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 700;
+            gap: 0.85rem;
             color: var(--text-primary);
             text-decoration: none;
         }
 
-        .nav-logo span {
-            font-size: 1.5rem;
+        .nav-logo__art {
+            width: 4.5rem;
+            height: 2.9rem;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(124, 231, 167, 0.16);
+            background:
+                linear-gradient(135deg, rgba(124, 231, 167, 0.16), rgba(120, 216, 255, 0.08)),
+                rgba(255, 255, 255, 0.03);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+                0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-logo__art img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transform: scale(1.05);
+        }
+
+        .nav-logo__text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+
+        .nav-logo__title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .nav-logo__subtitle {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
         }
 
         .nav-links {
@@ -166,7 +202,7 @@
             bottom: 0;
             background: 
                 radial-gradient(circle at 20% 80%, rgba(88, 166, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(163, 113, 247, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 80% 20%, rgba(124, 231, 167, 0.12) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -231,7 +267,7 @@
             box-shadow: 
                 0 0 0 1px var(--border),
                 0 20px 50px rgba(0, 0, 0, 0.5),
-                0 0 100px rgba(88, 166, 255, 0.1);
+                0 0 100px rgba(124, 231, 167, 0.12);
         }
 
         /* Features */
@@ -281,7 +317,7 @@
         .feature-card:hover {
             border-color: var(--accent);
             transform: translateY(-4px);
-            box-shadow: 0 10px 40px rgba(88, 166, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(124, 231, 167, 0.1);
         }
 
         .feature-icon {
@@ -585,7 +621,16 @@
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+        }
+
+        .footer-brand__logo {
+            width: 3.2rem;
+            height: 2.2rem;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid rgba(124, 231, 167, 0.16);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
         }
 
         .footer-brand p {
@@ -674,6 +719,20 @@
                 display: none;
             }
 
+            .nav-container {
+                gap: 1rem;
+            }
+
+            .nav-logo__art {
+                width: 3.8rem;
+                height: 2.5rem;
+                border-radius: 14px;
+            }
+
+            .nav-logo__subtitle {
+                display: none;
+            }
+
             .hero-content h1 {
                 font-size: 2.5rem;
             }
@@ -728,8 +787,13 @@
     <nav>
         <div class="nav-container">
             <a href="#" class="nav-logo">
-                <span>🎴</span>
-                Universal Card
+                <span class="nav-logo__art" aria-hidden="true">
+                    <img src="assets/logo.png" alt="">
+                </span>
+                <span class="nav-logo__text">
+                    <span class="nav-logo__title">Universal Card</span>
+                    <span class="nav-logo__subtitle">Home Assistant Docs</span>
+                </span>
             </a>
             <ul class="nav-links">
                 <li><a href="#features">Возможности</a></li>
@@ -1255,7 +1319,10 @@ body:
         <div class="footer-container">
             <div class="footer-top">
                 <div class="footer-brand">
-                    <h3><span>🎴</span> Universal Card</h3>
+                    <h3>
+                        <img class="footer-brand__logo" src="assets/logo.png" alt="">
+                        <span>Universal Card</span>
+                    </h3>
                     <p>Продвинутая карточка Lovelace для создания красивых и функциональных dashboard в Home Assistant.</p>
                 </div>
                 
