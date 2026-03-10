@@ -31,7 +31,7 @@ Implemented areas:
 - production Pages documentation with a complete capability reference and a dedicated editor page
 - full examples gallery backed by real Home Assistant dark-theme renders, cropped screenshots, and modal GIF capture
 - automated docs asset export into `docs/img/` for the public Pages site
-- manual GitHub Actions workflow for docs screenshot artifact capture
+- local-only screenshot and GIF capture workflow for docs asset refresh
 - development documentation for architecture audits, implementation plans, feature behavior, upgrade notes, editor coverage, and this summary
 
 ## New And Expanded Configuration Fields
@@ -131,10 +131,10 @@ Additional verification for the documentation pipeline:
 - `npm run ha:fixture:down`
 - `npm run docs:assets:refresh`
 
-CI coverage added in this stage:
+The screenshot pipeline in this stage is local-only by design:
 
-- manual workflow `.github/workflows/screenshots.yml`
-- artifact upload for `docs/img/` and screenshot export logs
+- the Dockerized Home Assistant fixture is used from the developer machine
+- `docs/img/` is refreshed only through the local asset workflow
 
 The Home Assistant screenshot workflow completed successfully on March 9, 2026 and produced real UI captures for the fixture dashboard views.
 
@@ -158,7 +158,7 @@ Tracked build artifacts were regenerated as part of the final verification:
 4. Add richer editor controls for mixed string and CSS layout values.
 5. Add a structured header builder only if preset-based layout stops being sufficient for real dashboards.
 6. Add dedicated visual or e2e coverage for fullscreen, tabs, carousel, subview, and header-layout editor flows.
-7. Add CI artifact upload or manual workflow dispatch for screenshot refresh if docs asset generation needs to move into GitHub Actions later.
+7. Add a richer local review checklist for screenshots and GIF quality before docs asset updates are committed.
 
 ## Commit History
 
@@ -178,7 +178,6 @@ This branch is organized as the following commit series:
 - `feat: add local Home Assistant screenshot fixture workflow`
 - `feat: expand docs asset pipeline for full pages coverage`
 - `docs: add complete pages reference and rendered examples`
-- `ci: add docs screenshot artifact workflow`
 
 ## PR Notes
 

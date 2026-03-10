@@ -92,18 +92,17 @@ This keeps the run deterministic.
 
 The tracked fixture template remains in `tests/ha-fixture/config/`, which keeps the repository clean and makes onboarding reproducible.
 
-## CI Workflow
+## Execution Model
 
-A manual GitHub Actions workflow is now available at `.github/workflows/screenshots.yml`.
+Screenshot generation is intentionally local-only.
 
-It:
+Reasons:
 
-1. builds the bundle
-2. starts the same Home Assistant fixture
-3. runs `npm run docs:assets:refresh`
-4. uploads `docs/img/` and the capture log as workflow artifacts
+1. Home Assistant frontend changes can introduce screenshot drift without any change in Universal Card.
+2. GIF and cropped asset generation are expensive and noisy for standard CI feedback.
+3. The docs pipeline is meant to be curated before committing generated assets into `docs/img/`.
 
-This keeps CI safe and reproducible without auto-committing generated screenshots back into the branch.
+Use the local Docker fixture workflow when screenshots or GIFs need to be refreshed.
 
 ## Limits
 
