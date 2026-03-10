@@ -1,6 +1,6 @@
 ---
 title: Examples Gallery
-description: Copyable YAML examples for the full Universal Card feature surface, paired with real Home Assistant captures where that adds value.
+description: Use-case recipes for the full Universal Card feature surface, paired with real Home Assistant captures where that adds value.
 section_label: Examples
 permalink: /examples/
 ---
@@ -11,28 +11,43 @@ permalink: /examples/
   <strong>Preview model.</strong> Visual examples use real Home Assistant screenshots and GIFs. Behavior-first examples use exact YAML when a static screenshot would not explain the feature well.
 </div>
 
-## Coverage
+## How To Use This Page
 
-This page includes examples for:
+Use this page in two ways:
 
-- basic cards
-- all body modes
-- grid layouts
-- header layouts
-- badges
-- footer
-- actions and gestures
-- visibility rules
-- themes and styling
-- loading strategy
-- nested cards
-- editor usage
+1. jump to a use case and copy the closest recipe
+2. use [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) when you already know which config block you need
 
-For a block-by-block field lookup, use [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}).
+## Recipe Index
 
-## 1. Basic expandable card
+| Use case | Best recipe |
+| --- | --- |
+| First card | [Basic expandable card](#recipe-basic-expandable-card) |
+| Two-column summary | [Grid layout](#recipe-grid-layout) |
+| Mixed spans dashboard | [Advanced grid with spans](#recipe-advanced-grid-with-spans) |
+| Focused overlay | [Modal with responsive sizing](#recipe-modal-with-responsive-sizing) |
+| Instant modal open | [Modal with preload](#recipe-modal-with-preload) |
+| Large media card | [Fullscreen mode](#recipe-fullscreen-mode) |
+| Grouped content | [Tabs mode](#recipe-tabs-mode) |
+| Slide-based navigation | [Carousel mode](#recipe-carousel-mode) |
+| Route-based detail page | [Subview mode](#recipe-subview-mode) |
+| Header-only launcher | [Header-only card](#recipe-header-only-card) |
+| Header redesign | [Header layout presets](#recipe-header-layout-presets) |
+| Compact status row | [Badge rules and icon-only mode](#recipe-badge-rules-and-icon-only-mode) |
+| Footer actions | [Footer cards and actions](#recipe-footer-cards-and-actions) |
+| Card shell actions | [Root actions and context menu](#recipe-root-actions-and-context-menu) |
+| Conditional UI | [Visibility and section visibility](#recipe-visibility-and-section-visibility) |
+| Swipe navigation | [Swipe gestures](#recipe-swipe-gestures) |
+| Themed card | [Themes, tokens, and state styles](#recipe-themes-tokens-and-state-styles) |
+| Stable wall panel | [Loading strategy and stable wall panel setup](#recipe-loading-strategy-and-stable-wall-panel-setup) |
+| Nested dashboard | [Nested cards](#recipe-nested-cards) |
+| Editor-first workflow | [Editor-driven setup](#recipe-editor-driven-setup) |
 
-<div class="docs-showcase">
+## Layout Recipes
+
+### Recipe: Basic expandable card
+
+<div id="recipe-basic-expandable-card" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Default card with entity, badges, and inline content.</p>
@@ -61,9 +76,9 @@ body:
   </div>
 </div>
 
-## 2. Grid layout
+### Recipe: Grid layout
 
-<div class="docs-showcase">
+<div id="recipe-grid-layout" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Two-column grid for compact dashboard summaries.</p>
@@ -91,9 +106,9 @@ body:
   </div>
 </div>
 
-## 3. Advanced grid with spans
+### Recipe: Advanced grid with spans
 
-<div class="docs-showcase">
+<div id="recipe-advanced-grid-with-spans" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Mixed column sizing with colspan and rowspan.</p>
@@ -133,9 +148,9 @@ body:
   </div>
 </div>
 
-## 4. Modal with responsive sizing
+### Recipe: Modal with responsive sizing
 
-<div class="docs-showcase">
+<div id="recipe-modal-with-responsive-sizing" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Real modal open animation from Home Assistant.</p>
@@ -170,9 +185,29 @@ body:
   </div>
 </div>
 
-## 5. Fullscreen mode
+### Recipe: Modal with preload
 
-<div class="docs-showcase">
+```yaml
+type: custom:universal-card
+title: Frequently Used Controls
+body_mode: modal
+modal:
+  width: auto
+  max_width: 56rem
+  loading_strategy: preload
+body:
+  cards:
+    - type: button
+      entity: input_boolean.kitchen_light
+    - type: button
+      entity: input_boolean.security_armed
+    - type: button
+      entity: script.evening_scene
+```
+
+### Recipe: Fullscreen mode
+
+<div id="recipe-fullscreen-mode" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Fullscreen body mode for large media and immersive layouts.</p>
@@ -195,9 +230,9 @@ body:
   </div>
 </div>
 
-## 6. Tabs mode
+### Recipe: Tabs mode
 
-<div class="docs-showcase">
+<div id="recipe-tabs-mode" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Tab-based grouping inside one card.</p>
@@ -230,9 +265,9 @@ tabs:
   </div>
 </div>
 
-## 7. Carousel mode
+### Recipe: Carousel mode
 
-<div class="docs-showcase">
+<div id="recipe-carousel-mode" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Slide-based navigation with autoplay and indicators.</p>
@@ -265,9 +300,9 @@ body:
   </div>
 </div>
 
-## 8. Subview mode
+### Recipe: Subview mode
 
-<div class="docs-showcase">
+<div id="recipe-subview-mode" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Subview mode for route-based details.</p>
@@ -284,9 +319,9 @@ subview:
   </div>
 </div>
 
-## 9. Header-only card
+### Recipe: Header-only card
 
-<div class="docs-showcase">
+<div id="recipe-header-only-card" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Use <code>body_mode: none</code> for compact status or launcher cards.</p>
@@ -309,9 +344,11 @@ tap_action:
   </div>
 </div>
 
-## 10. Header layout presets
+## Header And Status Recipes
 
-<div class="docs-showcase">
+### Recipe: Header layout presets
+
+<div id="recipe-header-layout-presets" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Header variants with different badge placement and spacing.</p>
@@ -340,9 +377,33 @@ body:
   </div>
 </div>
 
-## 11. Badge rules and icon-only mode
+### Recipe: Centered hero header
 
-<div class="docs-showcase">
+```yaml
+type: custom:universal-card
+title: Climate
+subtitle: Main floor
+icon: mdi:home-thermometer
+header:
+  layout:
+    variant: centered
+    align: center
+    badges_position: below_content
+badges:
+  - type: attribute
+    entity: weather.home
+    attribute: temperature
+    icon: mdi:thermometer
+    unit: °C
+body:
+  cards:
+    - type: thermostat
+      entity: climate.living_room
+```
+
+### Recipe: Badge rules and icon-only mode
+
+<div id="recipe-badge-rules-and-icon-only-mode" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Header badges with color rules and compact icon-only chips.</p>
@@ -376,9 +437,60 @@ badges:
   </div>
 </div>
 
-## 12. Footer cards and actions
+### Recipe: Attribute badge cluster
 
-<div class="docs-showcase">
+```yaml
+type: custom:universal-card
+title: Weather Summary
+badges:
+  - type: attribute
+    entity: weather.home
+    attribute: temperature
+    icon: mdi:thermometer
+    label: Temp
+    unit: °C
+  - type: attribute
+    entity: weather.home
+    attribute: humidity
+    icon: mdi:water-percent
+    label: Humidity
+    unit: '%'
+  - type: custom
+    icon: mdi:weather-windy
+    label: Wind
+    value: 14
+    unit: km/h
+```
+
+### Recipe: Header slots with sticky state
+
+```yaml
+type: custom:universal-card
+title: Hallway
+entity: sensor.demo_temperature
+show_state: true
+sticky_header: true
+header_left:
+  cards:
+    - type: button
+      icon: mdi:arrow-left
+header_right:
+  cards:
+    - type: button
+      icon: mdi:cog
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: sensor.demo_temperature
+        - entity: sensor.demo_humidity
+```
+
+## Footer And Interaction Recipes
+
+### Recipe: Footer cards and actions
+
+<div id="recipe-footer-cards-and-actions" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Footer content for secondary status and quick actions.</p>
@@ -411,9 +523,30 @@ body:
   </div>
 </div>
 
-## 13. Root actions and context menu
+### Recipe: Footer slot cards
 
-<div class="docs-showcase">
+```yaml
+type: custom:universal-card
+title: Media Room
+footer_left:
+  cards:
+    - type: button
+      icon: mdi:skip-previous
+footer_right:
+  cards:
+    - type: button
+      icon: mdi:skip-next
+footer:
+  text: Media shortcuts
+body:
+  cards:
+    - type: media-control
+      entity: media_player.living_room
+```
+
+### Recipe: Root actions and context menu
+
+<div id="recipe-root-actions-and-context-menu" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Actions work on the card shell, badges, footer, and optional context surfaces.</p>
@@ -449,9 +582,9 @@ body:
   </div>
 </div>
 
-## 14. Visibility and section visibility
+### Recipe: Visibility and section visibility
 
-<div class="docs-showcase">
+<div id="recipe-visibility-and-section-visibility" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Visibility can target the full card or only specific regions.</p>
@@ -479,9 +612,9 @@ footer:
   </div>
 </div>
 
-## 15. Swipe gestures
+### Recipe: Swipe gestures
 
-<div class="docs-showcase">
+<div id="recipe-swipe-gestures" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Swipe is behavior-first, so the YAML is the important part here.</p>
@@ -513,9 +646,11 @@ body:
   </div>
 </div>
 
-## 16. Themes, tokens, and state styles
+## Styling Recipes
 
-<div class="docs-showcase">
+### Recipe: Themes, tokens, and state styles
+
+<div id="recipe-themes-tokens-and-state-styles" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Built-in themes plus fine-grained style overrides.</p>
@@ -547,9 +682,48 @@ custom_css:
   </div>
 </div>
 
-## 17. Loading strategy and stable wall panel setup
+### Recipe: Theme-only quick restyle
 
-<div class="docs-showcase">
+```yaml
+type: custom:universal-card
+title: Midnight Summary
+theme: midnight
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: sensor.demo_temperature
+        - entity: sensor.demo_humidity
+```
+
+### Recipe: Custom CSS accent
+
+```yaml
+type: custom:universal-card
+title: Accent Card
+theme: minimal
+custom_css:
+  - scope: card
+    css: |
+      .universal-card {
+        border: 1px solid rgba(124, 214, 255, 0.28);
+      }
+  - scope: header
+    css: |
+      .header-title {
+        letter-spacing: 0.08em;
+      }
+body:
+  cards:
+    - type: markdown
+      content: Accent styling example
+```
+
+## Performance And Editor Recipes
+
+### Recipe: Loading strategy and stable wall panel setup
+
+<div id="recipe-loading-strategy-and-stable-wall-panel-setup" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Use lazy loading and stability settings for heavier dashboards.</p>
@@ -578,9 +752,9 @@ body:
   </div>
 </div>
 
-## 18. Nested cards
+### Recipe: Nested cards
 
-<div class="docs-showcase">
+<div id="recipe-nested-cards" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">Nested cards and stacks for complex dashboards.</p>
@@ -614,9 +788,9 @@ body:
   </div>
 </div>
 
-## 19. Editor-driven setup
+### Recipe: Editor-driven setup
 
-<div class="docs-showcase">
+<div id="recipe-editor-driven-setup" class="docs-showcase">
   <div class="docs-showcase__panel">
     <h3>Rendered preview</h3>
     <p class="docs-showcase__meta">The visual editor covers shell, body modes, badges, visibility, swipe, and styling.</p>
@@ -632,9 +806,7 @@ body:
   </div>
 </div>
 
-## 20. Quick copy-paste recipes
-
-### Badge-only status card
+### Recipe: Badge-only status card
 
 ```yaml
 type: custom:universal-card
@@ -653,7 +825,7 @@ badges:
     label: Alerts
 ```
 
-### Compact dashboard launcher
+### Recipe: Compact dashboard launcher
 
 ```yaml
 type: custom:universal-card
@@ -666,7 +838,7 @@ tap_action:
   navigation_path: /lovelace/cameras
 ```
 
-### Modal quick-control sheet
+### Recipe: Modal quick-control sheet
 
 ```yaml
 type: custom:universal-card
@@ -683,49 +855,4 @@ body:
       entity: input_boolean.kitchen_light
     - type: button
       entity: input_boolean.security_armed
-```
-
-### Header slots with sticky state
-
-```yaml
-type: custom:universal-card
-title: Hallway
-entity: sensor.demo_temperature
-show_state: true
-sticky_header: true
-header_left:
-  cards:
-    - type: button
-      icon: mdi:arrow-left
-header_right:
-  cards:
-    - type: button
-      icon: mdi:cog
-body:
-  cards:
-    - type: entities
-      entities:
-        - entity: sensor.demo_temperature
-        - entity: sensor.demo_humidity
-```
-
-### Footer slot cards
-
-```yaml
-type: custom:universal-card
-title: Media Room
-footer_left:
-  cards:
-    - type: button
-      icon: mdi:skip-previous
-footer_right:
-  cards:
-    - type: button
-      icon: mdi:skip-next
-footer:
-  text: Media shortcuts
-body:
-  cards:
-    - type: media-control
-      entity: media_player.living_room
 ```
