@@ -1,4 +1,5 @@
 ---
+published: false
 layout: docs
 title: Local HA Screenshots
 description: Real Home Assistant screenshot workflow for Universal Card docs, Pages assets, and production-ready example renders.

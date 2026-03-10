@@ -1,3 +1,6 @@
+---
+published: false
+---
 # Audit: modal, badges, loading, and editor architecture
 
 ## Scope

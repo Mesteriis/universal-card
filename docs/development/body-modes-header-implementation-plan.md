@@ -1,3 +1,6 @@
+---
+published: false
+---
 # Implementation Plan: Body Modes And Header Layout
 
 ## Goals

@@ -1,4 +1,5 @@
 ---
+published: false
 title: Upgrade Notes
 description: Additive config changes, compatibility notes, and behavior clarifications introduced in this branch.
 section_label: Project Notes

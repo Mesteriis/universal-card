@@ -1,3 +1,6 @@
+---
+published: false
+---
 # Editor Support For Modal And Badges
 
 ## Goal

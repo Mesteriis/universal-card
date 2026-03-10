@@ -1,3 +1,6 @@
+---
+published: false
+---
 # Modal and Badges Implementation Plan
 
 ## Goals

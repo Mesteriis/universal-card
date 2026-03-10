@@ -1,23 +1,18 @@
 ---
 title: Loading Strategy
-description: Lazy versus preload behavior for modal content, plus guidance for inline lazy loading and runtime-safety features.
+description: When to use lazy loading, preload, and runtime-safety settings.
 section_label: Features
 permalink: /features/loading-strategy/
 ---
+
 # Loading Strategy
 
-## Overview
+Universal Card has two loading layers:
 
-`Universal Card` exposes two related but distinct loading surfaces:
+- inline lazy loading for regular body content
+- modal `lazy` or `preload` for `body_mode: modal`
 
-- `lazy_load` and its inline batching controls for the regular expandable body pipeline
-- `modal.loading_strategy` for `body_mode: modal`
-
-These are intentionally separate because modal content is managed by the modal mode lifecycle, not by the inline expand-body lifecycle.
-
-## Modal loading strategies
-
-Configure modal content under `modal:`.
+## Modal loading strategy
 
 ```yaml
 modal:
@@ -29,42 +24,25 @@ Supported values:
 - `lazy`
 - `preload`
 
-## `lazy`
-
-`lazy` is the default and safest mode.
-
-Behavior:
-
-- modal cards are created when the modal is opened for the first time
-- initial dashboard render stays lighter
-- after first load, the existing mode lifecycle reuses built cards
+### `lazy`
 
 Use `lazy` when:
 
-- modal content contains heavy cards
-- the modal is opened occasionally
-- low-power tablets are a priority
-- first-open latency is acceptable
+- modal content is heavy
+- first-open speed is acceptable
+- the dashboard runs on slower tablets or wall panels
 
-## `preload`
-
-`preload` prepares modal content ahead of the first open.
-
-Behavior:
-
-- the card starts modal preparation during initialization
-- the preload path reuses the same mode card-loading flow as a real open
-- concurrent preload and open calls are deduplicated
+### `preload`
 
 Use `preload` when:
 
-- first-open latency matters more than startup cost
-- modal content is relatively light
-- the modal is opened often enough to justify precomputation
+- the modal is opened often
+- first-open speed matters
+- the content is relatively light
 
 ## Inline lazy loading
 
-The regular expandable body still supports inline lazy loading through root fields:
+These fields control regular body loading:
 
 - `lazy_load`
 - `lazy_initial_batch`
@@ -90,11 +68,14 @@ body:
     - type: entities
       entities:
         - sensor.demo_humidity
+    - type: entities
+      entities:
+        - sensor.network_health_sensor
 ```
 
-## Runtime-safety controls
+## Runtime-safety settings
 
-For weaker devices or highly dynamic dashboards, the runtime also exposes:
+Use these when the dashboard needs predictable behavior on weaker hardware:
 
 - `stability_mode`
 - `remember_expanded_state`
@@ -104,9 +85,7 @@ For weaker devices or highly dynamic dashboards, the runtime also exposes:
 - `pool_ttl_ms`
 - `pool_max_entries`
 
-These are not modal-specific, but they often matter in the same performance-tuning conversations.
-
-## Examples
+## Example combinations
 
 ### Safe default modal
 
@@ -140,33 +119,30 @@ body:
       entity: light.hall
 ```
 
-## Performance notes
+### Conservative dashboard tuning
 
-`preload` is intentionally opt-in.
+```yaml
+type: custom:universal-card
+title: Stable wall panel
+lazy_load: true
+lazy_initial_batch: 1
+lazy_batch_size: 1
+lazy_idle_timeout: 180
+stability_mode: true
+remember_expanded_state: false
+enable_card_pool: true
+pool_scope: card
+pool_max_entries: 8
+body:
+  cards:
+    - type: entities
+      entities:
+        - sensor.demo_temperature
+        - sensor.demo_humidity
+        - sensor.network_health_sensor
+```
 
-Reasons:
+## Recommendation
 
-- modal content may include cameras, media, or heavy custom cards
-- early initialization can increase startup cost
-- multiple preloaded cards on one dashboard can add up quickly
-
-Practical guidance:
-
-- keep `lazy` as the default unless you have measured a first-open problem
-- use `preload` selectively rather than globally
-- use `stability_mode` when you need predictable behavior more than aggressive optimization
-
-## Editor support
-
-The visual editor now exposes:
-
-- `modal.loading_strategy`
-- modal size fields that usually need to be tuned together with loading behavior
-
-Inline batching controls such as `lazy_initial_batch` and `lazy_batch_size` remain better suited to YAML.
-
-## Limitations
-
-- loading strategy is modal-specific in this stage; fullscreen and subview are unchanged
-- `preload` prepares content but does not force the modal open
-- the visual difference is timing-based, so documentation uses YAML and guidance instead of a fake screenshot
+Start with defaults.
+Only switch to `preload` or tune batching when you have a real performance or UX reason.

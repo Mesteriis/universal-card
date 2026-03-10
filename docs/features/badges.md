@@ -1,53 +1,43 @@
 ---
 title: Badges
-description: Badge types, visibility rules, comparison operators, colors, and icon-only rendering.
+description: Badge types, visibility rules, comparison operators, color rules, icon-only rendering, and actions.
 section_label: Features
 permalink: /features/badges/
 ---
+
 # Badges
 
-## Overview
+Badges live in the header and are ideal for compact status, counters, quick actions, and visual state indicators.
 
-Badges are rendered in the card header and can show entity state, attributes, counters, or static values.
+## Badge types
 
-Primary runtime files:
-
-- `src/ui/Header.ts`
-- `src/ui/badge-rules.ts`
-- `src/core/config-contracts.ts`
-- `src/core/config.ts`
-
-Supported badge types:
+Supported types:
 
 - `state`
 - `attribute`
 - `counter`
 - `custom`
 
-## Core fields
+## Common fields
 
-Common badge fields:
-
-- `type`
-- `entity`
-- `attribute`
-- `icon`
-- `value`
-- `label`
-- `unit`
-- `color`
-- `thresholds`
-- `tap_action`
-- `icon_tap_action`
-- `icon_only`
-- `visibility`
-- `color_rules`
+| Field | Purpose |
+| --- | --- |
+| `icon` | badge icon |
+| `value` | displayed value |
+| `label` | short label |
+| `unit` | unit suffix |
+| `color` | fixed badge color |
+| `thresholds` | numeric color mapping |
+| `visibility` | show or hide the badge based on rules |
+| `color_rules` | set color from rules |
+| `icon_only` | hide label and value, keep icon only |
+| `tap_action` | action for the whole badge |
+| `icon_tap_action` | action for the icon only |
 
 ## Visibility rules
 
-Each badge can have its own `visibility` rule list.
-
-Format:
+Each badge can decide for itself whether it should render.
+Rules are evaluated with logical `AND`.
 
 ```yaml
 badges:
@@ -59,17 +49,13 @@ badges:
         value: on
 ```
 
-Behavior:
+A rule can compare against:
 
-- rules are evaluated with logical `AND`
-- if any rule fails, the badge is hidden
-- if no visibility rules are defined, the badge is visible
-- by default, rules compare against the badge's own resolved value
-- a rule can override the source value with its own `entity` and optional `attribute`
+- the badge's own resolved value
+- another `entity`
+- another entity `attribute`
 
-## Comparison operators
-
-Supported operators in this stage:
+## Supported operators
 
 - `==`
 - `!=`
@@ -78,19 +64,15 @@ Supported operators in this stage:
 - `>=`
 - `<=`
 
-Comparison behavior:
+Use cases:
 
-- numeric-looking values are compared as numbers
-- boolean values and `true` / `false` strings are compared as booleans
-- everything else is compared as strings
-
-The rule shape is intentionally designed to be extended later with operators such as `in`, `not_in`, `contains`, and `matches`, but those operators are not implemented in this stage.
+- compare `on` / `off`
+- compare string states such as `home`, `away`, `unavailable`
+- compare numeric sensor values
 
 ## Color rules
 
-`color_rules` provide rule-based badge colors without requiring a template engine.
-
-Example:
+Use `color_rules` when the color should follow state.
 
 ```yaml
 badges:
@@ -99,56 +81,44 @@ badges:
     icon: mdi:lightbulb
     color_rules:
       - operator: ==
-        value: on
+        value: 'on'
         color: var(--warning-color)
       - operator: ==
-        value: off
+        value: 'off'
         color: var(--secondary-text-color)
       - operator: ==
         value: unavailable
         color: var(--error-color)
 ```
 
-Color precedence:
+Typical patterns:
 
-1. `color`
-2. first matching rule from `color_rules`
-3. existing automatic state color / numeric threshold fallback
-4. `var(--primary-color)`
-
-This preserves backward compatibility for existing badges that already use `color` or `thresholds`.
+- active = yellow
+- inactive = gray
+- unavailable = red
 
 ## Icon-only mode
 
-Set `icon_only: true` to render only the icon when the badge has an icon.
-
-Example:
+`icon_only: true` keeps the badge compact and works well for dense dashboards.
 
 ```yaml
 badges:
   - type: state
-    entity: light.kitchen
-    icon: mdi:lightbulb
+    entity: vacuum.robot
+    icon: mdi:robot-vacuum
     icon_only: true
     color_rules:
       - operator: ==
-        value: on
-        color: gold
+        value: cleaning
+        color: deepskyblue
 ```
 
-Notes:
+## Badge actions
 
-- icon-only mode hides label, value, unit, and progress bar
-- if no icon is provided, the badge falls back to normal text rendering instead of becoming empty
+You can add actions at two levels:
 
-## Tap actions
-
-Two action levels are available:
-
-- `tap_action`: click anywhere on the badge body
-- `icon_tap_action`: click only the icon area
-
-Example:
+- `tap_action` for the full badge
+- `icon_tap_action` for the icon only
 
 ```yaml
 badges:
@@ -162,56 +132,21 @@ badges:
       action: more-info
 ```
 
-Behavior:
+## Example patterns
 
-- when `icon_tap_action` is configured, clicking the icon runs that action instead of the badge body action
-- when `icon_tap_action` is not configured, clicking the icon behaves like a normal badge click
-- if the badge has an `entity` and the action does not specify one, the badge entity is used automatically
-
-## Editor support
-
-The visual editor now supports:
-
-- base badge fields, including static `color`
-- `icon_only`
-- `visibility` rules with comparison operators
-- `color_rules`
-
-Still YAML-only in this stage:
-
-- `tap_action`
-- `icon_tap_action`
-
-## Examples
-
-### Visibility on badge value
+### Attribute badge
 
 ```yaml
 badges:
-  - type: custom
-    icon: mdi:thermometer
-    value: 24
-    unit: °C
-    visibility:
-      - operator: >=
-        value: 20
+  - type: attribute
+    entity: weather.home
+    attribute: humidity
+    icon: mdi:water-percent
+    label: Humidity
+    unit: '%'
 ```
 
-### Visibility based on another entity
-
-```yaml
-badges:
-  - type: custom
-    icon: mdi:door
-    label: Patio
-    value: Open
-    visibility:
-      - entity: binary_sensor.patio_door
-        operator: ==
-        value: on
-```
-
-### Counter badge with color rules
+### Counter badge
 
 ```yaml
 badges:
@@ -229,34 +164,54 @@ badges:
         color: gold
 ```
 
-### Icon-only badge with separate icon action
+### Badge shown only on a separate entity state
+
+```yaml
+badges:
+  - type: custom
+    icon: mdi:door
+    label: Patio
+    value: Open
+    visibility:
+      - entity: binary_sensor.patio_door
+        operator: ==
+        value: on
+```
+
+### Compact icon-only badge row
 
 ```yaml
 badges:
   - type: state
+    entity: input_boolean.kitchen_light
+    icon: mdi:lightbulb
+    icon_only: true
+  - type: state
     entity: vacuum.robot
     icon: mdi:robot-vacuum
     icon_only: true
-    tap_action:
-      action: call-service
-      service: vacuum.start
-      entity: vacuum.robot
-    icon_tap_action:
-      action: more-info
+  - type: state
+    entity: input_boolean.security_armed
+    icon: mdi:shield-lock
+    icon_only: true
 ```
 
-## Limitations
+## Editor coverage
 
-- rule arrays currently use implicit `AND`; nested logical groups are not supported for badges in this stage
-- future operators `in`, `not_in`, `contains`, and `matches` are planned but not yet available
-- badge actions currently remain YAML-only in the editor
-- the active runtime path is the header badge renderer in `src/ui/Header.ts`
+The visual editor covers:
 
-## Compatibility notes
+- common badge fields
+- `icon_only`
+- `visibility`
+- `color_rules`
 
-Existing badge configs continue to work:
+YAML is still the best fit for:
 
-- `color` still has the highest priority
-- `thresholds` still work as before when `color` and `color_rules` do not override them
-- `tap_action` still works on the whole badge
-- new fields are additive and do not replace legacy badge fields
+- `tap_action`
+- `icon_tap_action`
+- larger hand-tuned badge collections
+
+## Limits
+
+- badge rule lists use `AND`
+- future operators such as `in`, `not_in`, `contains`, and `matches` are not available yet

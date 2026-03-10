@@ -1,4 +1,5 @@
 ---
+published: false
 title: Work Summary
 description: Branch-level summary of modal, badges, body modes, header, loading strategy, and editor work.
 section_label: Project Notes

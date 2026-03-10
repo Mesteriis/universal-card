@@ -1,31 +1,21 @@
 ---
 title: Configuration
-description: Core YAML structure, config anatomy, and the shortest path from a minimal card to the full Universal Card feature surface.
+description: Core YAML structure, starter templates, and the shortest path from a minimal card to a production dashboard card.
 section_label: Configuration
 permalink: /configuration/
 ---
 
 # Configuration
 
-`Universal Card` is a frontend-only Lovelace custom card.
-The configuration surface is intentionally layered: start with the shell, then choose a body mode, then add layout, rules, styling, and runtime knobs only where they solve a real need.
+`Universal Card` is easiest to configure in layers:
 
-## Core anatomy
+1. define the shell
+2. choose how the body opens
+3. add layout
+4. add rules and actions
+5. add styling only where it improves the dashboard
 
-A typical card is built from these layers:
-
-| Layer | Purpose |
-| --- | --- |
-| root fields | title, subtitle, icon, entity, theme, actions, expansion state, runtime flags |
-| `header` | slot cards, sticky/clickable behavior, layout presets |
-| `badges` | state chips with thresholds, visibility rules, color rules, and actions |
-| `body` | nested Lovelace cards |
-| `body_mode` | how the body is opened and laid out |
-| `grid` | shared column and spacing rules for nested cards |
-| `footer` | supporting cards and action zones |
-| feature surfaces | visibility, swipe, state styles, theme tokens, custom CSS, loading |
-
-## Minimal example
+## Minimal card
 
 ```yaml
 type: custom:universal-card
@@ -36,51 +26,135 @@ body:
       content: Hello
 ```
 
-## Recommended build path
+## Common shell fields
 
-1. Set `title`, `icon`, optional `entity`, and `body.cards`.
-2. Pick a `body_mode` based on how content should open.
-3. Add `grid` when the body needs structure.
-4. Add `header.layout` and `badges` when the header becomes dense.
-5. Add actions, visibility, and styling once the structure is stable.
-6. Add runtime tuning only if you have a concrete performance or UX reason.
+| Field | Purpose |
+| --- | --- |
+| `title`, `subtitle` | Main header copy |
+| `icon`, `icon_color` | Header icon and optional color |
+| `entity`, `attribute` | Entity-backed title, styles, and rules |
+| `theme` | Built-in visual preset |
+| `padding`, `border_radius` | Base shell spacing and shape |
+| `expanded` | Start opened or collapsed |
+| `show_state` | Show the entity state in the header |
+| `show_expand_icon`, `expand_icon` | Expand affordance |
 
-## Body mode map
+## Main sections
+
+| Section | Purpose |
+| --- | --- |
+| `header` | Header behavior and layout presets |
+| `header_left`, `header_right` | Side slot cards in the header |
+| `badges` | Header chips with values, rules, and actions |
+| `body` | Nested Lovelace cards |
+| `body_mode` | How the body is shown |
+| `grid` | Shared card layout rules |
+| `footer` | Supporting cards and actions |
+| `footer_left`, `footer_right` | Side slot cards in the footer |
+| `visibility`, `section_visibility` | Show or hide card regions |
+| `swipe` | Directional gesture actions |
+| `theme_tokens`, `state_styles`, `custom_css` | Styling layers |
+
+## Body mode quick picker
 
 | Mode | Best for | Main docs |
 | --- | --- | --- |
 | `expand` | inline drill-down | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `modal` | focused detail dialogs | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
-| `fullscreen` | immersive dashboards and cameras | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `tabs` | grouped content | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `carousel` | sequential cards and quick swipes | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `subview` | navigation to a separate Lovelace view | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| `none` | header-only cards | [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) |
+| `modal` | focused detail overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
+| `fullscreen` | large media and immersive dashboards | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
+| `tabs` | grouped content inside one card | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
+| `carousel` | slide-based navigation | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
+| `subview` | jump to a dedicated Lovelace view | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
+| `none` | header-only status cards | [Examples Gallery]({{ '/examples/' | relative_url }}) |
 
-## Major config families
+## Starter templates
 
-### Layout and composition
+### Expand with grid
 
-- root shell fields
-- `body_mode`
-- `body.cards`
-- `grid.*`
-- `tabs[]`, `tabs_config.*`
-- `carousel_autoplay`, `carousel_interval`, `carousel_options.*`
-- `modal.*`, `fullscreen.*`, `subview.*`
-- `header.*`, `header_left.*`, `header_right.*`
-- `footer.*`
+```yaml
+type: custom:universal-card
+title: Overview
+icon: mdi:view-dashboard
+body_mode: expand
+grid:
+  columns: 2
+  gap: 12px
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: sensor.demo_temperature
+        - entity: sensor.demo_humidity
+    - type: entities
+      entities:
+        - entity: sensor.network_health_sensor
+        - entity: input_select.house_mode
+```
 
-### Rules and interaction
+### Modal detail card
+
+```yaml
+type: custom:universal-card
+title: Security
+icon: mdi:shield-home
+body_mode: modal
+modal:
+  width: auto
+  max_width: 72rem
+  max_height: 85vh
+  loading_strategy: lazy
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: input_boolean.security_armed
+        - entity: sensor.security_status
+```
+
+### Header with badges
+
+```yaml
+type: custom:universal-card
+title: Living Room
+subtitle: Lights and comfort
+icon: mdi:sofa
+header:
+  layout:
+    variant: stacked
+    badges_position: below_content
+badges:
+  - type: state
+    entity: input_boolean.kitchen_light
+    icon: mdi:lightbulb
+    label: Main light
+    color_rules:
+      - operator: ==
+        value: 'on'
+        color: gold
+      - operator: ==
+        value: 'off'
+        color: gray
+body:
+  cards:
+    - type: entities
+      entities:
+        - entity: input_boolean.kitchen_light
+```
+
+## Rules and interaction
+
+Use these groups when the structure is already stable:
 
 - root `tap_action`, `hold_action`, `double_tap_action`
-- `badges[]` including `visibility` and `color_rules`
+- `badges[]` with `visibility`, `color_rules`, `icon_only`, and badge actions
 - root `visibility`
 - `section_visibility`
 - `swipe.*`
 - `context_menu.*`
 
-### Styling and runtime
+## Styling and runtime
+
+Use these groups for visual tuning and performance:
 
 - `theme`
 - `icon_color`
@@ -89,39 +163,25 @@ body:
 - `custom_css`
 - `lazy_load`
 - `modal.loading_strategy`
-- persistence, pooling, animation, and stability fields
+- persistence, pooling, animation, and stability settings
 
-## Docs map for the full surface
+## Where to go next
 
 <div class="docs-link-grid">
-  <a class="docs-link-card" href="{{ '/features/capability-reference/' | relative_url }}">
-    <h3>Capability Reference</h3>
-    <p>The complete public inventory across layout, styling, interactions, runtime, editor, and platform API surfaces.</p>
-  </a>
   <a class="docs-link-card" href="{{ '/examples/' | relative_url }}">
     <h3>Examples Gallery</h3>
-    <p>Dark-theme screenshots and GIFs captured from a real Home Assistant fixture, paired with exact YAML.</p>
+    <p>Copyable YAML for body modes, badges, visibility, styling, footer, gestures, and editor scenarios.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/capability-reference/' | relative_url }}">
+    <h3>Capability Reference</h3>
+    <p>The complete user-facing field map grouped by feature area.</p>
   </a>
   <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>
-    <p>Visual editor coverage, section breakdown, and where YAML remains the better tool.</p>
+    <p>What is supported in the visual editor and when YAML remains the better fit.</p>
   </a>
-  <a class="docs-link-card" href="{{ '/development/upgrade-notes/' | relative_url }}">
-    <h3>Upgrade Notes</h3>
-    <p>New fields and behavior changes grouped by implementation stage.</p>
+  <a class="docs-link-card" href="{{ '/release-notes/' | relative_url }}">
+    <h3>Release Notes</h3>
+    <p>User-facing highlights by version with short notes about what changed.</p>
   </a>
 </div>
-
-## Repository map
-
-- production source: `src/`
-- tests and fixtures: `tests/`
-- production bundles: `universal-card.js`, `lazy/*.js`
-- docs site: `docs/`
-- release automation: `.github/workflows/`
-
-## Next steps
-
-- [Installation]({{ '/installation/' | relative_url }}) if the resource is not loaded yet
-- [Examples Gallery]({{ '/examples/' | relative_url }}) if you want starting YAML and real renders
-- [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) when you need the full public inventory

@@ -1,125 +1,102 @@
 ---
 title: Feature Map
-description: Complete public capability map for Universal Card, including rendered examples, behavior-only surfaces, editor coverage, and advanced runtime hooks.
+description: User-facing map of the Universal Card feature surface, with links to examples and focused guides.
 section_label: Features
 permalink: /features/
 ---
 
 # Feature Map
 
-This page is the public map of the Universal Card feature surface.
-It answers three things:
+This page answers three practical questions:
 
-1. what the card supports
-2. where that capability is documented
-3. whether that capability is covered by screenshots, YAML examples, or behavior notes
+1. what the card can do
+2. where to find an example
+3. where to find the focused guide for that area
 
 <div class="docs-callout">
-  <strong>Static-site constraint.</strong> GitHub Pages cannot boot a real Lovelace runtime. For visual features, the docs therefore use real dark-theme captures produced from a local Home Assistant fixture. For behavior-first features, the docs use exact YAML and explicit guidance instead of fake previews.
+  <strong>Preview model.</strong> GitHub Pages is static, so visual examples use real Home Assistant captures instead of simulated renders.
 </div>
 
 ## Primary docs
 
 <div class="docs-card-grid">
-  <a class="docs-card" href="{{ '/features/capability-reference/' | relative_url }}">
-    <h3>Capability Reference</h3>
-    <p>Complete public inventory across layout, styling, interaction, runtime, editor, and platform API surfaces.</p>
-  </a>
   <a class="docs-card" href="{{ '/examples/' | relative_url }}">
     <h3>Examples Gallery</h3>
-    <p>Production-ready screenshots and GIFs paired with copyable YAML for every major visual cluster.</p>
+    <p>Copyable YAML for every major visual and behavioral area of the card.</p>
+  </a>
+  <a class="docs-card" href="{{ '/configuration/' | relative_url }}">
+    <h3>Configuration</h3>
+    <p>Start here for structure, starter templates, and field groups.</p>
   </a>
   <a class="docs-card" href="{{ '/features/modal-layout/' | relative_url }}">
     <h3>Modal Layout</h3>
-    <p>Responsive modal sizing, overlay density, grid behavior, and loading strategy.</p>
+    <p>Overlay sizing, spacing, mobile behavior, and modal-specific loading.</p>
   </a>
   <a class="docs-card" href="{{ '/features/body-modes-layout/' | relative_url }}">
     <h3>Body Modes Layout</h3>
-    <p>Expand, fullscreen, tabs, carousel, subview, and the shared contracts behind them.</p>
+    <p>Expand, fullscreen, tabs, carousel, subview, and header-only cards.</p>
   </a>
   <a class="docs-card" href="{{ '/features/header-layout/' | relative_url }}">
     <h3>Header Layout</h3>
-    <p>Preset-based header arrangement, spacing, alignment, and badge placement.</p>
+    <p>Header variants, spacing, alignment, slot usage, and badge placement.</p>
   </a>
   <a class="docs-card" href="{{ '/features/badges/' | relative_url }}">
     <h3>Badges</h3>
-    <p>Per-badge rules, icon-only mode, color mapping, and badge action behavior.</p>
+    <p>Badge types, visibility rules, color rules, icon-only mode, and actions.</p>
   </a>
   <a class="docs-card" href="{{ '/features/loading-strategy/' | relative_url }}">
     <h3>Loading Strategy</h3>
-    <p>Lazy versus preload behavior and safe defaults for performance-sensitive dashboards.</p>
+    <p>When to use lazy loading, preload, and runtime-safety settings.</p>
   </a>
   <a class="docs-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>
-    <p>Visual editor coverage, section layout, and where YAML remains the better surface.</p>
+    <p>Visual editor coverage, best-fit workflows, and YAML-first areas.</p>
   </a>
 </div>
 
-## Coverage matrix
+## Coverage map
 
-| Area | Coverage | Best entry point |
-| --- | --- | --- |
-| Core card shell | screenshot + YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
-| Body modes | screenshot/GIF + YAML | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
-| Modal sizing and loading | GIF + YAML + guidance | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
-| Grid composition | screenshot + YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
-| Header layout | screenshot + YAML | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |
-| Badges | screenshot + YAML | [Badges]({{ '/features/badges/' | relative_url }}) |
-| Footer | screenshot + YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
-| Root actions | YAML + render context | [Examples Gallery]({{ '/examples/' | relative_url }}) |
-| Context menu and swipe | YAML + behavior note | [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) |
-| Visibility and section visibility | YAML + render context | [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) |
-| Themes, tokens, state styles, custom CSS | screenshot + YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
-| Loading, persistence, pooling, stability | YAML + behavior note | [Loading Strategy]({{ '/features/loading-strategy/' | relative_url }}) |
-| Editor | screenshot + coverage map | [Editor]({{ '/features/editor/' | relative_url }}) |
-| Platform API and plugin hooks | reference note | [Capability Reference]({{ '/features/capability-reference/' | relative_url }}) |
+| Area | Best entry point |
+| --- | --- |
+| Basic card setup | [Configuration]({{ '/configuration/' | relative_url }}) |
+| Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
+| Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
+| Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
+| Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |
+| Badge rules and icon-only mode | [Badges]({{ '/features/badges/' | relative_url }}) |
+| Performance and loading | [Loading Strategy]({{ '/features/loading-strategy/' | relative_url }}) |
+| Visual editor | [Editor]({{ '/features/editor/' | relative_url }}) |
+| Release highlights | [Release Notes]({{ '/release-notes/' | relative_url }}) |
 
-## Major capability areas
+## Main capability groups
 
-### Layout and surfaces
+### Layout
 
 - 7 body modes: `expand`, `modal`, `fullscreen`, `tabs`, `carousel`, `subview`, `none`
-- shared `grid` contract with spans and mixed column definitions
-- nested Lovelace cards in body, header, and footer regions
-- footer cards and footer action zones
+- shared `grid` layout with card spans
+- nested Lovelace cards in header, body, and footer
+- configurable header variants and badge placement
 
-### Interaction and rules
+### Rules and interaction
 
-- top-level tap, hold, and double-tap actions
-- badge actions and icon-specific badge actions
-- root visibility and per-section visibility
-- swipe gesture runtime with directional actions
-- optional context menu surface
+- tap, hold, and double-tap actions
+- badge-level actions
+- root and section visibility
+- swipe gestures
+- optional context menus
 
-### Styling and themes
+### Styling
 
-- broad built-in theme set
+- built-in themes
 - `icon_color`
 - `theme_tokens`
 - `state_styles`
-- scoped `custom_css`
-- header, tabs, fullscreen, modal, and grid spacing controls
+- `custom_css`
+- spacing and sizing controls for body modes and header layouts
 
-### Runtime and performance
+### Runtime and editor
 
-- inline `lazy_load`
-- modal `loading_strategy`
-- persistence via `remember_expanded_state` and `remember_mode_state`
-- card pooling knobs
-- `stability_mode`
-- animation timing and stagger controls
-
-### Editor and tooling
-
-- schema-driven visual editor
-- nested rule builders for visibility and badge rules
-- typed swipe and layout controls
-- public runtime namespace for config helpers, loaders, plugins, and devtools
-
-## Recommended reading order
-
-1. [Installation]({{ '/installation/' | relative_url }})
-2. [Configuration]({{ '/configuration/' | relative_url }})
-3. [Examples Gallery]({{ '/examples/' | relative_url }})
-4. [Capability Reference]({{ '/features/capability-reference/' | relative_url }})
-5. The specific feature page for the part of the card you want to tune
+- inline lazy loading
+- modal `lazy` vs `preload`
+- persistence and stability controls
+- visual editor with mode-aware settings and nested rule builders

@@ -1,78 +1,64 @@
 ---
 title: Header Layout
-description: Preset-based header layouts, spacing, alignment, and badge placement options.
+description: Header variants, spacing, alignment, slot usage, and badge placement.
 section_label: Features
 permalink: /features/header-layout/
 ---
+
 # Header Layout
 
-## Overview
+The header can stay compact, stack into rows, or center itself for hero-style cards.
+All header layout settings live under `header.layout`.
 
-The header now supports preset-based layout configuration instead of a single hard-coded arrangement.
+## Main fields
 
-Primary runtime files:
+| Field | Purpose |
+| --- | --- |
+| `variant` | overall header arrangement |
+| `gap` | spacing between header regions |
+| `content_gap` | spacing between title, subtitle, content cards, and badges |
+| `align` | text and content alignment |
+| `badges_position` | keep badges on the right or move them below content |
 
-- `src/ui/Header.ts`
-- `src/styles/header-footer.ts`
-- `src/core/config.ts`
-- `src/core/UniversalCard.ts`
+## Variants
 
-The current historical layout remains the default preset.
+### `default`
 
-## Config Surface
+Best for regular dashboard cards with title, subtitle, icon, and badges in one row.
 
-Header layout is configured under `header.layout`.
+### `stacked`
 
-Supported fields:
+Best when the header is getting dense and badges need more room.
 
-- `variant`
-- `gap`
-- `content_gap`
-- `align`
-- `badges_position`
+### `centered`
 
-### Variants
+Best for hero cards, status cards, and cards with fewer controls but stronger visual emphasis.
+
+## Alignment values
 
 Supported values:
-
-- `default`
-- `stacked`
-- `centered`
-
-Behavior summary:
-
-- `default`: current left/content/right row layout
-- `stacked`: control zones stay on top, content moves to a second row
-- `centered`: stacked-style layout with centered content alignment
-
-### Alignment
-
-Supported `align` values:
 
 - `start`
 - `center`
 - `end`
 
-This controls alignment of title, subtitle, content cards, and any badges rendered below content.
-
-### Badges position
+## Badge placement
 
 Supported values:
 
 - `right`
 - `below_content`
 
-`right` keeps badges in the right header zone.
-
-`below_content` moves badges into the content column under title, subtitle, and content slot cards.
+Use `below_content` when badges are part of the main header story instead of a side utility area.
 
 ## Examples
 
-### Default layout with tighter spacing
+### Compact default header
 
 ```yaml
 type: custom:universal-card
 title: Living Room
+subtitle: Lights and comfort
 header:
   layout:
     variant: default
@@ -80,7 +66,7 @@ header:
     content_gap: 2px
 ```
 
-### Stacked layout with badges below content
+### Stacked header with badges under the title
 
 ```yaml
 type: custom:universal-card
@@ -94,11 +80,11 @@ header:
     badges_position: below_content
 badges:
   - type: state
-    entity: light.kitchen
+    entity: input_boolean.kitchen_light
     label: Main
 ```
 
-### Centered layout for a dashboard hero card
+### Centered hero header
 
 ```yaml
 type: custom:universal-card
@@ -110,21 +96,27 @@ header:
     variant: centered
     align: center
     badges_position: below_content
+badges:
+  - type: attribute
+    entity: weather.home
+    attribute: temperature
+    icon: mdi:thermometer
+    unit: °C
 ```
 
-## Slots And Existing Header Features
+## Slot usage
 
-The new layout system keeps existing header features intact:
+These layout options work together with the existing header slots:
 
-- left slot cards still render in `header_left`
-- right slot cards still render in `header_right`
-- content slot cards still render in `header.cards`
-- expand icon behavior is unchanged
-- badge actions and visibility rules are unchanged
+- `header_left.cards`
+- `header.cards`
+- `header_right.cards`
 
-## Editor Support
+That means you can still place supporting controls in the side slots while changing the main title/badge arrangement.
 
-The visual editor now exposes:
+## Editor coverage
+
+The visual editor covers the full header layout group:
 
 - `header.sticky`
 - `header.clickable`
@@ -134,24 +126,10 @@ The visual editor now exposes:
 - `header.layout.align`
 - `header.layout.badges_position`
 
-## Limitations
+## When YAML is still better
 
-- header layout uses presets, not arbitrary free-form element ordering
-- `centered` is intentionally opinionated and does not expose every possible alignment combination
-- slot placement remains tied to left/content/right regions; only badges can move between right and below-content positions in this stage
-- a full drag-and-drop header builder is intentionally out of scope for now
+YAML remains better if you want:
 
-## Rationale
-
-A preset-based system fits the current architecture better than a free-form layout engine:
-
-- smaller API surface
-- easier editor integration
-- easier regression testing
-- preserves current DOM/event behavior with minimal change
-
-## Compatibility Notes
-
-- if `header.layout` is omitted, the runtime uses the existing default header arrangement
-- existing badges, slot cards, and header actions continue to work without changes
-- no existing header field was removed in this stage
+- very custom slot-card combinations
+- highly tuned spacing across nested header cards
+- a card design that uses header slots as part of a larger visual composition
