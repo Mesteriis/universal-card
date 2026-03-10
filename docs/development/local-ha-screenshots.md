@@ -92,8 +92,20 @@ This keeps the run deterministic.
 
 The tracked fixture template remains in `tests/ha-fixture/config/`, which keeps the repository clean and makes onboarding reproducible.
 
+## CI Workflow
+
+A manual GitHub Actions workflow is now available at `.github/workflows/screenshots.yml`.
+
+It:
+
+1. builds the bundle
+2. starts the same Home Assistant fixture
+3. runs `npm run docs:assets:refresh`
+4. uploads `docs/img/` and the capture log as workflow artifacts
+
+This keeps CI safe and reproducible without auto-committing generated screenshots back into the branch.
+
 ## Limits
 
-- This is still a local workflow. CI artifact upload can be added later, but is not required to generate production Pages assets.
-- Screenshot stability depends on a fixed viewport and current Home Assistant frontend behavior.
+- Screenshot stability still depends on a fixed viewport and current Home Assistant frontend behavior.
 - Some features such as `swipe`, `context_menu`, and loading strategy are behavior-heavy. They are documented with real renders where useful, but YAML and guidance remain the authoritative coverage surface.
