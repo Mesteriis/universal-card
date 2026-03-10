@@ -74,7 +74,6 @@ const config = {
     js: `/**
  * Universal Card v${CARD_VERSION}
  * @license MIT
- * Built: ${new Date().toISOString()}
  */`
   },
   define: {
