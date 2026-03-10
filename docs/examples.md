@@ -20,6 +20,14 @@ Use this page in two ways:
 
 If you want starter configs grouped by real dashboard scenarios, use [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}).
 
+Focused guides for the main recipe families:
+
+- [Grid Layout]({{ '/features/grid-layout/' | relative_url }})
+- [Footer]({{ '/features/footer/' | relative_url }})
+- [Visibility]({{ '/features/visibility/' | relative_url }})
+- [Actions And Gestures]({{ '/features/interactions/' | relative_url }})
+- [Theming Guide]({{ '/features/theming-guide/' | relative_url }})
+
 ## Recipe Index
 
 | Use case | Best recipe |
@@ -858,3 +866,12 @@ body:
     - type: button
       entity: input_boolean.security_armed
 ```
+
+## Related Docs
+
+- [Configuration]({{ '/configuration/' | relative_url }})
+- [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
+- [Grid Layout]({{ '/features/grid-layout/' | relative_url }})
+- [Footer]({{ '/features/footer/' | relative_url }})
+- [Visibility]({{ '/features/visibility/' | relative_url }})
+- [Actions And Gestures]({{ '/features/interactions/' | relative_url }})

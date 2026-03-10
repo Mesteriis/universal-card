@@ -182,6 +182,22 @@ Use [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) if you are 
     <h3>YAML Block Reference</h3>
     <p>Block-by-block YAML guidance for root fields, badges, grid, body modes, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-link-card" href="{{ '/features/grid-layout/' | relative_url }}">
+    <h3>Grid Layout</h3>
+    <p>Columns, gaps, colspan, rowspan, and practical layout guidance.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/footer/' | relative_url }}">
+    <h3>Footer</h3>
+    <p>How to use footer slots, helper text, and secondary action rows cleanly.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/visibility/' | relative_url }}">
+    <h3>Visibility</h3>
+    <p>Whole-card, section, and badge visibility patterns.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/interactions/' | relative_url }}">
+    <h3>Actions And Gestures</h3>
+    <p>Tap, hold, context menu, footer actions, and swipe gestures.</p>
+  </a>
   <a class="docs-link-card" href="{{ '/features/recipes-by-use-case/' | relative_url }}">
     <h3>Recipes by Use Case</h3>
     <p>Starter recipes for climate, security, media, mobile dashboards, wall panels, and admin tools.</p>

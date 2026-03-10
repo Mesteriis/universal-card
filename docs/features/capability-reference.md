@@ -125,6 +125,10 @@ YAML remains the better tool for:
 
 - [Examples Gallery]({{ '/examples/' | relative_url }})
 - [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
+- [Grid Layout]({{ '/features/grid-layout/' | relative_url }})
+- [Footer]({{ '/features/footer/' | relative_url }})
+- [Visibility]({{ '/features/visibility/' | relative_url }})
+- [Actions And Gestures]({{ '/features/interactions/' | relative_url }})
 - [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }})
 - [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }})
 - [Theming Guide]({{ '/features/theming-guide/' | relative_url }})

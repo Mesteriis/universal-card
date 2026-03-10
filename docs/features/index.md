@@ -32,6 +32,22 @@ This page answers three practical questions:
     <h3>YAML Block Reference</h3>
     <p>Block-by-block reference for root fields, badges, body mode blocks, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/grid-layout/' | relative_url }}">
+    <h3>Grid Layout</h3>
+    <p>How to use columns, gaps, colspan, and rowspan for expandable, modal, fullscreen, and tabbed layouts.</p>
+  </a>
+  <a class="docs-card" href="{{ '/features/footer/' | relative_url }}">
+    <h3>Footer</h3>
+    <p>Footer text, slot cards, action buttons, and secondary controls.</p>
+  </a>
+  <a class="docs-card" href="{{ '/features/visibility/' | relative_url }}">
+    <h3>Visibility</h3>
+    <p>Whole-card, section-level, and badge-level conditional rendering.</p>
+  </a>
+  <a class="docs-card" href="{{ '/features/interactions/' | relative_url }}">
+    <h3>Actions And Gestures</h3>
+    <p>Tap, hold, double-tap, context menu, footer actions, and swipe gestures.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/recipes-by-use-case/' | relative_url }}">
     <h3>Recipes by Use Case</h3>
     <p>Starter configurations grouped by real dashboard needs such as climate, security, media, wall panels, and admin tools.</p>
@@ -81,6 +97,10 @@ This page answers three practical questions:
 | Basic card setup | [Configuration]({{ '/configuration/' | relative_url }}) |
 | Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
 | Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
+| Grid composition | [Grid Layout]({{ '/features/grid-layout/' | relative_url }}) |
+| Footer actions and support content | [Footer]({{ '/features/footer/' | relative_url }}) |
+| Conditional rendering | [Visibility]({{ '/features/visibility/' | relative_url }}) |
+| Actions, menus, and gestures | [Actions And Gestures]({{ '/features/interactions/' | relative_url }}) |
 | Room or dashboard scenario recipes | [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}) |
 | Styling recipes | [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }}) |
 | Styling decision guide | [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) |

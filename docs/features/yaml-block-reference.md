@@ -699,4 +699,8 @@ pool_max_entries: 8
 
 1. [Configuration]({{ '/configuration/' | relative_url }})
 2. [Examples Gallery]({{ '/examples/' | relative_url }})
-3. The focused feature page for the area you are tuning
+3. [Grid Layout]({{ '/features/grid-layout/' | relative_url }}) for layout tuning
+4. [Footer]({{ '/features/footer/' | relative_url }}) for secondary controls
+5. [Visibility]({{ '/features/visibility/' | relative_url }}) for conditional rendering
+6. [Actions And Gestures]({{ '/features/interactions/' | relative_url }}) for interaction design
+7. [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) for styling decisions
