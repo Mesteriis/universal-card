@@ -28,7 +28,7 @@ html {
 
 body.docs-page-body {
   margin: 0;
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
   background:
     radial-gradient(circle at top left, rgba(124, 231, 167, 0.18), transparent 30%),
     radial-gradient(circle at top right, rgba(120, 216, 255, 0.12), transparent 26%),
@@ -341,7 +341,7 @@ a {
 
 .docs-content code,
 .docs-content pre code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', 'Cascadia Mono', 'Menlo', monospace;
 }
 
 .docs-content :not(pre) > code {

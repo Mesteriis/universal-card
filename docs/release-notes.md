@@ -20,11 +20,7 @@ Highlights:
 - broader visual editor coverage for layout, badges, and body modes
 - much larger Pages documentation set with real Home Assistant examples
 - local screenshot and GIF workflow for docs asset refresh
-
-Configuration note:
-
-- this version includes configuration cleanup for older setups
-- if you maintain older YAML, re-save and test after updating
+- new layout and badge options are additive, so existing cards can keep their current config and adopt the new fields only when needed
 
 ## Older releases
 

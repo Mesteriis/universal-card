@@ -1,28 +1,18 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Card — Продвинутая карточка для Home Assistant</title>
-    <meta name="description" content="Мощная Lovelace карточка с 7 режимами отображения, CSS Grid, 21 темой и визуальным редактором">
+    <title>Universal Card — Advanced Lovelace card for Home Assistant</title>
+    <meta name="description" content="Advanced Lovelace card with 7 body modes, CSS Grid layout, 21 themes, and a visual editor">
     <meta name="keywords" content="Home Assistant, Lovelace, Custom Card, HACS, Smart Home">
     <meta property="og:title" content="Universal Card">
-    <meta property="og:description" content="Продвинутая карточка Lovelace для Home Assistant">
+    <meta property="og:description" content="Advanced Lovelace card for Home Assistant">
     <meta property="og:image" content="img/body-modes-demo.gif">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0b1512">
     <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="apple-touch-icon" href="assets/icon.png">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Highlight.js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
     
     <style>
         :root {
@@ -53,7 +43,7 @@
         }
 
         body {
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
@@ -277,8 +267,37 @@
             margin-bottom: 2rem;
         }
 
-        .hero-badges img {
-            height: 24px;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.38rem 0.72rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .hero-badge strong {
+            color: var(--text-primary);
+            margin-right: 0.35rem;
+        }
+
+        .hero-badge--accent {
+            border-color: rgba(124, 231, 167, 0.18);
+            background: rgba(124, 231, 167, 0.08);
+        }
+
+        .hero-badge--cyan {
+            border-color: rgba(120, 216, 255, 0.18);
+            background: rgba(120, 216, 255, 0.08);
+        }
+
+        .hero-badge--solid {
+            border-color: rgba(47, 159, 122, 0.32);
+            background: rgba(47, 159, 122, 0.16);
         }
 
         .hero-buttons {
@@ -514,7 +533,7 @@
         }
 
         .code-block code {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'JetBrains Mono', 'SFMono-Regular', 'Cascadia Mono', 'Menlo', monospace;
             font-size: 0.9rem;
             line-height: 1.6;
         }
@@ -582,7 +601,7 @@
         }
 
         .install-card.recommended::before {
-            content: 'Рекомендуется';
+            content: 'Recommended';
             position: absolute;
             top: -12px;
             left: 24px;
@@ -838,18 +857,18 @@
                 </span>
             </a>
             <ul class="nav-links">
-                <li><a href="#features">Возможности</a></li>
-                <li><a href="#modes">Режимы</a></li>
-                <li><a href="#themes">Темы</a></li>
-                <li><a href="#examples">Примеры</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#modes">Modes</a></li>
+                <li><a href="#themes">Themes</a></li>
+                <li><a href="#examples">Examples</a></li>
                 <li><a href="features/">Docs</a></li>
-                <li><a href="#installation">Установка</a></li>
+                <li><a href="#installation">Install</a></li>
             </ul>
             <div class="nav-cta">
                 <a href="features/" class="btn btn-secondary">
                     📚 Docs
                 </a>
-                <a href="https://github.com/Mesteriis/universal-card" class="btn btn-primary" target="_blank">
+                <a href="https://github.com/Mesteriis/universal-card" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                     ⭐ GitHub
                 </a>
             </div>
@@ -866,22 +885,22 @@
                     </span>
                     <span>Universal Card System</span>
                 </div>
-                <h1>Universal Card для Home Assistant</h1>
-                <p>Мощная Lovelace карточка с 7 режимами отображения, CSS Grid layout, 21 темой и визуальным редактором.</p>
+                <h1>Universal Card for Home Assistant</h1>
+                <p>Advanced Lovelace card with 7 body modes, CSS Grid layout, 21 themes, and a visual editor.</p>
                 
                 <div class="hero-badges">
-                    <img src="https://img.shields.io/github/v/release/Mesteriis/universal-card?style=flat-square&color=3cd48b" alt="Release">
-                    <img src="https://img.shields.io/github/stars/Mesteriis/universal-card?style=flat-square&color=78d8ff" alt="Stars">
-                    <img src="https://img.shields.io/github/downloads/Mesteriis/universal-card/total?style=flat-square&color=2f9f7a" alt="Downloads">
-                    <img src="https://img.shields.io/badge/HACS-Custom-16483e?style=flat-square&labelColor=0d1117&logoColor=7ce7a7" alt="HACS">
+                    <span class="hero-badge hero-badge--accent"><strong>Release</strong> Latest</span>
+                    <span class="hero-badge hero-badge--cyan"><strong>Modes</strong> 7 body modes</span>
+                    <span class="hero-badge"><strong>Themes</strong> 21 presets</span>
+                    <span class="hero-badge hero-badge--solid"><strong>Install</strong> HACS ready</span>
                 </div>
                 
                 <div class="hero-buttons">
                     <a href="#installation" class="btn btn-primary btn-large">
-                        📦 Установить через HACS
+                        📦 Install via HACS
                     </a>
                     <a href="examples/" class="btn btn-secondary btn-large">
-                        💻 Примеры и YAML
+                        💻 Examples and YAML
                     </a>
                 </div>
             </div>
@@ -895,57 +914,57 @@
     <section class="features" id="features">
         <div class="section-container">
             <div class="section-header">
-                <h2>✨ Возможности</h2>
-                <p>Всё что нужно для создания идеального dashboard</p>
+                <h2>✨ Features</h2>
+                <p>Everything you need to build a polished Home Assistant dashboard</p>
             </div>
             
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon blue">🎭</div>
-                    <h3>7 режимов Body</h3>
-                    <p>Expand, Modal, Fullscreen, Tabs, Carousel, Subview и None — выберите идеальный способ отображения контента.</p>
+                    <h3>7 Body Modes</h3>
+                    <p>Expand, Modal, Fullscreen, Tabs, Carousel, Subview, and None for the right content flow in each card.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon green">📐</div>
                     <h3>CSS Grid Layout</h3>
-                    <p>Гибкая сетка с colspan/rowspan, кастомными колонками и responsive breakpoints.</p>
+                    <p>Flexible grid layout with colspan, rowspan, custom columns, and responsive breakpoints.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon purple">🎨</div>
-                    <h3>21 тема</h3>
-                    <p>От минимализма до киберпанка — готовые темы на любой вкус с возможностью кастомизации.</p>
+                    <h3>21 Themes</h3>
+                    <p>From minimal dashboards to dramatic branded panels, with room for custom tuning.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon orange">⚡</div>
                     <h3>Lazy Loading</h3>
-                    <p>Контент загружается только при необходимости — никаких лагов даже со множеством карточек.</p>
+                    <p>Load heavy content only when needed and keep large dashboards responsive.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon blue">👁️</div>
                     <h3>Visibility Conditions</h3>
-                    <p>Показывайте карточки по условиям: состояние entity, пользователь, время, размер экрана.</p>
+                    <p>Show cards only when they matter: entity state, user, time window, or screen context.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon green">🪆</div>
                     <h3>Nested Cards</h3>
-                    <p>Неограниченная вложенность карточек с наследованием тем.</p>
+                    <p>Compose complex dashboard surfaces with nested cards and theme inheritance.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon purple">👆</div>
                     <h3>Actions</h3>
-                    <p>Tap, Hold, Double Tap — настройте действия для любого взаимодействия.</p>
+                    <p>Tap, hold, and double tap actions for compact control surfaces and drill-down flows.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon orange">🎨</div>
-                    <h3>Визуальный редактор</h3>
-                    <p>Полноценный GUI редактор прямо в Lovelace — без необходимости писать YAML.</p>
+                    <h3>Visual Editor</h3>
+                    <p>Configure major layout and badge options from Lovelace without hand-editing every field.</p>
                 </div>
             </div>
         </div>
@@ -954,99 +973,99 @@
     <section class="features" id="docs-hub">
         <div class="section-container">
             <div class="section-header">
-                <h2>📚 Полная документация</h2>
-                <p>Pages-site теперь включает полный capability reference, реальные dark-theme renders, editor coverage и gallery примеров с точным YAML.</p>
+                <h2>📚 Full Documentation</h2>
+                <p>The Pages site now includes a full capability reference, real dark-theme renders, editor coverage, and a large YAML-backed examples gallery.</p>
             </div>
 
             <div class="features-grid">
                 <a class="feature-card" href="features/">
                     <div class="feature-icon blue">🧭</div>
                     <h3>Feature Map</h3>
-                    <p>Полная карта возможностей: body modes, badges, header layout, loading, themes, footer и editor coverage.</p>
+                    <p>Full map of public capabilities: body modes, badges, header layout, loading, themes, footer, and editor support.</p>
                 </a>
 
                 <a class="feature-card" href="examples/">
                     <div class="feature-icon green">🧪</div>
                     <h3>Examples Gallery</h3>
-                    <p>Реальные скриншоты и GIF из Home Assistant рядом с копируемым YAML для всех основных visual feature groups.</p>
+                    <p>Real Home Assistant screenshots and GIFs paired with copyable YAML for the main feature groups.</p>
                 </a>
 
                 <a class="feature-card" href="features/capability-reference/">
                     <div class="feature-icon purple">🗂️</div>
                     <h3>Capability Reference</h3>
-                    <p>Полный инвентарь пользовательских возможностей: layout, actions, visibility, styling, runtime settings и editor coverage.</p>
+                    <p>Complete inventory of layout, actions, visibility, styling, runtime settings, and editor coverage.</p>
                 </a>
 
                 <a class="feature-card" href="features/yaml-block-reference/">
                     <div class="feature-icon green">🧱</div>
                     <h3>YAML Block Reference</h3>
-                    <p>Энциклопедический reference по блокам конфигурации: root, header, badges, body modes, styling, actions и runtime.</p>
+                    <p>Block-by-block configuration reference for root shell, header, badges, body modes, styling, actions, and runtime.</p>
                 </a>
 
                 <a class="feature-card" href="features/field-matrix/">
                     <div class="feature-icon purple">🧾</div>
                     <h3>Field Matrix</h3>
-                    <p>Быстрый lookup по группам полей, editor coverage и лучшей точке входа в документацию.</p>
+                    <p>Quick lookup by field group, editor coverage, and the best documentation entry point for each area.</p>
                 </a>
 
                 <a class="feature-card" href="features/grid-layout/">
                     <div class="feature-icon blue">🧮</div>
                     <h3>Grid Layout</h3>
-                    <p>Подробное руководство по columns, gaps, colspan, rowspan и композиции nested cards.</p>
+                    <p>Detailed guide for columns, gaps, spans, and nested-card composition.</p>
                 </a>
 
                 <a class="feature-card" href="features/footer/">
                     <div class="feature-icon orange">🦶</div>
                     <h3>Footer</h3>
-                    <p>Footer text, supporting cards, action rows и вторичные control surfaces.</p>
+                    <p>Footer text, supporting cards, action rows, and secondary control surfaces.</p>
                 </a>
 
                 <a class="feature-card" href="features/visibility/">
                     <div class="feature-icon purple">👁️</div>
                     <h3>Visibility</h3>
-                    <p>Card-level, section-level и badge-level правила отображения.</p>
+                    <p>Card-level, section-level, and badge-level visibility rules.</p>
                 </a>
 
                 <a class="feature-card" href="features/interactions/">
                     <div class="feature-icon green">🕹️</div>
                     <h3>Actions And Gestures</h3>
-                    <p>Tap, hold, double tap, context menu, footer actions и swipe navigation.</p>
+                    <p>Tap, hold, double tap, context menus, footer actions, and swipe navigation.</p>
                 </a>
 
                 <a class="feature-card" href="features/recipes-by-use-case/">
                     <div class="feature-icon orange">🗺️</div>
                     <h3>Recipes by Use Case</h3>
-                    <p>Готовые рецепты под реальные сценарии: climate, security, media, wall panel, mobile dashboard и admin tools.</p>
+                    <p>Ready recipes for real dashboard scenarios: climate, security, media, wall panel, mobile, and admin tools.</p>
                 </a>
 
                 <a class="feature-card" href="features/custom-css-recipes/">
                     <div class="feature-icon blue">🎛️</div>
                     <h3>Custom CSS Recipes</h3>
-                    <p>Готовые сниппеты для точечного restyle: card shell, header, badges, tabs, modal, fullscreen и footer.</p>
+                    <p>Ready snippets for precise restyling of the card shell, header, badges, tabs, modal, fullscreen, and footer.</p>
                 </a>
 
                 <a class="feature-card" href="features/theming-guide/">
                     <div class="feature-icon purple">🎨</div>
                     <h3>Theming Guide</h3>
-                    <p>Когда использовать theme, icon_color, theme_tokens, state_styles и когда уже действительно нужен custom_css.</p>
+                    <p>When to use theme, icon color, theme tokens, state styles, and when `custom_css` is the right tool.</p>
                 </a>
 
                 <a class="feature-card" href="features/selector-catalog/">
                     <div class="feature-icon green">🧬</div>
                     <h3>Selector Catalog</h3>
-                    <p>Официальные CSS hooks и стабильные селекторы, которые можно безопасно таргетить через custom_css.</p>
+                    <p>Official CSS hooks and stable selectors that are safe to target from `custom_css`.</p>
                 </a>
 
                 <a class="feature-card" href="features/editor/">
                     <div class="feature-icon orange">🛠️</div>
                     <h3>Editor Coverage</h3>
-                    <p>Отдельная страница по visual editor: секции, что вынесено в UI, и где осознанно остаётся YAML.</p>
+                    <p>Dedicated editor page covering what is exposed in UI and what intentionally stays YAML-first.</p>
                 </a>
 
                 <a class="feature-card" href="configuration/">
                     <div class="feature-icon orange">⚙️</div>
                     <h3>Configuration Guide</h3>
-                    <p>Структура конфигурации, anatomy карточки и быстрый маршрут от minimal card к продвинутому dashboard.</p>
+                    <p>Configuration structure, card anatomy, and the shortest path from a minimal card to a production dashboard.</p>
                 </a>
             </div>
         </div>
@@ -1056,59 +1075,59 @@
         <div class="section-container">
             <div class="section-header">
                 <h2>🔟 Top Recipes</h2>
-                <p>Самые полезные стартовые сценарии с прямыми переходами к examples и use-case страницам.</p>
+                <p>The most useful starting points, with direct jumps into examples and use-case pages.</p>
             </div>
 
             <div class="features-grid">
                 <a class="feature-card" href="examples/#recipe-basic-expandable-card">
                     <div class="feature-icon blue">1</div>
                     <h3>Basic Expandable</h3>
-                    <p>Базовая карточка для большинства dashboard use cases.</p>
+                    <p>Baseline card pattern for most dashboard use cases.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-modal-with-responsive-sizing">
                     <div class="feature-icon green">2</div>
                     <h3>Modal Detail</h3>
-                    <p>Overlay для detail views и быстрых control sheets.</p>
+                    <p>Overlay pattern for detail views and quick control sheets.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-fullscreen-mode">
                     <div class="feature-icon purple">3</div>
                     <h3>Fullscreen Media</h3>
-                    <p>Камеры, media, большие панели и immersive layouts.</p>
+                    <p>Cameras, media panels, and immersive large-format layouts.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-tabs-mode">
                     <div class="feature-icon orange">4</div>
                     <h3>Tabs Card</h3>
-                    <p>Группировка climate, security, media и других разделов.</p>
+                    <p>Grouped content for climate, security, media, and other dashboard domains.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-badge-rules-and-icon-only-mode">
                     <div class="feature-icon purple">5</div>
                     <h3>Badge Status Row</h3>
-                    <p>Компактные статусы, icon-only chips и color rules.</p>
+                    <p>Compact statuses, icon-only chips, and condition-based color rules.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-visibility-and-section-visibility">
                     <div class="feature-icon green">6</div>
                     <h3>Conditional UI</h3>
-                    <p>Скрытие whole-card или отдельных sections по условиям.</p>
+                    <p>Hide the whole card or specific sections based on runtime conditions.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-themes-tokens-and-state-styles">
                     <div class="feature-icon orange">7</div>
                     <h3>Theme Override</h3>
-                    <p>Тонкая настройка вида через themes, tokens и state styles.</p>
+                    <p>Refine the look with themes, tokens, and state-based styling.</p>
                 </a>
                 <a class="feature-card" href="examples/#recipe-loading-strategy-and-stable-wall-panel-setup">
                     <div class="feature-icon blue">8</div>
                     <h3>Wall Panel Stable</h3>
-                    <p>Консервативный setup для планшетов и постоянных панелей.</p>
+                    <p>Stable configuration for tablets, kiosks, and always-on wall panels.</p>
                 </a>
                 <a class="feature-card" href="features/recipes-by-use-case/#use-case-security-dashboard">
                     <div class="feature-icon green">9</div>
                     <h3>Security Dashboard</h3>
-                    <p>Готовый use-case recipe для охраны, камер и alert actions.</p>
+                    <p>Ready use-case recipe for security, cameras, and alert-oriented actions.</p>
                 </a>
                 <a class="feature-card" href="features/recipes-by-use-case/#use-case-mobile-dashboard">
                     <div class="feature-icon purple">10</div>
                     <h3>Mobile Dashboard</h3>
-                    <p>Компактные карточки, badges и one-column friendly layout.</p>
+                    <p>Compact cards, badges, and one-column friendly layout patterns.</p>
                 </a>
             </div>
         </div>
@@ -1119,44 +1138,44 @@
         <div class="section-container">
             <div class="section-header">
                 <h2>🎭 Body Modes</h2>
-                <p>7 способов отображения контента на любой случай</p>
+                <p>Seven ways to present card content depending on context</p>
             </div>
             
             <div class="modes-grid">
                 <div class="mode-card">
                     <div class="icon">📂</div>
                     <h4>Expand</h4>
-                    <p>Плавное раскрытие</p>
+                    <p>Smooth inline expansion</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">🪟</div>
                     <h4>Modal</h4>
-                    <p>Всплывающее окно</p>
+                    <p>Focused overlay window</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">📺</div>
                     <h4>Fullscreen</h4>
-                    <p>На весь экран</p>
+                    <p>Immersive full-screen mode</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">📑</div>
                     <h4>Tabs</h4>
-                    <p>Вкладки</p>
+                    <p>Tabbed content groups</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">🎠</div>
                     <h4>Carousel</h4>
-                    <p>Карусель</p>
+                    <p>Slide-based navigation</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">📄</div>
                     <h4>Subview</h4>
-                    <p>Встроенный view</p>
+                    <p>Route-based detail view</p>
                 </div>
                 <div class="mode-card">
                     <div class="icon">🏷️</div>
                     <h4>None</h4>
-                    <p>Только header</p>
+                    <p>Header-only card shell</p>
                 </div>
             </div>
         </div>
@@ -1166,8 +1185,8 @@
     <section class="themes" id="themes">
         <div class="section-container">
             <div class="section-header">
-                <h2>🎨 21 тема оформления</h2>
-                <p>Выберите стиль, который подходит вашему dashboard</p>
+                <h2>🎨 21 Theme Presets</h2>
+                <p>Choose a visual language that matches your dashboard</p>
             </div>
             
             <figure class="themes-image">
@@ -1180,16 +1199,16 @@
     <section class="examples" id="examples">
         <div class="section-container">
             <div class="section-header">
-                <h2>💻 Примеры кода</h2>
-                <p>Начните использовать за минуту</p>
+                <h2>💻 Code Examples</h2>
+                <p>Start with copyable YAML in under a minute</p>
             </div>
             
             <div class="example-tabs">
-                <button class="example-tab active" data-tab="basic">Базовый</button>
+                <button class="example-tab active" data-tab="basic">Basic</button>
                 <button class="example-tab" data-tab="grid">Grid Layout</button>
                 <button class="example-tab" data-tab="tabs">Tabs</button>
                 <button class="example-tab" data-tab="modal">Modal</button>
-                <button class="example-tab" data-tab="theme">С темой</button>
+                <button class="example-tab" data-tab="theme">Theme</button>
             </div>
             
             <div class="code-block" id="code-basic">
@@ -1198,8 +1217,8 @@
                     <button class="copy-btn" onclick="copyCode('basic')">📋 Copy</button>
                 </div>
                 <pre><code class="language-yaml">type: custom:universal-card
-title: Освещение
-subtitle: Гостиная
+title: Lighting
+subtitle: Living Room
 icon: mdi:lightbulb-group
 entity: light.living_room
 body:
@@ -1238,15 +1257,15 @@ body:
                     <button class="copy-btn" onclick="copyCode('tabs')">📋 Copy</button>
                 </div>
                 <pre><code class="language-yaml">type: custom:universal-card
-title: Умный дом
+title: Smart Home
 body_mode: tabs
 tabs:
-  - label: Свет
+  - label: Lights
     icon: mdi:lightbulb
     cards:
       - type: light
         entity: light.room
-  - label: Климат
+  - label: Climate
     icon: mdi:thermometer
     cards:
       - type: thermostat
@@ -1259,7 +1278,7 @@ tabs:
                     <button class="copy-btn" onclick="copyCode('modal')">📋 Copy</button>
                 </div>
                 <pre><code class="language-yaml">type: custom:universal-card
-title: Настройки
+title: Settings
 icon: mdi:cog
 body_mode: modal
 modal:
@@ -1275,11 +1294,11 @@ body:
 
             <div class="code-block" id="code-theme" style="display: none;">
                 <div class="code-header">
-                    <span>С темой</span>
+                    <span>Theme</span>
                     <button class="copy-btn" onclick="copyCode('theme')">📋 Copy</button>
                 </div>
                 <pre><code class="language-yaml">type: custom:universal-card
-title: Неоновая карточка
+title: Neon Card
 theme: neon
 expanded: true
 body:
@@ -1297,18 +1316,18 @@ body:
     <section class="gallery" id="gallery">
         <div class="section-container">
             <div class="section-header">
-                <h2>📸 Галерея</h2>
-                <p>Скриншоты возможностей</p>
+                <h2>📸 Gallery</h2>
+                <p>Feature screenshots from the real card surface</p>
             </div>
             
             <div class="gallery-grid">
                 <figure class="gallery-item">
                     <img src="img/grid-layout-1.png" alt="Grid Layout">
-                    <figcaption>Grid Layout с colspan/rowspan</figcaption>
+                    <figcaption>Grid layout with colspan and rowspan</figcaption>
                 </figure>
                 <figure class="gallery-item">
                     <img src="img/header-options.png" alt="Header Options">
-                    <figcaption>Варианты заголовков</figcaption>
+                    <figcaption>Header layout variants</figcaption>
                 </figure>
                 <figure class="gallery-item">
                     <img src="img/actions.png" alt="Actions">
@@ -1316,15 +1335,15 @@ body:
                 </figure>
                 <figure class="gallery-item">
                     <img src="img/nested-cards.png" alt="Nested Cards">
-                    <figcaption>Вложенные карточки</figcaption>
+                    <figcaption>Nested card composition</figcaption>
                 </figure>
                 <figure class="gallery-item">
                     <img src="img/visibility.png" alt="Visibility">
-                    <figcaption>Условия видимости</figcaption>
+                    <figcaption>Visibility rules</figcaption>
                 </figure>
                 <figure class="gallery-item">
                     <img src="img/debug-view.png" alt="Debug Mode">
-                    <figcaption>Debug режим</figcaption>
+                    <figcaption>Debug view</figcaption>
                 </figure>
             </div>
         </div>
@@ -1334,28 +1353,28 @@ body:
     <section class="installation" id="installation">
         <div class="section-container">
             <div class="section-header">
-                <h2>📦 Установка</h2>
-                <p>Выберите удобный способ установки</p>
+                <h2>📦 Installation</h2>
+                <p>Choose the installation path that fits your setup</p>
             </div>
             
             <div class="install-methods">
                 <div class="install-card recommended">
                     <h3>🎨 HACS</h3>
                     <ol class="install-steps">
-                        <li>Откройте <strong>HACS</strong> → <strong>Frontend</strong></li>
-                        <li>Нажмите <strong>"+"</strong> → найдите <strong>"Universal Card"</strong></li>
-                        <li>Нажмите <strong>"Установить"</strong></li>
-                        <li>Перезагрузите Home Assistant</li>
+                        <li>Open <strong>HACS</strong> → <strong>Frontend</strong></li>
+                        <li>Select <strong>"+"</strong> and search for <strong>"Universal Card"</strong></li>
+                        <li>Click <strong>"Download"</strong></li>
+                        <li>Restart Home Assistant</li>
                     </ol>
                 </div>
                 
                 <div class="install-card">
-                    <h3>📁 Ручная установка</h3>
+                    <h3>📁 Manual Install</h3>
                     <ol class="install-steps">
-                        <li>Скачайте последний релиз с <a href="https://github.com/Mesteriis/universal-card/releases" target="_blank">GitHub Releases</a></li>
-                        <li>Скопируйте <code>universal-card.js</code> и папку <code>lazy/</code> в <code>/config/www/universal-card/</code></li>
-                        <li>Добавьте Lovelace resource:<br><code>/local/universal-card/universal-card.js</code> (<code>module</code>)</li>
-                        <li>Обновите страницу и очистите кеш браузера</li>
+                        <li>Download the latest package from <a href="https://github.com/Mesteriis/universal-card/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a></li>
+                        <li>Copy <code>universal-card.js</code> and the <code>lazy/</code> directory into <code>/config/www/universal-card/</code></li>
+                        <li>Add the Lovelace resource:<br><code>/local/universal-card/universal-card.js</code> (<code>module</code>)</li>
+                        <li>Refresh the page and clear browser cache if needed</li>
                     </ol>
                 </div>
             </div>
@@ -1371,11 +1390,11 @@ body:
                         <img class="footer-brand__logo" src="assets/icon.png" alt="">
                         <span>Universal Card</span>
                     </h3>
-                    <p>Продвинутая карточка Lovelace для создания красивых и функциональных dashboard в Home Assistant.</p>
+                    <p>Advanced Lovelace card for building polished and highly functional dashboards in Home Assistant.</p>
                 </div>
                 
                 <div class="footer-links">
-                    <h4>Документация</h4>
+                    <h4>Documentation</h4>
                     <ul>
                         <li><a href="features/">Feature Map</a></li>
                         <li><a href="examples/">Examples Gallery</a></li>
@@ -1384,20 +1403,20 @@ body:
                 </div>
                 
                 <div class="footer-links">
-                    <h4>Ресурсы</h4>
+                    <h4>Resources</h4>
                     <ul>
-                        <li><a href="https://github.com/Mesteriis/universal-card/issues">Issues</a></li>
-                        <li><a href="https://github.com/Mesteriis/universal-card/discussions">Discussions</a></li>
-                        <li><a href="https://github.com/Mesteriis/universal-card/pulls">Pull Requests</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/issues" target="_blank" rel="noopener noreferrer">Issues</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/discussions" target="_blank" rel="noopener noreferrer">Discussions</a></li>
+                        <li><a href="https://github.com/Mesteriis/universal-card/pulls" target="_blank" rel="noopener noreferrer">Pull Requests</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-links">
-                    <h4>Ссылки</h4>
+                    <h4>Links</h4>
                     <ul>
-                        <li><a href="https://www.home-assistant.io/">Home Assistant</a></li>
-                        <li><a href="https://hacs.xyz/">HACS</a></li>
-                        <li><a href="https://github.com/Mesteriis">@Mesteriis</a></li>
+                        <li><a href="https://www.home-assistant.io/" target="_blank" rel="noopener noreferrer">Home Assistant</a></li>
+                        <li><a href="https://hacs.xyz/" target="_blank" rel="noopener noreferrer">HACS</a></li>
+                        <li><a href="https://github.com/Mesteriis" target="_blank" rel="noopener noreferrer">@Mesteriis</a></li>
                     </ul>
                 </div>
             </div>
@@ -1405,7 +1424,7 @@ body:
             <div class="footer-bottom">
                 <span>© 2024-2026 Universal Card. MIT License.</span>
                 <div class="footer-social">
-                    <a href="https://github.com/Mesteriis/universal-card" target="_blank" title="GitHub">
+                    <a href="https://github.com/Mesteriis/universal-card" target="_blank" rel="noopener noreferrer" title="GitHub">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
@@ -1416,9 +1435,6 @@ body:
     </footer>
 
     <script>
-        // Highlight.js init
-        hljs.highlightAll();
-
         // Tab switching
         document.querySelectorAll('.example-tab').forEach(tab => {
             tab.addEventListener('click', () => {
