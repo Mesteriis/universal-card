@@ -24,8 +24,7 @@
     "smoke:runtime": "node scripts/smoke-runtime-optimizations.js",
     "test": "npm run test:config && npm run test:unit && npm run typecheck && npm run build && npm run smoke:themes-modes && npm run smoke:runtime",
     "check": "npm run test",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "release:prepare": "node scripts/prepare-release.mjs"
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
