@@ -2,28 +2,20 @@
  * Universal Card - Modal Mode
  *
  * Opens content in a modal/popup dialog with backdrop.
- * Supports configurable width, backdrop blur, and animations.
+ * Supports configurable sizing, layout, and close behavior.
  *
  * @author Mesteriis
  * @version 1.0.0
  * @module modes/ModalMode
  */
 
+import { DEFAULTS } from '../core/constants.js';
+import type { ModalConfig } from '../core/config-contracts.js';
 import { BaseMode, type GridConfig, type ModeConfig, type ModeOptions } from './BaseMode.js';
 import { acquireBodyScrollLock, releaseBodyScrollLock } from '../utils/overlay.js';
 
-interface ModalSettings {
-  width?: string;
-  max_width?: string;
-  backdrop_blur?: boolean;
-  backdrop_color?: string;
-  close_on_backdrop?: boolean;
-  close_on_escape?: boolean;
-  show_close?: boolean;
-}
-
 interface ModalModeConfig extends ModeConfig {
-  modal?: ModalSettings;
+  modal?: ModalConfig;
   grid?: GridConfig;
 }
 
@@ -35,7 +27,9 @@ export class ModalMode extends BaseMode {
   _portalTarget: HTMLElement;
   _escapeHandler: (event: KeyboardEvent) => void;
   _width: string;
+  _height: string;
   _maxWidth: string;
+  _maxHeight: string;
   _backdropBlur: boolean;
   _backdropColor: string;
   _closeOnBackdrop: boolean;
@@ -51,10 +45,12 @@ export class ModalMode extends BaseMode {
     this._escapeHandler = this._handleEscape.bind(this);
 
     const modal = config.modal || {};
-    this._width = modal.width || '90%';
-    this._maxWidth = modal.max_width || '600px';
+    this._width = this._normalizeStringValue(modal.width, DEFAULTS.modal_width);
+    this._height = this._normalizeStringValue(modal.height, DEFAULTS.modal_height);
+    this._maxWidth = this._normalizeStringValue(modal.max_width, DEFAULTS.modal_max_width);
+    this._maxHeight = this._normalizeStringValue(modal.max_height, DEFAULTS.modal_max_height);
     this._backdropBlur = modal.backdrop_blur !== false;
-    this._backdropColor = modal.backdrop_color || 'rgba(0, 0, 0, 0.6)';
+    this._backdropColor = this._normalizeStringValue(modal.backdrop_color, DEFAULTS.backdrop_color);
     this._closeOnBackdrop = modal.close_on_backdrop !== false;
     this._closeOnEscape = modal.close_on_escape !== false;
     this._showClose = modal.show_close !== false;
@@ -64,12 +60,16 @@ export class ModalMode extends BaseMode {
     this._container = document.createElement('div');
     this._container.className = 'modal-mode-placeholder';
     this._container.style.display = 'none';
+    this._container.dataset.ucRole = 'mode-placeholder';
+    this._container.dataset.ucMode = 'modal';
     return this._container;
   }
 
   _renderModal(): HTMLElement {
     this._overlay = document.createElement('div');
     this._overlay.className = 'uc-modal-overlay';
+    this._overlay.dataset.ucRole = 'overlay';
+    this._overlay.dataset.ucMode = 'modal';
     this._overlay.style.setProperty('--modal-backdrop-color', this._backdropColor);
 
     if (this._backdropBlur) {
@@ -78,8 +78,14 @@ export class ModalMode extends BaseMode {
 
     this._dialog = document.createElement('div');
     this._dialog.className = 'uc-modal-dialog';
+    this._dialog.dataset.ucRole = 'dialog';
+    this._dialog.dataset.ucMode = 'modal';
     this._dialog.style.setProperty('--modal-width', this._width);
+    this._dialog.style.setProperty('--modal-height', this._height);
     this._dialog.style.setProperty('--modal-max-width', this._maxWidth);
+    this._dialog.style.setProperty('--modal-max-height', this._maxHeight);
+    this._dialog.dataset.widthMode = this._width === 'auto' ? 'auto' : 'manual';
+    this._dialog.dataset.heightMode = this._height === 'auto' ? 'auto' : 'manual';
     this._dialog.setAttribute('role', 'dialog');
     this._dialog.setAttribute('aria-modal', 'true');
     this._dialog.tabIndex = -1;
@@ -87,29 +93,21 @@ export class ModalMode extends BaseMode {
     const header = this._renderHeader();
     const content = document.createElement('div');
     content.className = 'uc-modal-content';
+    content.dataset.ucRole = 'content';
 
     const grid = document.createElement('div');
     grid.className = 'uc-modal-grid';
-
-    if (this._config.grid) {
-      const { columns = 1, gap = '16px' } = this._config.grid;
-      if (typeof columns === 'string' && columns.trim()) {
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = columns;
-        grid.style.gap = gap;
-      } else if (typeof columns === 'number' && columns > 1) {
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        grid.style.gap = gap;
-      }
-    }
+    grid.dataset.ucRole = 'grid';
+    this._applyGridConfig(grid, this._config.grid, { columns: 1, gap: '12px' });
 
     if (!this._loaded) {
       grid.innerHTML = this._renderSkeleton();
     }
 
     content.appendChild(grid);
-    this._dialog.appendChild(header);
+    if (header) {
+      this._dialog.appendChild(header);
+    }
     this._dialog.appendChild(content);
 
     const style = document.createElement('style');
@@ -123,19 +121,27 @@ export class ModalMode extends BaseMode {
     return this._overlay;
   }
 
-  _renderHeader(): HTMLElement {
+  _renderHeader(): HTMLElement | null {
+    const titleText = this._config.title || '';
+    if (!titleText && !this._showClose) {
+      return null;
+    }
+
     const header = document.createElement('div');
     header.className = 'uc-modal-header';
+    header.dataset.ucRole = 'header';
 
     const title = document.createElement('div');
     title.className = 'uc-modal-title';
-    title.textContent = this._config.title || '';
+    title.dataset.ucRole = 'title';
+    title.textContent = titleText;
     header.appendChild(title);
 
     if (this._showClose) {
       const closeBtn = document.createElement('button');
       closeBtn.type = 'button';
       closeBtn.className = 'uc-modal-close';
+      closeBtn.dataset.ucRole = 'close';
       closeBtn.innerHTML = '<ha-icon icon="mdi:close"></ha-icon>';
       closeBtn.addEventListener('click', () => {
         void this.close();
@@ -237,78 +243,104 @@ export class ModalMode extends BaseMode {
     this._appendCards(grid, this._config.body?.cards || []);
   }
 
+  _normalizeStringValue(value: string | undefined, fallback: string): string {
+    if (typeof value !== 'string') {
+      return fallback;
+    }
+
+    const trimmed = value.trim();
+    return trimmed || fallback;
+  }
+
   static override getStyles(): string {
     return `
       /* ============================= */
       /* MODAL OVERLAY */
       /* ============================= */
-      
+
       .uc-modal-overlay {
+        --modal-overlay-padding: clamp(12px, 3vw, 20px);
         position: fixed;
         inset: 0;
         z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        padding: var(--modal-overlay-padding);
         background: var(--modal-backdrop-color, rgba(0, 0, 0, 0.6));
         opacity: 0;
         transition: opacity 0.25s ease;
       }
-      
+
       .uc-modal-overlay.with-blur {
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
       }
-      
+
       .uc-modal-overlay.open {
         opacity: 1;
       }
-      
+
       /* ============================= */
       /* MODAL DIALOG */
       /* ============================= */
-      
+
       .uc-modal-dialog {
         width: var(--modal-width, 90%);
-        max-width: var(--modal-max-width, 600px);
-        max-height: 90vh;
+        max-width: min(var(--modal-max-width, 600px), calc(100vw - (2 * var(--modal-overlay-padding))));
+        max-height: min(var(--modal-max-height, 85vh), calc(100vh - (2 * var(--modal-overlay-padding))));
+        min-width: min(280px, calc(100vw - (2 * var(--modal-overlay-padding))));
         background: var(--ha-card-background, var(--card-background-color, white));
         border-radius: var(--ha-card-border-radius, 12px);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         overflow: hidden;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         transform: scale(0.95) translateY(20px);
         opacity: 0;
-        transition: 
+        transition:
           transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
           opacity 0.3s ease;
       }
-      
+
+      .uc-modal-dialog[data-width-mode="auto"] {
+        width: min(calc(100vw - (2 * var(--modal-overlay-padding))), var(--modal-max-width, 600px));
+      }
+
+      .uc-modal-dialog[data-height-mode="manual"] {
+        height: var(--modal-height, auto);
+      }
+
+      .uc-modal-dialog[data-height-mode="auto"] {
+        height: auto;
+      }
+
       .uc-modal-dialog.open {
         transform: scale(1) translateY(0);
         opacity: 1;
       }
-      
+
       /* ============================= */
       /* MODAL HEADER */
       /* ============================= */
-      
+
       .uc-modal-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px;
+        gap: 12px;
+        padding: 14px 16px;
         border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
       }
-      
+
       .uc-modal-title {
+        min-width: 0;
         font-size: 18px;
         font-weight: 500;
         color: var(--primary-text-color);
       }
-      
+
       .uc-modal-close {
         background: none;
         border: none;
@@ -319,42 +351,50 @@ export class ModalMode extends BaseMode {
         border-radius: 50%;
         transition: background 0.2s ease;
       }
-      
+
       .uc-modal-close:hover {
         background: rgba(0, 0, 0, 0.1);
       }
-      
+
       .uc-modal-close ha-icon {
         --mdc-icon-size: 24px;
       }
-      
+
       /* ============================= */
       /* MODAL CONTENT */
       /* ============================= */
-      
+
       .uc-modal-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        padding: 12px 16px 16px;
       }
-      
+
       .uc-modal-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
       }
-      
+
       .uc-modal-grid .card-wrapper {
         min-width: 0;
+        min-height: 0;
         animation: modal-card-appear 0.3s ease forwards;
         opacity: 0;
       }
-      
+
+      .uc-modal-grid .card-wrapper > * {
+        min-width: 0;
+        height: 100%;
+      }
+
       .uc-modal-grid .card-wrapper:nth-child(1) { animation-delay: 50ms; }
       .uc-modal-grid .card-wrapper:nth-child(2) { animation-delay: 100ms; }
       .uc-modal-grid .card-wrapper:nth-child(3) { animation-delay: 150ms; }
       .uc-modal-grid .card-wrapper:nth-child(4) { animation-delay: 200ms; }
-      
+
       @keyframes modal-card-appear {
         from {
           opacity: 0;
@@ -365,23 +405,26 @@ export class ModalMode extends BaseMode {
           transform: translateY(0);
         }
       }
-      
+
       /* Skeleton */
       .uc-modal-content .skeleton-container {
+        display: grid;
+        grid-template-columns: inherit;
+        gap: inherit;
+        grid-column: 1 / -1;
         transition: opacity 0.2s ease;
       }
-      
+
       .uc-modal-content .skeleton-container.fade-out {
         opacity: 0;
       }
-      
+
       .uc-modal-content .skeleton-card {
-        padding: 16px;
+        padding: 14px;
         background: var(--secondary-background-color, #f5f5f5);
         border-radius: 8px;
-        margin-bottom: 8px;
       }
-      
+
       .uc-modal-content .skeleton-line {
         height: 12px;
         background: var(--divider-color, #e0e0e0);
@@ -389,16 +432,16 @@ export class ModalMode extends BaseMode {
         margin-bottom: 8px;
         animation: skeleton-pulse 1.5s ease-in-out infinite;
       }
-      
+
       .uc-modal-content .skeleton-line.title {
         width: 60%;
         height: 16px;
       }
-      
+
       .uc-modal-content .skeleton-line.text {
         width: 100%;
       }
-      
+
       .uc-modal-content .skeleton-line.short {
         width: 40%;
       }
@@ -406,6 +449,27 @@ export class ModalMode extends BaseMode {
       @keyframes skeleton-pulse {
         0%, 100% { opacity: 0.4; }
         50% { opacity: 1; }
+      }
+
+      @media (max-width: 767px) {
+        .uc-modal-overlay {
+          align-items: stretch;
+        }
+
+        .uc-modal-dialog {
+          width: calc(100vw - (2 * var(--modal-overlay-padding))) !important;
+          min-width: 0;
+          max-height: calc(100vh - (2 * var(--modal-overlay-padding)));
+        }
+
+        .uc-modal-content {
+          padding: 10px 12px 12px;
+        }
+
+        .uc-modal-grid {
+          grid-template-columns: minmax(0, 1fr) !important;
+          gap: 10px;
+        }
       }
     `;
   }

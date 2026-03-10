@@ -286,6 +286,127 @@ describe('UniversalCardEditor helper paths and bind flows', () => {
     });
   });
 
+  it('renders modal editor fields and icon color from shared schema descriptors', async () => {
+    const editor = await createEditor({
+      body_mode: 'modal'
+    });
+
+    const bodySection = editor._renderBodySection();
+    const styleSection = editor._renderStyleSection();
+
+    expect(bodySection).toContain('name="modal.width"');
+    expect(bodySection).toContain('name="modal.height"');
+    expect(bodySection).toContain('name="modal.max_width"');
+    expect(bodySection).toContain('name="modal.max_height"');
+    expect(bodySection).toContain('name="modal.loading_strategy"');
+    expect(styleSection).toContain('name="icon_color"');
+  });
+
+  it('renders fullscreen tabs carousel subview and header layout fields from shared schema descriptors', async () => {
+    const fullscreenEditor = await createEditor({
+      body_mode: 'fullscreen'
+    });
+    const tabsEditor = await createEditor({
+      body_mode: 'tabs'
+    });
+    const carouselEditor = await createEditor({
+      body_mode: 'carousel'
+    });
+    const subviewEditor = await createEditor({
+      body_mode: 'subview'
+    });
+    const headerEditor = await createEditor({});
+
+    const fullscreenBody = fullscreenEditor._renderBodySection();
+    const tabsBody = tabsEditor._renderBodySection();
+    const carouselBody = carouselEditor._renderBodySection();
+    const subviewBody = subviewEditor._renderBodySection();
+    const headerSection = headerEditor._renderHeaderSection();
+
+    expect(fullscreenBody).toContain('name="fullscreen.width"');
+    expect(fullscreenBody).toContain('name="fullscreen.max_height"');
+    expect(tabsBody).toContain('name="tabs_config.tab_alignment"');
+    expect(tabsBody).toContain('name="tabs_config.content_padding"');
+    expect(carouselBody).toContain('name="carousel_options.show_arrows"');
+    expect(carouselBody).toContain('name="carousel_options.height"');
+    expect(subviewBody).toContain('name="subview.path"');
+    expect(subviewBody).toContain('name="subview.return_on_close"');
+    expect(headerSection).toContain('name="header.layout.variant"');
+    expect(headerSection).toContain('name="header.layout.badges_position"');
+  });
+
+  it('binds badge visibility and color rule editor flows', async () => {
+    const editor = await createEditor({
+      badges: [
+        {
+          type: 'state'
+        }
+      ]
+    });
+
+    const addVisibilityButton = appendElement(editor.shadowRoot, 'button', {
+      dataset: { action: 'add-badge-visibility-rule', index: '0' }
+    });
+    const addColorButton = appendElement(editor.shadowRoot, 'button', {
+      dataset: { action: 'add-badge-color-rule', index: '0' }
+    });
+    appendElement(editor.shadowRoot, 'button', {
+      dataset: { action: 'delete-badge-rule', index: '0', ruleKind: 'visibility', ruleIndex: '0' }
+    });
+
+    const badgeItem = appendElement(editor.shadowRoot, 'div', {
+      className: 'badge-item',
+      dataset: { index: '0' }
+    });
+    const visibilityValueInput = appendElement(badgeItem, 'input', {
+      className: 'badge-field',
+      dataset: { field: 'value', ruleKind: 'visibility', ruleIndex: '0' },
+      type: 'text',
+      value: '42'
+    });
+    const colorValueInput = appendElement(badgeItem, 'input', {
+      className: 'badge-field',
+      dataset: { field: 'value', ruleKind: 'color_rules', ruleIndex: '0' },
+      type: 'text',
+      value: 'unavailable'
+    });
+    const colorInput = appendElement(badgeItem, 'input', {
+      className: 'badge-field',
+      dataset: { field: 'color', ruleKind: 'color_rules', ruleIndex: '0' },
+      type: 'text',
+      value: '#ff9800'
+    });
+
+    editor._bindBadges();
+
+    addVisibilityButton.dispatchEvent(new Event('click'));
+    addColorButton.dispatchEvent(new Event('click'));
+    visibilityValueInput.dispatchEvent(new Event('input'));
+    colorValueInput.dispatchEvent(new Event('input'));
+    colorInput.dispatchEvent(new Event('input'));
+
+    expect(editor._config.badges[0].visibility).toEqual([
+      {
+        operator: '==',
+        value: 42
+      }
+    ]);
+    expect(editor._config.badges[0].color_rules).toEqual([
+      {
+        operator: '==',
+        value: 'unavailable',
+        color: '#ff9800'
+      }
+    ]);
+
+    editor.shadowRoot.querySelector('[data-action="delete-badge-rule"]').dispatchEvent(new Event('click'));
+
+    expect(editor._config.badges[0].visibility).toBeUndefined();
+    expect(editor._pushHistory).toHaveBeenCalledTimes(3);
+    expect(editor._fireConfigChangedAndRender).toHaveBeenCalledTimes(3);
+    expect(editor._fireConfigChanged).toHaveBeenCalledTimes(3);
+  });
+
   it('binds tab editor input, add, and delete flows through the main bind pipeline', async () => {
     const editor = await createEditor({
       tabs: [{}]

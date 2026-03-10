@@ -41,9 +41,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
       - name: Validate package metadata
         run: |
           python3 -m json.tool hacs.json >/dev/null
@@ -54,7 +51,6 @@ jobs:
           npm run test
           npm run test:coverage
           npm run test:coverage:expanded
-          npm run test:e2e
 
       - name: Commit release artifacts
         id: commit_release

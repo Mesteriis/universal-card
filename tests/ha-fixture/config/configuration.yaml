@@ -1,0 +1,110 @@
+default_config:
+
+demo:
+
+homeassistant:
+  name: Universal Card Fixture
+  latitude: 40.4168
+  longitude: -3.7038
+  elevation: 667
+  unit_system: metric
+  time_zone: Europe/Madrid
+  auth_providers:
+    - type: trusted_networks
+      trusted_networks:
+        - 127.0.0.1
+        - ::1
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+        - 10.0.0.0/8
+      allow_bypass_login: true
+    - type: homeassistant
+
+lovelace:
+  mode: yaml
+  resources:
+    - url: /local/universal-card.js
+      type: module
+  dashboards:
+    fixture-dashboard:
+      mode: yaml
+      filename: ui-lovelace.yaml
+      title: Universal Card Fixture
+      icon: mdi:view-dashboard
+      show_in_sidebar: true
+      require_admin: false
+
+input_boolean:
+  kitchen_light:
+    name: Kitchen Light
+    initial: true
+  away_mode:
+    name: Away Mode
+    initial: false
+  security_armed:
+    name: Security Armed
+    initial: true
+
+input_number:
+  indoor_temperature:
+    name: Indoor Temperature
+    min: 16
+    max: 30
+    step: 0.5
+    initial: 22.5
+  humidity_level:
+    name: Humidity Level
+    min: 20
+    max: 90
+    step: 1
+    initial: 48
+
+counter:
+  notifications:
+    name: Notifications
+    initial: 3
+    step: 1
+
+input_select:
+  house_mode:
+    name: House Mode
+    options:
+      - home
+      - away
+      - night
+    initial: home
+
+input_text:
+  network_health:
+    name: Network Health
+    initial: online
+
+template:
+  - sensor:
+      - name: Demo Temperature
+        unique_id: demo_temperature
+        unit_of_measurement: °C
+        state: "{{ states('input_number.indoor_temperature') }}"
+      - name: Demo Humidity
+        unique_id: demo_humidity
+        unit_of_measurement: '%'
+        state: "{{ states('input_number.humidity_level') }}"
+      - name: Security Status
+        unique_id: security_status
+        state: >-
+          {% if is_state('input_boolean.security_armed', 'on') %}
+            armed
+          {% else %}
+            disarmed
+          {% endif %}
+      - name: Network Health Sensor
+        unique_id: network_health_sensor
+        state: "{{ states('input_text.network_health') }}"
+      - name: House Mode Sensor
+        unique_id: house_mode_sensor
+        state: "{{ states('input_select.house_mode') }}"
+
+logger:
+  default: warning
+  logs:
+    homeassistant.components.http.ban: error

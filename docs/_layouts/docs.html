@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <meta name="theme-color" content="#0b1512">
+  <link rel="icon" type="image/png" href="{{ '/assets/icon.png' | relative_url }}">
+  <link rel="apple-touch-icon" href="{{ '/assets/icon.png' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/docs.css' | relative_url }}">
+</head>
+<body class="docs-page-body">
+  <header class="docs-topbar">
+    <div class="docs-topbar__inner">
+      <a class="docs-brand" href="{{ '/' | relative_url }}">
+        <span class="docs-brand__art" aria-hidden="true">
+          <img class="docs-brand__logo" src="{{ '/assets/logo.png' | relative_url }}" alt="">
+        </span>
+        <span class="docs-brand__text">
+          <strong>Universal Card</strong>
+          <small>GitHub Pages Docs</small>
+        </span>
+      </a>
+      <nav class="docs-toplinks" aria-label="Quick links">
+        <a href="{{ '/features/' | relative_url }}">Features</a>
+        <a href="{{ '/examples/' | relative_url }}">Examples</a>
+        <a href="{{ '/configuration/' | relative_url }}">Configuration</a>
+        <a href="https://github.com/Mesteriis/universal-card" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+      <button class="docs-nav-toggle" type="button" aria-expanded="false" aria-controls="docs-sidebar">Menu</button>
+    </div>
+  </header>
+
+  <div class="docs-shell">
+    <aside class="docs-sidebar" id="docs-sidebar">
+      <div class="docs-sidebar__section">
+        <div class="docs-sidebar__title">Start</div>
+        <a class="docs-nav-link{% if page.url == '/installation/' %} is-active{% endif %}" href="{{ '/installation/' | relative_url }}">Installation</a>
+        <a class="docs-nav-link{% if page.url == '/configuration/' %} is-active{% endif %}" href="{{ '/configuration/' | relative_url }}">Configuration</a>
+        <a class="docs-nav-link{% if page.url == '/features/' %} is-active{% endif %}" href="{{ '/features/' | relative_url }}">Feature Map</a>
+        <a class="docs-nav-link{% if page.url == '/examples/' %} is-active{% endif %}" href="{{ '/examples/' | relative_url }}">Examples Gallery</a>
+      </div>
+
+      <div class="docs-sidebar__section">
+        <div class="docs-sidebar__title">Feature Docs</div>
+        <a class="docs-nav-link{% if page.url == '/features/capability-reference/' %} is-active{% endif %}" href="{{ '/features/capability-reference/' | relative_url }}">Capability Reference</a>
+        <a class="docs-nav-link{% if page.url == '/features/yaml-block-reference/' %} is-active{% endif %}" href="{{ '/features/yaml-block-reference/' | relative_url }}">YAML Block Reference</a>
+        <a class="docs-nav-link{% if page.url == '/features/field-matrix/' %} is-active{% endif %}" href="{{ '/features/field-matrix/' | relative_url }}">Field Matrix</a>
+        <a class="docs-nav-link{% if page.url == '/features/recipes-by-use-case/' %} is-active{% endif %}" href="{{ '/features/recipes-by-use-case/' | relative_url }}">Recipes by Use Case</a>
+        <a class="docs-nav-link{% if page.url == '/features/grid-layout/' %} is-active{% endif %}" href="{{ '/features/grid-layout/' | relative_url }}">Grid Layout</a>
+        <a class="docs-nav-link{% if page.url == '/features/footer/' %} is-active{% endif %}" href="{{ '/features/footer/' | relative_url }}">Footer</a>
+        <a class="docs-nav-link{% if page.url == '/features/visibility/' %} is-active{% endif %}" href="{{ '/features/visibility/' | relative_url }}">Visibility</a>
+        <a class="docs-nav-link{% if page.url == '/features/interactions/' %} is-active{% endif %}" href="{{ '/features/interactions/' | relative_url }}">Actions And Gestures</a>
+        <a class="docs-nav-link{% if page.url == '/features/custom-css-recipes/' %} is-active{% endif %}" href="{{ '/features/custom-css-recipes/' | relative_url }}">Custom CSS Recipes</a>
+        <a class="docs-nav-link{% if page.url == '/features/theming-guide/' %} is-active{% endif %}" href="{{ '/features/theming-guide/' | relative_url }}">Theming Guide</a>
+        <a class="docs-nav-link{% if page.url == '/features/selector-catalog/' %} is-active{% endif %}" href="{{ '/features/selector-catalog/' | relative_url }}">Selector Catalog</a>
+        <a class="docs-nav-link{% if page.url == '/features/modal-layout/' %} is-active{% endif %}" href="{{ '/features/modal-layout/' | relative_url }}">Modal Layout</a>
+        <a class="docs-nav-link{% if page.url == '/features/body-modes-layout/' %} is-active{% endif %}" href="{{ '/features/body-modes-layout/' | relative_url }}">Body Modes Layout</a>
+        <a class="docs-nav-link{% if page.url == '/features/header-layout/' %} is-active{% endif %}" href="{{ '/features/header-layout/' | relative_url }}">Header Layout</a>
+        <a class="docs-nav-link{% if page.url == '/features/badges/' %} is-active{% endif %}" href="{{ '/features/badges/' | relative_url }}">Badges</a>
+        <a class="docs-nav-link{% if page.url == '/features/loading-strategy/' %} is-active{% endif %}" href="{{ '/features/loading-strategy/' | relative_url }}">Loading Strategy</a>
+        <a class="docs-nav-link{% if page.url == '/features/editor/' %} is-active{% endif %}" href="{{ '/features/editor/' | relative_url }}">Editor</a>
+      </div>
+
+      <div class="docs-sidebar__section">
+        <div class="docs-sidebar__title">Releases</div>
+        <a class="docs-nav-link{% if page.url == '/release-notes/' %} is-active{% endif %}" href="{{ '/release-notes/' | relative_url }}">Release Notes</a>
+      </div>
+    </aside>
+
+    <main class="docs-main">
+      <section class="docs-hero-panel">
+        <div class="docs-hero-panel__brand">
+          <span class="docs-hero-panel__seal" aria-hidden="true">
+            <img src="{{ '/assets/icon.png' | relative_url }}" alt="">
+          </span>
+          <span>Universal Card Docs</span>
+        </div>
+        {% if page.section_label %}<p class="docs-eyebrow">{{ page.section_label }}</p>{% endif %}
+        <h1>{{ page.title }}</h1>
+        {% if page.description %}<p class="docs-hero-panel__lead">{{ page.description }}</p>{% endif %}
+      </section>
+
+      <article class="docs-content">
+        {{ content }}
+      </article>
+    </main>
+  </div>
+
+  <script src="{{ '/assets/docs.js' | relative_url }}"></script>
+</body>
+</html>

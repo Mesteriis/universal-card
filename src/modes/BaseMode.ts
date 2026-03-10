@@ -93,6 +93,7 @@ export class BaseMode {
   _cards: ModeCardElement[];
   _hass: HomeAssistantLike | null;
   _loaded: boolean;
+  _loadPromise: Promise<void> | null;
   _active: boolean;
   _poolEnabled: boolean;
   _poolNamespace: string;
@@ -109,6 +110,7 @@ export class BaseMode {
     this._cards = [];
     this._hass = null;
     this._loaded = false;
+    this._loadPromise = null;
     this._active = false;
     this._poolEnabled = config?.enable_card_pool !== false;
     this._poolNamespace = typeof options.poolNamespace === 'string' && options.poolNamespace
@@ -156,29 +158,39 @@ export class BaseMode {
       return;
     }
 
-    const poolKey = this._buildCardsPoolKey(configs);
-    this._cardsPoolKey = poolKey;
+    if (this._loadPromise) {
+      return this._loadPromise;
+    }
 
-    if (poolKey) {
-      const pooledCards = cardPool.acquire(poolKey) as ModeCardElement[] | null;
-      if (pooledCards && pooledCards.length === configs.length) {
-        this._cards = pooledCards;
-        this._updateCardsHass(this._hass);
-        this._loaded = true;
-        return;
+    this._loadPromise = (async () => {
+      const poolKey = this._buildCardsPoolKey(configs);
+      this._cardsPoolKey = poolKey;
+
+      if (poolKey) {
+        const pooledCards = cardPool.acquire(poolKey) as ModeCardElement[] | null;
+        if (pooledCards && pooledCards.length === configs.length) {
+          this._cards = pooledCards;
+          this._updateCardsHass(this._hass);
+          this._loaded = true;
+          return;
+        }
       }
-    }
 
-    try {
-      const helpers = await this._getCardHelpers();
-      this._cards = await Promise.all(
-        configs.map((config) => this._createCard(config, helpers))
-      );
-      this._loaded = true;
-    } catch (error) {
-      console.error('[UniversalCard] Failed to load cards:', error);
-      this._loaded = true;
-    }
+      try {
+        const helpers = await this._getCardHelpers();
+        this._cards = await Promise.all(
+          configs.map((config) => this._createCard(config, helpers))
+        );
+        this._loaded = true;
+      } catch (error) {
+        console.error('[UniversalCard] Failed to load cards:', error);
+        this._loaded = true;
+      }
+    })().finally(() => {
+      this._loadPromise = null;
+    });
+
+    return this._loadPromise;
   }
 
   async _createCard(config: ModeCardConfig, helpers: ModeCardHelpers | null): Promise<ModeCardElement> {
@@ -302,12 +314,54 @@ export class BaseMode {
     });
   }
 
+  _applyGridConfig(container: HTMLElement, grid: GridConfig | undefined, defaults: Partial<GridConfig> = {}): void {
+    const columns = grid?.columns ?? defaults.columns ?? 1;
+    const display = typeof grid?.display === 'string' && grid.display.trim()
+      ? grid.display.trim()
+      : (typeof defaults.display === 'string' && defaults.display.trim() ? defaults.display.trim() : 'grid');
+    const gap = typeof grid?.gap === 'string' && grid.gap.trim()
+      ? grid.gap.trim()
+      : (typeof defaults.gap === 'string' && defaults.gap.trim() ? defaults.gap.trim() : '16px');
+    const valueMap = {
+      gridAutoRows: grid?.auto_rows,
+      gridAutoColumns: grid?.auto_columns,
+      rowGap: grid?.row_gap,
+      columnGap: grid?.column_gap,
+      alignItems: grid?.align_items,
+      justifyItems: grid?.justify_items,
+      placeItems: grid?.place_items,
+      alignContent: grid?.align_content,
+      justifyContent: grid?.justify_content,
+      placeContent: grid?.place_content,
+      gridAutoFlow: grid?.auto_flow,
+      direction: grid?.direction
+    };
+
+    container.style.display = display;
+    container.style.gap = gap;
+
+    if (typeof columns === 'string' && columns.trim()) {
+      container.style.gridTemplateColumns = columns.trim();
+    } else if (typeof columns === 'number' && columns > 1) {
+      container.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+    } else {
+      container.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
+
+    Object.entries(valueMap).forEach(([property, value]) => {
+      if (typeof value === 'string' && value.trim()) {
+        (container.style as unknown as Record<string, string>)[property] = value.trim();
+      }
+    });
+  }
+
   _appendCards(container: HTMLElement, configs: ModeCardConfig[] = []): void {
     const fragment = document.createDocumentFragment();
 
     this._cards.forEach((card, index) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'card-wrapper';
+      wrapper.dataset.ucRole = 'card-wrapper';
 
       const config = configs[index];
       if (config) {
@@ -360,6 +414,7 @@ export class BaseMode {
     this._cards = [];
     this._container = null;
     this._loaded = false;
+    this._loadPromise = null;
     this._active = false;
     this._cardsPoolKey = null;
   }

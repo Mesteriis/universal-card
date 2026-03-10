@@ -4,11 +4,21 @@ description: Продвинутая карточка Lovelace для Home Assist
 url: https://mesteriis.github.io
 baseurl: /universal-card
 
-# Theme (not used, we have custom HTML)
 theme: null
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 
-# Exclude files
 exclude:
   - README.md
   - CHANGELOG.md
   - LICENSE
+
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: docs

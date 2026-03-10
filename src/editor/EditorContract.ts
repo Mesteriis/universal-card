@@ -11,6 +11,7 @@ import {
   ACTION_TYPES,
   BADGE_FORMATS,
   BADGE_TYPES,
+  MODAL_LOADING_STRATEGIES,
   BODY_MODES,
   CARD_ANIMATIONS,
   CARD_DIRECTIONS,
@@ -18,9 +19,13 @@ import {
   CONDITION_TYPES,
   EXPAND_TRIGGERS,
   EXPAND_ANIMATIONS,
+  HEADER_BADGES_POSITIONS,
+  HEADER_CONTENT_ALIGNMENTS,
+  HEADER_LAYOUT_VARIANTS,
   POOL_SCOPES,
   SWIPE_ACTIONS,
   SWIPE_DIRECTIONS,
+  TAB_ALIGNMENTS,
   THEMES,
   VALID_WEEKDAYS
 } from '../core/constants.js';
@@ -88,6 +93,11 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     placeholder: 'mdi:home',
     helper: 'Оставьте пустым, чтобы не показывать иконку.'
   },
+  icon_color: {
+    label: 'Цвет основной иконки',
+    placeholder: 'var(--primary-color)',
+    helper: 'Поддерживаются CSS-цвета и переменные темы.'
+  },
   entity: {
     label: 'Entity (опционально)',
     placeholder: 'light.room'
@@ -130,6 +140,157 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
   'grid.gap': {
     label: 'Отступы',
     placeholder: '16px'
+  },
+  'modal.width': {
+    label: 'Ширина modal',
+    placeholder: 'auto, 90%, 32rem'
+  },
+  'modal.height': {
+    label: 'Высота modal',
+    placeholder: 'auto, 70vh, 32rem'
+  },
+  'modal.max_width': {
+    label: 'Макс. ширина',
+    placeholder: '600px, 72rem'
+  },
+  'modal.max_height': {
+    label: 'Макс. высота',
+    placeholder: '85vh'
+  },
+  'modal.loading_strategy': {
+    label: 'Загрузка modal',
+    optionLabels: {
+      [MODAL_LOADING_STRATEGIES.LAZY]: 'Lazy: при открытии',
+      [MODAL_LOADING_STRATEGIES.PRELOAD]: 'Preload: заранее'
+    }
+  },
+  'fullscreen.width': {
+    label: 'Ширина fullscreen',
+    placeholder: '100%, 88rem'
+  },
+  'fullscreen.height': {
+    label: 'Высота fullscreen',
+    placeholder: '100%, 90vh'
+  },
+  'fullscreen.max_width': {
+    label: 'Макс. ширина fullscreen',
+    placeholder: '1200px, 96rem'
+  },
+  'fullscreen.max_height': {
+    label: 'Макс. высота fullscreen',
+    placeholder: '100vh'
+  },
+  'fullscreen.padding': {
+    label: 'Внутренние отступы fullscreen',
+    placeholder: '16px, 24px'
+  },
+  'fullscreen.background': {
+    label: 'Фон fullscreen',
+    placeholder: 'var(--lovelace-background)'
+  },
+  'fullscreen.show_close': {
+    label: 'Показывать кнопку закрытия'
+  },
+  'fullscreen.close_on_escape': {
+    label: 'Закрывать по Escape'
+  },
+  'tabs_config.position': {
+    label: 'Позиция табов',
+    control: 'select',
+    options: [
+      { value: 'top', label: 'Сверху' },
+      { value: 'bottom', label: 'Снизу' }
+    ]
+  },
+  'tabs_config.show_icons': {
+    label: 'Показывать иконки вкладок'
+  },
+  'tabs_config.show_labels': {
+    label: 'Показывать подписи вкладок'
+  },
+  'tabs_config.content_padding': {
+    label: 'Отступы контента tab',
+    placeholder: '16px, 12px'
+  },
+  'tabs_config.tab_min_width': {
+    label: 'Мин. ширина tab',
+    placeholder: '72px, 96px'
+  },
+  'tabs_config.tab_alignment': {
+    label: 'Выравнивание tab bar',
+    optionLabels: {
+      [TAB_ALIGNMENTS.START]: 'Слева',
+      [TAB_ALIGNMENTS.CENTER]: 'По центру',
+      [TAB_ALIGNMENTS.STRETCH]: 'Растянуть'
+    }
+  },
+  'carousel_options.show_arrows': {
+    label: 'Показывать стрелки'
+  },
+  'carousel_options.show_indicators': {
+    label: 'Показывать индикаторы'
+  },
+  'carousel_options.loop': {
+    label: 'Зацикливать карусель'
+  },
+  'carousel_options.swipe_threshold': {
+    label: 'Порог свайпа',
+    control: 'number'
+  },
+  'carousel_options.height': {
+    label: 'Высота карусели',
+    placeholder: 'auto, 22rem, 50vh'
+  },
+  'subview.path': {
+    label: 'Subview path',
+    placeholder: '/lovelace/details'
+  },
+  'subview.navigation_path': {
+    label: 'Альтернативный navigation path',
+    placeholder: '/lovelace/details'
+  },
+  'subview.replace_state': {
+    label: 'Использовать replaceState'
+  },
+  'subview.return_on_close': {
+    label: 'Вернуться при закрытии'
+  },
+  'header.sticky': {
+    label: 'Sticky header override'
+  },
+  'header.clickable': {
+    label: 'Header clickable'
+  },
+  'header.layout.variant': {
+    label: 'Header layout',
+    optionLabels: {
+      [HEADER_LAYOUT_VARIANTS.DEFAULT]: 'Default',
+      [HEADER_LAYOUT_VARIANTS.STACKED]: 'Stacked',
+      [HEADER_LAYOUT_VARIANTS.CENTERED]: 'Centered'
+    }
+  },
+  'header.layout.gap': {
+    label: 'Отступ между зонами header',
+    placeholder: '12px, 18px'
+  },
+  'header.layout.content_gap': {
+    label: 'Отступ внутри content',
+    placeholder: '2px, 6px'
+  },
+  'header.layout.align': {
+    label: 'Выравнивание content',
+    optionLabels: {
+      [HEADER_CONTENT_ALIGNMENTS.START]: 'Слева',
+      [HEADER_CONTENT_ALIGNMENTS.CENTER]: 'По центру',
+      [HEADER_CONTENT_ALIGNMENTS.END]: 'Справа'
+    }
+  },
+  'header.layout.badges_position': {
+    label: 'Позиция badges',
+    optionLabels: {
+      [HEADER_BADGES_POSITIONS.RIGHT]: 'Справа',
+      [HEADER_BADGES_POSITIONS.BELOW_CONTENT]: 'Под content'
+    }
   },
   theme: {
     label: 'Тема',
@@ -499,6 +660,9 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     label: 'Цвет',
     placeholder: 'var(--warning-color)'
   },
+  'badges.icon_only': {
+    label: 'Только иконка'
+  },
   'badges.value': {
     label: 'Значение',
     placeholder: 'Online / 42'
@@ -562,6 +726,62 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
   'badges.thresholds.color': {
     label: 'Цвет порога',
     placeholder: '#f44336'
+  },
+  'badges.visibility.operator': {
+    label: 'Оператор',
+    optionLabels: {
+      '==': '== равно',
+      '!=': '!= не равно',
+      '>': '> больше',
+      '<': '< меньше',
+      '>=': '>= больше или равно',
+      '<=': '<= меньше или равно'
+    }
+  },
+  'badges.visibility.value': {
+    label: 'Значение',
+    placeholder: 'on, 25, true',
+    control: 'text',
+    helper: 'Строка, число или boolean. true/false и числа распознаются автоматически.'
+  },
+  'badges.visibility.entity': {
+    label: 'Entity (override)',
+    placeholder: 'sensor.temperature',
+    control: 'entity'
+  },
+  'badges.visibility.attribute': {
+    label: 'Attribute',
+    placeholder: 'brightness'
+  },
+  'badges.color_rules.operator': {
+    label: 'Оператор',
+    optionLabels: {
+      '==': '== равно',
+      '!=': '!= не равно',
+      '>': '> больше',
+      '<': '< меньше',
+      '>=': '>= больше или равно',
+      '<=': '<= меньше или равно'
+    }
+  },
+  'badges.color_rules.value': {
+    label: 'Значение',
+    placeholder: 'on, unavailable, 50',
+    control: 'text',
+    helper: 'Строка, число или boolean. Цвет применяется при совпадении условия.'
+  },
+  'badges.color_rules.color': {
+    label: 'Цвет',
+    placeholder: '#fdd835'
+  },
+  'badges.color_rules.entity': {
+    label: 'Entity (override)',
+    placeholder: 'sensor.temperature',
+    control: 'entity'
+  },
+  'badges.color_rules.attribute': {
+    label: 'Attribute',
+    placeholder: 'brightness'
   }
 };
 
@@ -569,7 +789,7 @@ export const EDITOR_FIELD_GROUPS = Object.freeze({
   basic: ['title', 'subtitle', 'icon', 'entity', 'body_mode', 'expanded'],
   header: ['show_expand_icon', 'expand_icon', 'sticky_header'],
   body: ['grid.columns', 'grid.gap'],
-  style: ['theme', 'border_radius', 'padding', 'animation'],
+  style: ['theme', 'icon_color', 'border_radius', 'padding', 'animation'],
   runtime: [
     'lazy_load',
     'lazy_initial_batch',
@@ -585,7 +805,13 @@ export const EDITOR_FIELD_GROUPS = Object.freeze({
     'pool_max_entries'
   ],
   advanced: ['card_id'],
-  carousel: ['carousel_autoplay', 'carousel_interval']
+  carousel: [
+    'carousel_autoplay',
+    'carousel_interval',
+    ['carousel_options.show_arrows', 'carousel_options.show_indicators'],
+    ['carousel_options.loop', 'carousel_options.swipe_threshold'],
+    'carousel_options.height'
+  ]
 } as const);
 
 const SWIPE_FIELD_PATHS = Object.freeze([
@@ -608,6 +834,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
     'badges.entity',
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.show_name',
@@ -622,6 +849,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
     'badges.attribute',
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.show_name',
@@ -634,6 +862,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
   [BADGE_TYPES.COUNTER]: [
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.unit',
     'badges.entities',
@@ -646,6 +875,7 @@ const BADGE_TYPE_FIELDS: Record<string, readonly string[]> = Object.freeze({
   [BADGE_TYPES.CUSTOM]: [
     'badges.icon',
     'badges.color',
+    'badges.icon_only',
     'badges.label',
     'badges.value',
     'badges.unit',
@@ -980,4 +1210,23 @@ export function getBadgeFieldDescriptors(type: string): EditorFieldDescriptor[] 
 
 export function getBadgeThresholdFieldDescriptors(): EditorFieldDescriptor[] {
   return getEditorFieldDescriptors(['badges.thresholds.value', 'badges.thresholds.color']);
+}
+
+export function getBadgeVisibilityRuleFieldDescriptors(): EditorFieldDescriptor[] {
+  return getEditorFieldDescriptors([
+    'badges.visibility.operator',
+    'badges.visibility.value',
+    'badges.visibility.entity',
+    'badges.visibility.attribute'
+  ]);
+}
+
+export function getBadgeColorRuleFieldDescriptors(): EditorFieldDescriptor[] {
+  return getEditorFieldDescriptors([
+    'badges.color_rules.operator',
+    'badges.color_rules.value',
+    'badges.color_rules.color',
+    'badges.color_rules.entity',
+    'badges.color_rules.attribute'
+  ]);
 }

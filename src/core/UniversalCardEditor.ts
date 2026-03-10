@@ -9,17 +9,26 @@
  * @module core/UniversalCardEditor
  */
 
-import { BODY_MODES, CONDITION_TYPES, THEMES } from './constants.js';
+import { BADGE_OPERATORS, BODY_MODES, CONDITION_TYPES, THEMES } from './constants.js';
 import { ConfigManager } from './config.js';
 import type { ActionConfig } from './action-hooks.js';
 import type {
+  BadgeColorRule,
+  BadgeConditionRule,
   BadgeThreshold,
+  CarouselOptionsConfig,
   FooterConfig,
+  FullscreenConfig,
   HeaderBadgeConfig,
+  HeaderConfig,
+  HeaderLayoutConfig,
+  ModalConfig,
   SectionVisibilityConfig,
   StateStyleRule,
+  SubviewConfig,
   SwipeConfig,
   TabConfig,
+  TabsUiConfig,
   TimeVisibilityCondition,
   VisibilityCondition
 } from './config-contracts.js';
@@ -29,8 +38,10 @@ import type { HomeAssistantLike, HomeAssistantStateMap } from '../providers/Prov
 import { getThemePreviewStyle } from '../styles/themes.js';
 import {
   EDITOR_FIELD_GROUPS,
+  getBadgeColorRuleFieldDescriptors,
   getBadgeFieldDescriptors,
   getBadgeThresholdFieldDescriptors,
+  getBadgeVisibilityRuleFieldDescriptors,
   getEditorFieldDescriptor,
   getEditorFieldOptions,
   getStateStyleFieldDescriptors,
@@ -81,6 +92,7 @@ const EDITOR_BADGE_FIELD_KEYS = [
   'attribute',
   'icon',
   'color',
+  'icon_only',
   'value',
   'label',
   'unit',
@@ -96,6 +108,8 @@ const EDITOR_BADGE_FIELD_KEYS = [
   'count_state'
 ] as const;
 const EDITOR_BADGE_THRESHOLD_FIELD_KEYS = ['value', 'color'] as const;
+const EDITOR_BADGE_RULE_FIELD_KEYS = ['operator', 'value', 'entity', 'attribute'] as const;
+const EDITOR_BADGE_COLOR_RULE_FIELD_KEYS = ['operator', 'value', 'entity', 'attribute', 'color'] as const;
 const EDITOR_SECTION_VISIBILITY_KEYS = ['header', 'body', 'footer'] as const satisfies readonly (keyof SectionVisibilityConfig)[];
 const EDITOR_VISIBILITY_FIELD_KEYS = [
   'entity',
@@ -148,6 +162,8 @@ type EditorActionExtraFieldKey = (typeof EDITOR_ACTION_EXTRA_FIELDS)[number];
 type EditorTabFieldKey = (typeof EDITOR_TAB_FIELD_KEYS)[number];
 type EditorBadgeFieldKey = (typeof EDITOR_BADGE_FIELD_KEYS)[number];
 type EditorBadgeThresholdFieldKey = (typeof EDITOR_BADGE_THRESHOLD_FIELD_KEYS)[number];
+type EditorBadgeRuleFieldKey = (typeof EDITOR_BADGE_RULE_FIELD_KEYS)[number];
+type EditorBadgeColorRuleFieldKey = (typeof EDITOR_BADGE_COLOR_RULE_FIELD_KEYS)[number];
 type EditorSectionVisibilityKey = (typeof EDITOR_SECTION_VISIBILITY_KEYS)[number];
 type EditorVisibilityFieldKey = (typeof EDITOR_VISIBILITY_FIELD_KEYS)[number];
 type EditorStateStyleKey = (typeof EDITOR_STATE_STYLE_KEYS)[number];
@@ -159,9 +175,14 @@ type EditorActionConfig = Pick<
   'action' | 'target' | 'entity' | 'service' | 'service_data' | 'custom_action' | 'navigation_path' | 'url_path' | 'url_target'
 >;
 type EditorBadgeThreshold = Partial<BadgeThreshold>;
-type EditorBadgeConfig = Omit<Partial<HeaderBadgeConfig>, 'thresholds' | 'tap_action'> & {
+type EditorBadgeRule = Partial<BadgeConditionRule>;
+type EditorBadgeColorRule = Partial<BadgeColorRule>;
+type EditorBadgeConfig = Omit<Partial<HeaderBadgeConfig>, 'thresholds' | 'visibility' | 'color_rules' | 'tap_action' | 'icon_tap_action'> & {
   thresholds?: EditorBadgeThreshold[];
+  visibility?: EditorBadgeRule[];
+  color_rules?: EditorBadgeColorRule[];
   tap_action?: EditorActionConfig;
+  icon_tap_action?: EditorActionConfig;
 };
 type EditorVisibilityCondition = {
   condition: VisibilityCondition['condition'];
@@ -187,6 +208,11 @@ type EditorStateStyleMap = Record<string, EditorStateStyleRule>;
 type EditorCardSection = {
   cards?: CardConfigLike[];
 };
+type EditorHeaderLayoutConfig = Partial<HeaderLayoutConfig>;
+type EditorHeaderConfig = Partial<Omit<HeaderConfig, 'cards' | 'layout'>> & {
+  cards?: CardConfigLike[];
+  layout?: EditorHeaderLayoutConfig;
+};
 type EditorFooterConfig = Partial<Omit<FooterConfig, 'cards' | 'footer_left' | 'footer_right'>> & {
   cards?: CardConfigLike[];
   footer_left?: EditorCardSection;
@@ -201,6 +227,11 @@ type EditorSwipeConfig = Partial<Omit<SwipeConfig, 'left' | 'right' | 'up' | 'do
 type EditorTabConfig = Omit<Partial<TabConfig>, 'cards'> & {
   cards?: CardConfigLike[];
 };
+type EditorModalConfig = Partial<ModalConfig>;
+type EditorFullscreenConfig = Partial<FullscreenConfig>;
+type EditorTabsUiConfig = Partial<TabsUiConfig>;
+type EditorCarouselOptionsConfig = Partial<CarouselOptionsConfig>;
+type EditorSubviewConfig = Partial<SubviewConfig>;
 type EditorSectionVisibilityConfig = {
   [K in EditorSectionVisibilityKey]?: EditorVisibilityCondition[];
 };
@@ -209,14 +240,20 @@ type EditorConfig = CardConfigLike & {
   title?: string;
   subtitle?: string;
   icon?: string;
+  icon_color?: string;
   entity?: string;
   attribute?: string;
   theme?: string;
   body_mode?: string;
   expanded?: boolean;
   expand_trigger?: string;
-  header?: EditorCardSection;
+  header?: EditorHeaderConfig;
   body?: EditorCardSection;
+  modal?: EditorModalConfig;
+  fullscreen?: EditorFullscreenConfig;
+  tabs_config?: EditorTabsUiConfig;
+  carousel_options?: EditorCarouselOptionsConfig;
+  subview?: EditorSubviewConfig;
   footer?: EditorFooterConfig;
   tabs?: EditorTabConfig[];
   visibility?: EditorVisibilityCondition[];
@@ -325,6 +362,14 @@ function isEditorBadgeThresholdFieldKey(value: string): value is EditorBadgeThre
   return (EDITOR_BADGE_THRESHOLD_FIELD_KEYS as readonly string[]).includes(value);
 }
 
+function isEditorBadgeRuleFieldKey(value: string): value is EditorBadgeRuleFieldKey {
+  return (EDITOR_BADGE_RULE_FIELD_KEYS as readonly string[]).includes(value);
+}
+
+function isEditorBadgeColorRuleFieldKey(value: string): value is EditorBadgeColorRuleFieldKey {
+  return (EDITOR_BADGE_COLOR_RULE_FIELD_KEYS as readonly string[]).includes(value);
+}
+
 function isEditorStateStyleKey(value: string): value is EditorStateStyleKey {
   return (EDITOR_STATE_STYLE_KEYS as readonly string[]).includes(value);
 }
@@ -380,6 +425,22 @@ function setEditorBadgeField<K extends EditorBadgeFieldKey>(
   value: EditorBadgeConfig[K]
 ): void {
   badge[key] = value;
+}
+
+function setEditorBadgeRuleField<K extends EditorBadgeRuleFieldKey>(
+  rule: EditorBadgeRule,
+  key: K,
+  value: EditorBadgeRule[K]
+): void {
+  rule[key] = value;
+}
+
+function setEditorBadgeColorRuleField<K extends EditorBadgeColorRuleFieldKey>(
+  rule: EditorBadgeColorRule,
+  key: K,
+  value: EditorBadgeColorRule[K]
+): void {
+  rule[key] = value;
 }
 
 function setEditorStateStyleField<K extends EditorStateStyleKey>(
@@ -995,6 +1056,17 @@ export class UniversalCardEditor extends HTMLElement {
         <h3>Настройки заголовка</h3>
 
         ${this._renderSchemaFields(EDITOR_FIELD_GROUPS.header)}
+
+        <div class="subsection">
+          <h4>Header Layout</h4>
+
+          ${this._renderSchemaFields([
+            ['header.sticky', 'header.clickable'],
+            'header.layout.variant',
+            ['header.layout.gap', 'header.layout.content_gap'],
+            ['header.layout.align', 'header.layout.badges_position']
+          ])}
+        </div>
         
         <div class="subsection">
           <h4>Карточки в заголовке</h4>
@@ -1020,6 +1092,12 @@ export class UniversalCardEditor extends HTMLElement {
    * @returns {string} HTML string
    */
   _renderBodySection() {
+    const showModalSettings = this._config.body_mode === BODY_MODES.MODAL;
+    const showFullscreenSettings = this._config.body_mode === BODY_MODES.FULLSCREEN;
+    const showTabsSettings = this._config.body_mode === BODY_MODES.TABS;
+    const showCarouselSettings = this._config.body_mode === BODY_MODES.CAROUSEL;
+    const showSubviewSettings = this._config.body_mode === BODY_MODES.SUBVIEW;
+
     return `
       <div class="section">
         <h3>Настройки содержимого</h3>
@@ -1029,6 +1107,55 @@ export class UniversalCardEditor extends HTMLElement {
 
           ${this._renderSchemaFields([EDITOR_FIELD_GROUPS.body])}
         </div>
+
+        ${showModalSettings ? `
+          <div class="subsection">
+            <h4>Modal Layout</h4>
+            <p class="hint">Размеры принимают CSS значения: <code>auto</code>, <code>px</code>, <code>%</code>, <code>vw</code>, <code>vh</code>, <code>rem</code>.</p>
+
+            ${this._renderSchemaFields([
+              ['modal.width', 'modal.height'],
+              ['modal.max_width', 'modal.max_height'],
+              'modal.loading_strategy'
+            ])}
+          </div>
+        ` : ''}
+
+        ${showFullscreenSettings ? `
+          <div class="subsection">
+            <h4>Fullscreen Layout</h4>
+
+            ${this._renderSchemaFields([
+              ['fullscreen.width', 'fullscreen.height'],
+              ['fullscreen.max_width', 'fullscreen.max_height'],
+              ['fullscreen.padding', 'fullscreen.background'],
+              ['fullscreen.show_close', 'fullscreen.close_on_escape']
+            ])}
+          </div>
+        ` : ''}
+
+        ${showTabsSettings ? `
+          <div class="subsection">
+            <h4>Tabs Layout</h4>
+
+            ${this._renderSchemaFields([
+              ['tabs_config.position', 'tabs_config.tab_alignment'],
+              ['tabs_config.show_icons', 'tabs_config.show_labels'],
+              ['tabs_config.content_padding', 'tabs_config.tab_min_width']
+            ])}
+          </div>
+        ` : ''}
+
+        ${showSubviewSettings ? `
+          <div class="subsection">
+            <h4>Subview Settings</h4>
+
+            ${this._renderSchemaFields([
+              ['subview.path', 'subview.navigation_path'],
+              ['subview.replace_state', 'subview.return_on_close']
+            ])}
+          </div>
+        ` : ''}
         
         <div class="subsection">
           <h4>Карточки в body</h4>
@@ -1044,8 +1171,8 @@ export class UniversalCardEditor extends HTMLElement {
           </button>
         </div>
         
-        ${this._config.body_mode === BODY_MODES.TABS ? this._renderTabsEditor() : ''}
-        ${this._config.body_mode === BODY_MODES.CAROUSEL ? this._renderCarouselEditor() : ''}
+        ${showTabsSettings ? this._renderTabsEditor() : ''}
+        ${showCarouselSettings ? this._renderCarouselEditor() : ''}
       </div>
     `;
   }
@@ -1061,7 +1188,7 @@ export class UniversalCardEditor extends HTMLElement {
       <div class="section">
         <h3>Настройки стиля</h3>
 
-        ${this._renderSchemaFields(['theme'])}
+        ${this._renderSchemaFields([['theme', 'icon_color']])}
         
         <div class="theme-preview" style="${this._escapeHtml(this._getThemePreviewStyle())}">
           <div class="preview-header">Preview</div>
@@ -1714,7 +1841,11 @@ export class UniversalCardEditor extends HTMLElement {
     const type = badge.type || 'state';
     const badgeFields = getBadgeFieldDescriptors(type);
     const thresholdFields = getBadgeThresholdFieldDescriptors();
+    const visibilityRuleFields = getBadgeVisibilityRuleFieldDescriptors();
+    const colorRuleFields = getBadgeColorRuleFieldDescriptors();
     const thresholds = Array.isArray(badge.thresholds) ? badge.thresholds : [];
+    const visibilityRules = Array.isArray(badge.visibility) ? badge.visibility : [];
+    const colorRules = Array.isArray(badge.color_rules) ? badge.color_rules : [];
 
     return `
       <div class="badge-item" data-index="${index}">
@@ -1749,6 +1880,24 @@ export class UniversalCardEditor extends HTMLElement {
             Добавить threshold
           </button>
         </div>
+        ${this._renderBadgeRuleSection({
+          title: 'Visibility Rules',
+          emptyText: 'Нет visibility rules.',
+          action: 'add-badge-visibility-rule',
+          ruleKind: 'visibility',
+          fields: visibilityRuleFields,
+          rules: visibilityRules,
+          index
+        })}
+        ${this._renderBadgeRuleSection({
+          title: 'Color Rules',
+          emptyText: 'Нет color rules.',
+          action: 'add-badge-color-rule',
+          ruleKind: 'color_rules',
+          fields: colorRuleFields,
+          rules: colorRules,
+          index
+        })}
       </div>
     `;
   }
@@ -1802,20 +1951,112 @@ export class UniversalCardEditor extends HTMLElement {
   }
 
   /**
+   * Render a badge rules editor section.
+   *
+   * @private
+   * @param {{
+   *   title:string,
+   *   emptyText:string,
+   *   action:string,
+   *   ruleKind:'visibility'|'color_rules',
+   *   fields: import('../editor/EditorContract.js').EditorFieldDescriptor[],
+   *   rules: EditorBadgeRule[] | EditorBadgeColorRule[],
+   *   index:number
+   * }} options
+   * @returns {string}
+   */
+  _renderBadgeRuleSection(options) {
+    const {
+      title,
+      emptyText,
+      action,
+      ruleKind,
+      fields,
+      rules,
+      index
+    } = options;
+
+    return `
+      <div class="badge-rules">
+        <div class="badge-rules-header">
+          <span>${this._escapeHtml(title)}</span>
+          <span class="feature-badge">${rules.length || ''}</span>
+        </div>
+        <div class="badge-rule-list">
+          ${rules.length
+            ? rules.map((rule, ruleIndex) => `
+              <div class="badge-rule-item" data-index="${index}" data-rule-kind="${ruleKind}" data-rule-index="${ruleIndex}">
+                ${fields.map((field) => this._renderBadgeRuleField(field, rule, index, ruleKind, ruleIndex)).join('')}
+                <button class="btn-icon btn-delete" data-action="delete-badge-rule" data-index="${index}" data-rule-kind="${ruleKind}" data-rule-index="${ruleIndex}">
+                  <ha-icon icon="mdi:delete"></ha-icon>
+                </button>
+              </div>
+            `).join('')
+            : `<p class="feature-hint">${this._escapeHtml(emptyText)}</p>`}
+        </div>
+        <button class="btn btn-small btn-add" data-action="${action}" data-index="${index}">
+          <ha-icon icon="mdi:plus"></ha-icon>
+          Добавить правило
+        </button>
+      </div>
+    `;
+  }
+
+  /**
+   * Render a badge visibility/color rule field.
+   *
+   * @private
+   * @param {import('../editor/EditorContract.js').EditorFieldDescriptor} field
+   * @param {EditorBadgeRule | EditorBadgeColorRule} rule
+   * @param {number} index
+   * @param {'visibility'|'color_rules'} ruleKind
+   * @param {number} ruleIndex
+   * @returns {string}
+   */
+  _renderBadgeRuleField(
+    field: import('../editor/EditorContract.js').EditorFieldDescriptor,
+    rule: EditorBadgeRule | EditorBadgeColorRule,
+    index: number,
+    ruleKind: 'visibility' | 'color_rules',
+    ruleIndex: number
+  ) {
+    const fieldKey = ruleKind === 'visibility'
+      ? this._getBadgeRuleFieldKey(field.path)
+      : this._getBadgeColorRuleFieldKey(field.path);
+
+    return this._renderBadgeContractField(field, rule[fieldKey], {
+      index,
+      fieldKey,
+      className: 'badge-field badge-rule-field',
+      ruleKind,
+      ruleIndex
+    });
+  }
+
+  /**
    * Render a contract-backed badge input control.
    *
    * @private
    * @param {import('../editor/EditorContract.js').EditorFieldDescriptor} field
    * @param {*} value
-   * @param {{index:number, fieldKey:string, className:string, thresholdIndex?:number}} options
+   * @param {{
+   *   index:number,
+   *   fieldKey:string,
+   *   className:string,
+   *   thresholdIndex?:number,
+   *   ruleKind?:'visibility'|'color_rules',
+   *   ruleIndex?:number
+   * }} options
    * @returns {string}
    */
   _renderBadgeContractField(field, value, options) {
-    const { index, fieldKey, className, thresholdIndex } = options;
+    const { index, fieldKey, className, thresholdIndex, ruleKind, ruleIndex } = options;
     const dataThreshold = thresholdIndex !== undefined ? `data-threshold-index="${thresholdIndex}"` : '';
+    const dataRuleKind = ruleKind ? `data-rule-kind="${ruleKind}"` : '';
+    const dataRuleIndex = ruleIndex !== undefined ? `data-rule-index="${ruleIndex}"` : '';
+    const inputId = `${field.id}_${index}${thresholdIndex !== undefined ? `_${thresholdIndex}` : ''}${ruleIndex !== undefined ? `_${ruleIndex}` : ''}`;
 
     if (field.control === 'checkbox') {
-      const inputId = `${field.id}_${index}${thresholdIndex !== undefined ? `_${thresholdIndex}` : ''}`;
       return `
         <div class="field checkbox-field badge-field-block">
           <input type="checkbox"
@@ -1824,6 +2065,8 @@ export class UniversalCardEditor extends HTMLElement {
                  data-field="${fieldKey}"
                  data-index="${index}"
                  ${dataThreshold}
+                 ${dataRuleKind}
+                 ${dataRuleIndex}
                  ${value ? 'checked' : ''}>
           <label for="${inputId}">${this._escapeHtml(field.label)}</label>
         </div>
@@ -1834,7 +2077,7 @@ export class UniversalCardEditor extends HTMLElement {
       return `
         <label class="badge-field-block">
           <span>${this._escapeHtml(field.label)}</span>
-          <select class="${className}" data-field="${fieldKey}" data-index="${index}" ${dataThreshold}>
+          <select class="${className}" data-field="${fieldKey}" data-index="${index}" ${dataThreshold} ${dataRuleKind} ${dataRuleIndex}>
             ${(field.options || []).map((option) => `
               <option value="${this._escapeHtml(option.value)}" ${String(value ?? field.default ?? '') === option.value ? 'selected' : ''}>
                 ${this._escapeHtml(option.label)}
@@ -1863,6 +2106,8 @@ export class UniversalCardEditor extends HTMLElement {
                data-field="${fieldKey}"
                data-index="${index}"
                ${dataThreshold}
+               ${dataRuleKind}
+               ${dataRuleIndex}
                ${listAttr}
                ${minAttr}
                ${maxAttr}>
@@ -1897,6 +2142,38 @@ export class UniversalCardEditor extends HTMLElement {
     const fieldKey = path.replace('badges.thresholds.', '');
     if (!isEditorBadgeThresholdFieldKey(fieldKey)) {
       throw new Error(`Unsupported badge threshold field: ${path}`);
+    }
+
+    return fieldKey;
+  }
+
+  /**
+   * Resolve badge visibility rule field key from contract path.
+   *
+   * @private
+   * @param {string} path
+   * @returns {EditorBadgeRuleFieldKey}
+   */
+  _getBadgeRuleFieldKey(path: string): EditorBadgeRuleFieldKey {
+    const fieldKey = path.replace('badges.visibility.', '');
+    if (!isEditorBadgeRuleFieldKey(fieldKey)) {
+      throw new Error(`Unsupported badge visibility field: ${path}`);
+    }
+
+    return fieldKey;
+  }
+
+  /**
+   * Resolve badge color rule field key from contract path.
+   *
+   * @private
+   * @param {string} path
+   * @returns {EditorBadgeColorRuleFieldKey}
+   */
+  _getBadgeColorRuleFieldKey(path: string): EditorBadgeColorRuleFieldKey {
+    const fieldKey = path.replace('badges.color_rules.', '');
+    if (!isEditorBadgeColorRuleFieldKey(fieldKey)) {
+      throw new Error(`Unsupported badge color rule field: ${path}`);
     }
 
     return fieldKey;
@@ -4480,6 +4757,83 @@ export class UniversalCardEditor extends HTMLElement {
       });
     });
 
+    queryAll<HTMLButtonElement>(this.shadowRoot, '[data-action="add-badge-visibility-rule"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index, 10);
+        if (Number.isNaN(index) || !this._config.badges?.[index]) {
+          return;
+        }
+
+        const newBadges = [...this._config.badges];
+        const badge = { ...newBadges[index] };
+        const rules = Array.isArray(badge.visibility) ? [...badge.visibility] : [];
+        rules.push({ operator: BADGE_OPERATORS.EQUALS, value: 'on' });
+        badge.visibility = rules;
+        newBadges[index] = badge;
+        this._config = { ...this._config, badges: newBadges };
+        this._pushHistory(this._config);
+        this._fireConfigChangedAndRender();
+      });
+    });
+
+    queryAll<HTMLButtonElement>(this.shadowRoot, '[data-action="add-badge-color-rule"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index, 10);
+        if (Number.isNaN(index) || !this._config.badges?.[index]) {
+          return;
+        }
+
+        const newBadges = [...this._config.badges];
+        const badge = { ...newBadges[index] };
+        const rules = Array.isArray(badge.color_rules) ? [...badge.color_rules] : [];
+        rules.push({ operator: BADGE_OPERATORS.EQUALS, value: 'on', color: '#fdd835' });
+        badge.color_rules = rules;
+        newBadges[index] = badge;
+        this._config = { ...this._config, badges: newBadges };
+        this._pushHistory(this._config);
+        this._fireConfigChangedAndRender();
+      });
+    });
+
+    queryAll<HTMLButtonElement>(this.shadowRoot, '[data-action="delete-badge-rule"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index, 10);
+        const ruleIndex = parseInt(btn.dataset.ruleIndex, 10);
+        const ruleKind = btn.dataset.ruleKind;
+        if (
+          Number.isNaN(index) ||
+          Number.isNaN(ruleIndex) ||
+          !this._config.badges?.[index] ||
+          (ruleKind !== 'visibility' && ruleKind !== 'color_rules')
+        ) {
+          return;
+        }
+
+        const newBadges = [...this._config.badges];
+        const badge = { ...newBadges[index] };
+        const rules = ruleKind === 'visibility'
+          ? (badge.visibility || []).filter((_, currentIndex) => currentIndex !== ruleIndex)
+          : (badge.color_rules || []).filter((_, currentIndex) => currentIndex !== ruleIndex);
+
+        if (ruleKind === 'visibility') {
+          if (rules.length > 0) {
+            badge.visibility = rules;
+          } else {
+            delete badge.visibility;
+          }
+        } else if (rules.length > 0) {
+          badge.color_rules = rules;
+        } else {
+          delete badge.color_rules;
+        }
+
+        newBadges[index] = badge;
+        this._config = { ...this._config, badges: newBadges };
+        this._pushHistory(this._config);
+        this._fireConfigChangedAndRender();
+      });
+    });
+
     queryAll<HTMLElement>(this.shadowRoot, '.badge-item').forEach((item) => {
       const index = parseInt(item.dataset.index, 10);
       queryAll<EditorFieldElement>(item, '.badge-field').forEach((field) => {
@@ -4496,6 +4850,10 @@ export class UniversalCardEditor extends HTMLElement {
           const thresholdIndex = field.dataset.thresholdIndex !== undefined
             ? parseInt(field.dataset.thresholdIndex, 10)
             : null;
+          const ruleIndex = field.dataset.ruleIndex !== undefined
+            ? parseInt(field.dataset.ruleIndex, 10)
+            : null;
+          const ruleKind = field.dataset.ruleKind;
 
           const newBadges = [...this._config.badges];
           const badge = { ...newBadges[index] };
@@ -4517,6 +4875,44 @@ export class UniversalCardEditor extends HTMLElement {
 
             thresholds[thresholdIndex] = nextThreshold;
             badge.thresholds = thresholds;
+          } else if (ruleIndex !== null && !Number.isNaN(ruleIndex)) {
+            if (ruleKind === 'visibility') {
+              if (!isEditorBadgeRuleFieldKey(fieldName)) {
+                return;
+              }
+
+              const rules = Array.isArray(badge.visibility) ? [...badge.visibility] : [];
+              const nextRule: EditorBadgeRule = { ...(rules[ruleIndex] || {}) };
+              const nextValue = this._parseBadgeRuleEditorValue(fieldName, field);
+
+              if (nextValue === undefined) {
+                delete nextRule[fieldName];
+              } else {
+                setEditorBadgeRuleField(nextRule, fieldName, nextValue as EditorBadgeRule[typeof fieldName]);
+              }
+
+              rules[ruleIndex] = nextRule;
+              badge.visibility = rules;
+            } else if (ruleKind === 'color_rules') {
+              if (!isEditorBadgeColorRuleFieldKey(fieldName)) {
+                return;
+              }
+
+              const rules = Array.isArray(badge.color_rules) ? [...badge.color_rules] : [];
+              const nextRule: EditorBadgeColorRule = { ...(rules[ruleIndex] || {}) };
+              const nextValue = this._parseBadgeRuleEditorValue(fieldName, field);
+
+              if (nextValue === undefined) {
+                delete nextRule[fieldName];
+              } else {
+                setEditorBadgeColorRuleField(nextRule, fieldName, nextValue as EditorBadgeColorRule[typeof fieldName]);
+              }
+
+              rules[ruleIndex] = nextRule;
+              badge.color_rules = rules;
+            } else {
+              return;
+            }
           } else {
             if (!isEditorBadgeFieldKey(fieldName)) {
               return;
@@ -4578,6 +4974,42 @@ export class UniversalCardEditor extends HTMLElement {
     if (fieldName === 'entities') {
       const values = rawValue.split(',').map((entry) => entry.trim()).filter(Boolean);
       return values.length > 0 ? values : undefined;
+    }
+
+    return rawValue;
+  }
+
+  /**
+   * Parse badge visibility/color rule field value.
+   *
+   * @private
+   * @param {EditorBadgeRuleFieldKey | EditorBadgeColorRuleFieldKey} fieldName
+   * @param {HTMLInputElement|HTMLSelectElement} field
+   * @returns {EditorBadgeRule[EditorBadgeRuleFieldKey] | EditorBadgeColorRule[EditorBadgeColorRuleFieldKey] | undefined}
+   */
+  _parseBadgeRuleEditorValue(
+    fieldName: EditorBadgeRuleFieldKey | EditorBadgeColorRuleFieldKey,
+    field: EditorFieldElement
+  ): EditorBadgeRule[EditorBadgeRuleFieldKey] | EditorBadgeColorRule[EditorBadgeColorRuleFieldKey] | undefined {
+    if (field instanceof HTMLInputElement && field.type === 'checkbox') {
+      return field.checked;
+    }
+
+    const rawValue = field.value.trim();
+    if (!rawValue) {
+      return undefined;
+    }
+
+    if (fieldName === 'operator' || fieldName === 'entity' || fieldName === 'attribute' || fieldName === 'color') {
+      return rawValue;
+    }
+
+    if (/^(true|false)$/i.test(rawValue)) {
+      return rawValue.toLowerCase() === 'true';
+    }
+
+    if (/^-?\d+(\.\d+)?$/.test(rawValue)) {
+      return Number(rawValue);
     }
 
     return rawValue;
@@ -4754,6 +5186,12 @@ export class UniversalCardEditor extends HTMLElement {
     
     // Рекурсивно создаём новый объект с обновлённым значением
     this._config = this._setNestedValue(this._config, keys, newValue);
+
+    if (name === 'body_mode' || name === 'theme') {
+      this._fireConfigChangedAndRender();
+      return;
+    }
+
     this._fireConfigChanged();
   }
 
@@ -6500,6 +6938,12 @@ export class UniversalCardEditor extends HTMLElement {
         border-top: 1px dashed var(--editor-border);
       }
 
+      .badge-rules {
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px dashed var(--editor-border);
+      }
+
       .badge-thresholds-header {
         display: flex;
         align-items: center;
@@ -6509,6 +6953,21 @@ export class UniversalCardEditor extends HTMLElement {
       }
 
       .badge-threshold-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .badge-rules-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .badge-rule-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -6526,7 +6985,22 @@ export class UniversalCardEditor extends HTMLElement {
         border-radius: 8px;
       }
 
+      .badge-rule-item {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) auto;
+        gap: 8px;
+        align-items: end;
+        padding: 10px;
+        background: var(--editor-surface);
+        border: 1px solid var(--editor-border);
+        border-radius: 8px;
+      }
+
       .badge-threshold-field {
+        width: 100%;
+      }
+
+      .badge-rule-field {
         width: 100%;
       }
       

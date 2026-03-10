@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cardPool } from '../src/core/runtime.js';
 import { BaseMode } from '../src/modes/BaseMode.js';
@@ -86,6 +86,24 @@ describe('BaseMode pooling and loading', () => {
 
     expect(second.loaded).toBe(true);
     expect(second._cards).toHaveLength(1);
+  });
+
+  it('deduplicates concurrent loadCards calls', async () => {
+    const mode = new TestMode(createConfig());
+    const createCardElement = vi.fn(async () => {
+      await Promise.resolve();
+      return document.createElement('div');
+    });
+
+    mode._getCardHelpers = async () => ({ createCardElement });
+
+    await Promise.all([
+      mode.loadCards([{ type: 'markdown', content: 'x' }]),
+      mode.loadCards([{ type: 'markdown', content: 'x' }])
+    ]);
+
+    expect(createCardElement).toHaveBeenCalledTimes(1);
+    expect(mode._cards).toHaveLength(1);
   });
 
   it('builds scope-aware pool keys', () => {

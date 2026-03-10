@@ -1,3 +1,10 @@
+---
+published: false
+title: Enterprise Roadmap
+description: Longer-term product direction and enterprise-oriented capability planning for Universal Card.
+section_label: Project Notes
+permalink: /enterprise-roadmap/
+---
 # Universal Card Enterprise Roadmap
 
 ## Purpose

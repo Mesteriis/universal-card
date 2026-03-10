@@ -1,0 +1,11 @@
+services:
+  homeassistant:
+    image: ${HA_IMAGE:-ghcr.io/home-assistant/home-assistant:stable}
+    container_name: universal-card-ha-fixture
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+    volumes:
+      - ${HA_FIXTURE_RUNTIME_DIR:-/tmp/universal-card-ha-fixture-config}:/config

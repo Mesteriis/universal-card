@@ -18,6 +18,9 @@ import {
   VALID_COLLAPSE_ANIMATIONS,
   VALID_CARD_ANIMATIONS,
   VALID_CARD_DIRECTIONS,
+  VALID_HEADER_BADGES_POSITIONS,
+  VALID_HEADER_CONTENT_ALIGNMENTS,
+  VALID_HEADER_LAYOUT_VARIANTS,
   THEMES,
   ACTION_TYPES,
   CONDITION_TYPES,
@@ -25,11 +28,16 @@ import {
   VALID_WEEKDAYS,
   BADGE_TYPES,
   VALID_BADGE_TYPES,
+  BADGE_OPERATORS,
+  VALID_BADGE_OPERATORS,
   BADGE_FORMATS,
   VALID_BADGE_FORMATS,
+  MODAL_LOADING_STRATEGIES,
+  VALID_MODAL_LOADING_STRATEGIES,
   SWIPE_DIRECTIONS,
   VALID_SWIPE_DIRECTIONS,
   VALID_SWIPE_ACTIONS,
+  VALID_TAB_ALIGNMENTS,
   LIMITS
 } from './constants.js';
 
@@ -194,6 +202,13 @@ export class ConfigManager {
       );
     }
 
+    if (config.icon_color !== undefined && typeof config.icon_color !== 'string') {
+      throw new ConfigValidationError(
+        'icon_color must be a string',
+        'icon_color'
+      );
+    }
+
     if (config.attribute !== undefined && !isNonEmptyString(config.attribute)) {
       throw new ConfigValidationError(
         'attribute must be a non-empty string',
@@ -236,6 +251,10 @@ export class ConfigManager {
       );
     }
 
+    if (config.header !== undefined) {
+      this._validateHeaderConfig(config.header, 'header');
+    }
+
     if (config.carousel !== undefined) {
       throw new ConfigValidationError(
         'Legacy carousel object was removed. Use root carousel_autoplay and carousel_interval fields.',
@@ -269,6 +288,26 @@ export class ConfigManager {
           'grid.columns'
         );
       }
+    }
+
+    if (config.modal !== undefined) {
+      this._validateModal(config.modal, 'modal');
+    }
+
+    if (config.fullscreen !== undefined) {
+      this._validateFullscreen(config.fullscreen, 'fullscreen');
+    }
+
+    if (config.tabs_config !== undefined) {
+      this._validateTabsUiConfig(config.tabs_config, 'tabs_config');
+    }
+
+    if (config.carousel_options !== undefined) {
+      this._validateCarouselOptions(config.carousel_options, 'carousel_options');
+    }
+
+    if (config.subview !== undefined) {
+      this._validateSubview(config.subview, 'subview');
     }
 
     // Validate lazy-load chunk tuning
@@ -672,6 +711,99 @@ export class ConfigManager {
         );
       }
     });
+  }
+
+  /**
+   * Validate header configuration.
+   *
+   * @param {*} header
+   * @param {string} path
+   * @private
+   * @static
+   */
+  static _validateHeaderConfig(header, path) {
+    if (!isObject(header)) {
+      throw new ConfigValidationError(
+        'header must be an object',
+        path
+      );
+    }
+
+    this._validateCardCollection(header.cards, `${path}.cards`);
+
+    if (header.sticky !== undefined && typeof header.sticky !== 'boolean') {
+      throw new ConfigValidationError(
+        'header.sticky must be a boolean',
+        `${path}.sticky`
+      );
+    }
+
+    if (header.clickable !== undefined && typeof header.clickable !== 'boolean') {
+      throw new ConfigValidationError(
+        'header.clickable must be a boolean',
+        `${path}.clickable`
+      );
+    }
+
+    if (header.layout !== undefined) {
+      this._validateHeaderLayout(header.layout, `${path}.layout`);
+    }
+  }
+
+  /**
+   * Validate header layout configuration.
+   *
+   * @param {*} layout
+   * @param {string} path
+   * @private
+   * @static
+   */
+  static _validateHeaderLayout(layout, path) {
+    if (!isObject(layout)) {
+      throw new ConfigValidationError(
+        'header.layout must be an object',
+        path
+      );
+    }
+
+    ['gap', 'content_gap'].forEach((field) => {
+      if (layout[field] !== undefined && !isNonEmptyString(layout[field])) {
+        throw new ConfigValidationError(
+          `header.layout.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (
+      layout.variant !== undefined &&
+      (typeof layout.variant !== 'string' || !VALID_HEADER_LAYOUT_VARIANTS.includes(layout.variant))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.variant must be one of: ${VALID_HEADER_LAYOUT_VARIANTS.join(', ')}`,
+        `${path}.variant`
+      );
+    }
+
+    if (
+      layout.align !== undefined &&
+      (typeof layout.align !== 'string' || !VALID_HEADER_CONTENT_ALIGNMENTS.includes(layout.align))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.align must be one of: ${VALID_HEADER_CONTENT_ALIGNMENTS.join(', ')}`,
+        `${path}.align`
+      );
+    }
+
+    if (
+      layout.badges_position !== undefined &&
+      (typeof layout.badges_position !== 'string' || !VALID_HEADER_BADGES_POSITIONS.includes(layout.badges_position))
+    ) {
+      throw new ConfigValidationError(
+        `header.layout.badges_position must be one of: ${VALID_HEADER_BADGES_POSITIONS.join(', ')}`,
+        `${path}.badges_position`
+      );
+    }
   }
   
   /**
@@ -1336,6 +1468,13 @@ export class ConfigManager {
         }
       });
 
+      if (badge.icon_only !== undefined && typeof badge.icon_only !== 'boolean') {
+        throw new ConfigValidationError(
+          'Badge icon_only must be a boolean',
+          `${badgePath}.icon_only`
+        );
+      }
+
       if (badge.precision !== undefined) {
         if (!Number.isInteger(badge.precision)) {
           throw new ConfigValidationError(
@@ -1406,8 +1545,20 @@ export class ConfigManager {
         this._validateBadgeThresholds(badge.thresholds, `${badgePath}.thresholds`);
       }
 
+      if (badge.visibility !== undefined) {
+        this._validateBadgeRules(badge.visibility, `${badgePath}.visibility`);
+      }
+
+      if (badge.color_rules !== undefined) {
+        this._validateBadgeColorRules(badge.color_rules, `${badgePath}.color_rules`);
+      }
+
       if (badge.tap_action !== undefined) {
         this._validateAction(badge.tap_action, `${badgePath}.tap_action`);
+      }
+
+      if (badge.icon_tap_action !== undefined) {
+        this._validateAction(badge.icon_tap_action, `${badgePath}.icon_tap_action`);
       }
 
       switch (type) {
@@ -1454,6 +1605,223 @@ export class ConfigManager {
   }
 
   /**
+   * Validate modal configuration.
+   *
+   * @private
+   * @param {*} modal
+   * @param {string} path
+   */
+  static _validateModal(modal, path) {
+    if (!isObject(modal)) {
+      throw new ConfigValidationError(
+        'modal must be an object',
+        path
+      );
+    }
+
+    ['width', 'height', 'max_width', 'max_height', 'backdrop_color'].forEach((field) => {
+      if (modal[field] !== undefined && !isNonEmptyString(modal[field])) {
+        throw new ConfigValidationError(
+          `modal.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['backdrop_blur', 'close_on_backdrop', 'close_on_escape', 'show_close'].forEach((field) => {
+      if (modal[field] !== undefined && typeof modal[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `modal.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (
+      modal.loading_strategy !== undefined &&
+      (
+        typeof modal.loading_strategy !== 'string' ||
+        !VALID_MODAL_LOADING_STRATEGIES.includes(modal.loading_strategy)
+      )
+    ) {
+      throw new ConfigValidationError(
+        `modal.loading_strategy must be one of: ${VALID_MODAL_LOADING_STRATEGIES.join(', ')}`,
+        `${path}.loading_strategy`
+      );
+    }
+  }
+
+  /**
+   * Validate fullscreen configuration.
+   *
+   * @private
+   * @param {*} fullscreen
+   * @param {string} path
+   */
+  static _validateFullscreen(fullscreen, path) {
+    if (!isObject(fullscreen)) {
+      throw new ConfigValidationError(
+        'fullscreen must be an object',
+        path
+      );
+    }
+
+    ['width', 'height', 'max_width', 'max_height', 'padding', 'background'].forEach((field) => {
+      if (fullscreen[field] !== undefined && !isNonEmptyString(fullscreen[field])) {
+        throw new ConfigValidationError(
+          `fullscreen.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['show_close', 'close_on_escape'].forEach((field) => {
+      if (fullscreen[field] !== undefined && typeof fullscreen[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `fullscreen.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate tabs UI configuration.
+   *
+   * @private
+   * @param {*} tabsConfig
+   * @param {string} path
+   */
+  static _validateTabsUiConfig(tabsConfig, path) {
+    if (!isObject(tabsConfig)) {
+      throw new ConfigValidationError(
+        'tabs_config must be an object',
+        path
+      );
+    }
+
+    if (tabsConfig.position !== undefined && !isNonEmptyString(tabsConfig.position)) {
+      throw new ConfigValidationError(
+        'tabs_config.position must be a non-empty string',
+        `${path}.position`
+      );
+    }
+
+    ['show_icons', 'show_labels'].forEach((field) => {
+      if (tabsConfig[field] !== undefined && typeof tabsConfig[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `tabs_config.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['content_padding', 'tab_min_width'].forEach((field) => {
+      if (tabsConfig[field] !== undefined && !isNonEmptyString(tabsConfig[field])) {
+        throw new ConfigValidationError(
+          `tabs_config.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (
+      tabsConfig.tab_alignment !== undefined &&
+      (
+        typeof tabsConfig.tab_alignment !== 'string' ||
+        !VALID_TAB_ALIGNMENTS.includes(tabsConfig.tab_alignment)
+      )
+    ) {
+      throw new ConfigValidationError(
+        `tabs_config.tab_alignment must be one of: ${VALID_TAB_ALIGNMENTS.join(', ')}`,
+        `${path}.tab_alignment`
+      );
+    }
+  }
+
+  /**
+   * Validate carousel options configuration.
+   *
+   * @private
+   * @param {*} options
+   * @param {string} path
+   */
+  static _validateCarouselOptions(options, path) {
+    if (!isObject(options)) {
+      throw new ConfigValidationError(
+        'carousel_options must be an object',
+        path
+      );
+    }
+
+    ['show_arrows', 'show_indicators', 'loop'].forEach((field) => {
+      if (options[field] !== undefined && typeof options[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `carousel_options.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    if (options.swipe_threshold !== undefined) {
+      if (!isNumber(options.swipe_threshold)) {
+        throw new ConfigValidationError(
+          'carousel_options.swipe_threshold must be a number',
+          `${path}.swipe_threshold`
+        );
+      }
+
+      if (options.swipe_threshold < 0 || options.swipe_threshold > LIMITS.SWIPE_MAX_THRESHOLD_PX) {
+        throw new ConfigValidationError(
+          `carousel_options.swipe_threshold must be between 0 and ${LIMITS.SWIPE_MAX_THRESHOLD_PX}`,
+          `${path}.swipe_threshold`
+        );
+      }
+    }
+
+    if (options.height !== undefined && !isNonEmptyString(options.height)) {
+      throw new ConfigValidationError(
+        'carousel_options.height must be a non-empty string',
+        `${path}.height`
+      );
+    }
+  }
+
+  /**
+   * Validate subview configuration.
+   *
+   * @private
+   * @param {*} subview
+   * @param {string} path
+   */
+  static _validateSubview(subview, path) {
+    if (!isObject(subview)) {
+      throw new ConfigValidationError(
+        'subview must be an object',
+        path
+      );
+    }
+
+    ['path', 'navigation_path'].forEach((field) => {
+      if (subview[field] !== undefined && !isNonEmptyString(subview[field])) {
+        throw new ConfigValidationError(
+          `subview.${field} must be a non-empty string`,
+          `${path}.${field}`
+        );
+      }
+    });
+
+    ['replace_state', 'return_on_close'].forEach((field) => {
+      if (subview[field] !== undefined && typeof subview[field] !== 'boolean') {
+        throw new ConfigValidationError(
+          `subview.${field} must be a boolean`,
+          `${path}.${field}`
+        );
+      }
+    });
+  }
+
+  /**
    * Validate badge thresholds.
    *
    * @private
@@ -1489,6 +1857,85 @@ export class ConfigManager {
         throw new ConfigValidationError(
           'Badge threshold color must be a non-empty string',
           `${thresholdPath}.color`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate badge comparison rules.
+   *
+   * @private
+   * @param {*} rules
+   * @param {string} path
+   */
+  static _validateBadgeRules(rules, path) {
+    if (!Array.isArray(rules)) {
+      throw new ConfigValidationError(
+        'Badge rules must be an array',
+        path
+      );
+    }
+
+    rules.forEach((rule, index) => {
+      const rulePath = `${path}[${index}]`;
+
+      if (!isObject(rule)) {
+        throw new ConfigValidationError(
+          'Badge rule must be an object',
+          rulePath
+        );
+      }
+
+      if (typeof rule.operator !== 'string' || !VALID_BADGE_OPERATORS.includes(rule.operator)) {
+        throw new ConfigValidationError(
+          `Badge rule operator must be one of: ${VALID_BADGE_OPERATORS.join(', ')}`,
+          `${rulePath}.operator`
+        );
+      }
+
+      const valueType = typeof rule.value;
+      if (rule.value === undefined || !['string', 'number', 'boolean'].includes(valueType)) {
+        throw new ConfigValidationError(
+          'Badge rule value must be a string, number, or boolean',
+          `${rulePath}.value`
+        );
+      }
+
+      if (rule.entity !== undefined) {
+        const entityId = typeof rule.entity === 'string' ? rule.entity.trim() : rule.entity;
+        if (!isValidEntityId(entityId)) {
+          throw new ConfigValidationError(
+            `Invalid entity format: "${rule.entity}"`,
+            `${rulePath}.entity`
+          );
+        }
+      }
+
+      if (rule.attribute !== undefined && !isNonEmptyString(rule.attribute)) {
+        throw new ConfigValidationError(
+          'Badge rule attribute must be a non-empty string',
+          `${rulePath}.attribute`
+        );
+      }
+    });
+  }
+
+  /**
+   * Validate badge color rules.
+   *
+   * @private
+   * @param {*} rules
+   * @param {string} path
+   */
+  static _validateBadgeColorRules(rules, path) {
+    this._validateBadgeRules(rules, path);
+
+    rules.forEach((rule, index) => {
+      if (!isNonEmptyString(rule.color)) {
+        throw new ConfigValidationError(
+          'Badge color rule color must be a non-empty string',
+          `${path}[${index}].color`
         );
       }
     });
@@ -1596,7 +2043,7 @@ export class ConfigManager {
     }
     
     // Normalize header
-    normalized.header = this._normalizeSection(config.header, 'header');
+    normalized.header = this._normalizeHeader(config.header);
 
     if (config.header_left) {
       normalized.header_left = this._normalizeSection(config.header_left, 'header_left');
@@ -1630,6 +2077,11 @@ export class ConfigManager {
     
     // Normalize grid
     normalized.grid = this._normalizeGrid(config.grid);
+    normalized.modal = this._normalizeModal(config.modal);
+    normalized.fullscreen = this._normalizeFullscreen(config.fullscreen);
+    normalized.tabs_config = this._normalizeTabsConfig(config.tabs_config);
+    normalized.carousel_options = this._normalizeCarouselOptions(config.carousel_options);
+    normalized.subview = this._normalizeSubview(config.subview);
     
     // Для триггера раскрытия - не устанавливаем дефолт, пусть Header runtime обрабатывает
     // Для остальных триггеров - none
@@ -1651,6 +2103,15 @@ export class ConfigManager {
         normalized.attribute = attribute;
       } else {
         delete normalized.attribute;
+      }
+    }
+
+    if (typeof config.icon_color === 'string') {
+      const iconColor = config.icon_color.trim();
+      if (iconColor) {
+        normalized.icon_color = iconColor;
+      } else {
+        delete normalized.icon_color;
       }
     }
 
@@ -1694,6 +2155,67 @@ export class ConfigManager {
       ...section
     };
   }
+
+  /**
+   * Normalize header configuration.
+   *
+   * @param {*} header
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeHeader(header) {
+    const normalized = this._normalizeSection(header, 'header');
+
+    if (typeof normalized.sticky !== 'boolean') {
+      delete normalized.sticky;
+    }
+
+    if (typeof normalized.clickable !== 'boolean') {
+      delete normalized.clickable;
+    }
+
+    normalized.layout = this._normalizeHeaderLayout(header?.layout);
+
+    return normalized;
+  }
+
+  /**
+   * Normalize header layout configuration.
+   *
+   * @param {*} layout
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeHeaderLayout(layout) {
+    const source = isObject(layout) ? layout : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      variant:
+        typeof source.variant === 'string' && VALID_HEADER_LAYOUT_VARIANTS.includes(source.variant)
+          ? source.variant
+          : DEFAULTS.header_layout_variant,
+      gap: normalizeString(source.gap, DEFAULTS.header_gap),
+      content_gap: normalizeString(source.content_gap, DEFAULTS.header_content_gap),
+      align:
+        typeof source.align === 'string' && VALID_HEADER_CONTENT_ALIGNMENTS.includes(source.align)
+          ? source.align
+          : DEFAULTS.header_content_align,
+      badges_position:
+        typeof source.badges_position === 'string' && VALID_HEADER_BADGES_POSITIONS.includes(source.badges_position)
+          ? source.badges_position
+          : DEFAULTS.header_badges_position
+    };
+  }
   
   /**
    * Normalize grid configuration
@@ -1715,6 +2237,161 @@ export class ConfigManager {
       columns: grid.columns || DEFAULTS.grid_columns,
       gap: grid.gap || DEFAULTS.grid_gap,
       responsive: grid.responsive || null
+    };
+  }
+
+  /**
+   * Normalize modal configuration.
+   *
+   * @param {*} modal
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeModal(modal) {
+    const source = isObject(modal) ? modal : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      width: normalizeString(source.width, DEFAULTS.modal_width),
+      height: normalizeString(source.height, DEFAULTS.modal_height),
+      max_width: normalizeString(source.max_width, DEFAULTS.modal_max_width),
+      max_height: normalizeString(source.max_height, DEFAULTS.modal_max_height),
+      loading_strategy:
+        typeof source.loading_strategy === 'string' && VALID_MODAL_LOADING_STRATEGIES.includes(source.loading_strategy)
+          ? source.loading_strategy
+          : DEFAULTS.modal_loading_strategy,
+      backdrop_blur: source.backdrop_blur !== false,
+      backdrop_color: normalizeString(source.backdrop_color, DEFAULTS.backdrop_color),
+      close_on_backdrop: source.close_on_backdrop !== false,
+      close_on_escape: source.close_on_escape !== false,
+      show_close: source.show_close !== false
+    };
+  }
+
+  /**
+   * Normalize fullscreen configuration.
+   *
+   * @param {*} fullscreen
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeFullscreen(fullscreen) {
+    const source = isObject(fullscreen) ? fullscreen : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      width: normalizeString(source.width, DEFAULTS.fullscreen_width),
+      height: normalizeString(source.height, DEFAULTS.fullscreen_height),
+      max_width: normalizeString(source.max_width, DEFAULTS.fullscreen_max_width),
+      max_height: normalizeString(source.max_height, DEFAULTS.fullscreen_max_height),
+      padding: normalizeString(source.padding, DEFAULTS.fullscreen_padding),
+      background: normalizeString(source.background, DEFAULTS.fullscreen_background),
+      show_close: source.show_close !== false,
+      close_on_escape: source.close_on_escape !== false
+    };
+  }
+
+  /**
+   * Normalize tabs UI configuration.
+   *
+   * @param {*} tabsConfig
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeTabsConfig(tabsConfig) {
+    const source = isObject(tabsConfig) ? tabsConfig : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      position: normalizeString(source.position, 'top'),
+      show_icons: source.show_icons !== false,
+      show_labels: source.show_labels !== false,
+      content_padding: normalizeString(source.content_padding, DEFAULTS.tabs_content_padding),
+      tab_min_width: normalizeString(source.tab_min_width, DEFAULTS.tabs_tab_min_width),
+      tab_alignment:
+        typeof source.tab_alignment === 'string' && VALID_TAB_ALIGNMENTS.includes(source.tab_alignment)
+          ? source.tab_alignment
+          : DEFAULTS.tabs_tab_alignment
+    };
+  }
+
+  /**
+   * Normalize carousel options configuration.
+   *
+   * @param {*} options
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeCarouselOptions(options) {
+    const source = isObject(options) ? options : {};
+    const normalizeString = (value, fallback) => {
+      if (typeof value !== 'string') {
+        return fallback;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    };
+
+    return {
+      show_arrows: source.show_arrows !== false,
+      show_indicators: source.show_indicators !== false,
+      loop: source.loop !== false,
+      swipe_threshold: isNumber(source.swipe_threshold) ? source.swipe_threshold : DEFAULTS.swipe_threshold,
+      height: normalizeString(source.height, DEFAULTS.carousel_height)
+    };
+  }
+
+  /**
+   * Normalize subview configuration.
+   *
+   * @param {*} subview
+   * @returns {Object}
+   * @private
+   * @static
+   */
+  static _normalizeSubview(subview) {
+    const source = isObject(subview) ? subview : {};
+
+    const normalizeOptionalString = (value) => {
+      if (typeof value !== 'string') {
+        return undefined;
+      }
+
+      const trimmed = value.trim();
+      return trimmed || undefined;
+    };
+
+    return {
+      path: normalizeOptionalString(source.path),
+      navigation_path: normalizeOptionalString(source.navigation_path),
+      replace_state: source.replace_state === true,
+      return_on_close: source.return_on_close === true
     };
   }
   
@@ -2003,8 +2680,89 @@ export class ConfigManager {
           }
         }
 
+        if (Array.isArray(normalized.visibility)) {
+          normalized.visibility = normalized.visibility
+            .filter((rule) => isObject(rule) && VALID_BADGE_OPERATORS.includes(rule.operator))
+            .map((rule) => this._normalizeBadgeRule(rule))
+            .filter(Boolean);
+          if (normalized.visibility.length === 0) {
+            delete normalized.visibility;
+          }
+        }
+
+        if (Array.isArray(normalized.color_rules)) {
+          normalized.color_rules = normalized.color_rules
+            .filter((rule) => isObject(rule) && VALID_BADGE_OPERATORS.includes(rule.operator))
+            .map((rule) => this._normalizeBadgeColorRule(rule))
+            .filter(Boolean);
+          if (normalized.color_rules.length === 0) {
+            delete normalized.color_rules;
+          }
+        }
+
         return normalized;
       });
+  }
+
+  /**
+   * Normalize badge comparison rule.
+   *
+   * @private
+   * @param {*} rule
+   * @returns {Record<string, any> | null}
+   */
+  static _normalizeBadgeRule(rule) {
+    if (!isObject(rule)) {
+      return null;
+    }
+
+    const normalized: Record<string, any> = {
+      operator: rule.operator || BADGE_OPERATORS.EQUALS,
+      value: rule.value
+    };
+
+    if (typeof rule.entity === 'string') {
+      const entity = rule.entity.trim();
+      if (entity) {
+        normalized.entity = entity;
+      }
+    }
+
+    if (typeof rule.attribute === 'string') {
+      const attribute = rule.attribute.trim();
+      if (attribute) {
+        normalized.attribute = attribute;
+      }
+    }
+
+    if (typeof normalized.value === 'string') {
+      const trimmed = normalized.value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      normalized.value = trimmed;
+    }
+
+    return normalized;
+  }
+
+  /**
+   * Normalize badge color rule.
+   *
+   * @private
+   * @param {*} rule
+   * @returns {Record<string, any> | null}
+   */
+  static _normalizeBadgeColorRule(rule) {
+    const normalized = this._normalizeBadgeRule(rule);
+    if (!normalized || typeof rule.color !== 'string' || !rule.color.trim()) {
+      return null;
+    }
+
+    return {
+      ...normalized,
+      color: rule.color.trim()
+    };
   }
 
   /**
@@ -2264,6 +3022,7 @@ export class ConfigManager {
         unit: { type: 'string' },
         min: { type: 'number' },
         max: { type: 'number' },
+        icon_only: { type: 'boolean', default: false },
         show_name: { type: 'boolean', default: false },
         show_progress: { type: 'boolean', default: false },
         precision: {
@@ -2287,7 +3046,41 @@ export class ConfigManager {
           type: 'array',
           items: badgeThresholdSchema
         },
-        tap_action: actionSchema
+        visibility: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              operator: {
+                type: 'string',
+                enum: VALID_BADGE_OPERATORS,
+                default: BADGE_OPERATORS.EQUALS
+              },
+              value: { type: ['string', 'number', 'boolean'] },
+              entity: { type: 'string' },
+              attribute: { type: 'string' }
+            }
+          }
+        },
+        color_rules: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              operator: {
+                type: 'string',
+                enum: VALID_BADGE_OPERATORS,
+                default: BADGE_OPERATORS.EQUALS
+              },
+              value: { type: ['string', 'number', 'boolean'] },
+              entity: { type: 'string' },
+              attribute: { type: 'string' },
+              color: { type: 'string' }
+            }
+          }
+        },
+        tap_action: actionSchema,
+        icon_tap_action: actionSchema
       }
     };
 
@@ -2351,6 +3144,10 @@ export class ConfigManager {
         icon: {
           type: 'string',
           description: 'Header icon in mdi format.'
+        },
+        icon_color: {
+          type: 'string',
+          description: 'Optional CSS color value for the primary header icon.'
         },
         entity: {
           type: 'string',
@@ -2541,9 +3338,138 @@ export class ConfigManager {
             }
           }
         },
+        modal: {
+          type: 'object',
+          description: 'Modal body mode sizing and overlay behavior.',
+          properties: {
+            width: {
+              type: 'string',
+              default: DEFAULTS.modal_width,
+              description: 'Modal width. Use CSS lengths or auto.'
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.modal_height,
+              description: 'Modal height. Use CSS lengths or auto.'
+            },
+            max_width: {
+              type: 'string',
+              default: DEFAULTS.modal_max_width,
+              description: 'Maximum width cap applied to the modal dialog.'
+            },
+            max_height: {
+              type: 'string',
+              default: DEFAULTS.modal_max_height,
+              description: 'Maximum height cap applied to the modal dialog.'
+            },
+            loading_strategy: {
+              type: 'string',
+              enum: VALID_MODAL_LOADING_STRATEGIES,
+              default: DEFAULTS.modal_loading_strategy,
+              description: 'Modal content loading strategy.'
+            },
+            backdrop_blur: {
+              type: 'boolean',
+              default: true
+            },
+            backdrop_color: {
+              type: 'string',
+              default: DEFAULTS.backdrop_color
+            },
+            close_on_backdrop: {
+              type: 'boolean',
+              default: true
+            },
+            close_on_escape: {
+              type: 'boolean',
+              default: true
+            },
+            show_close: {
+              type: 'boolean',
+              default: true
+            }
+          }
+        },
+        fullscreen: {
+          type: 'object',
+          description: 'Fullscreen body mode sizing and overlay behavior.',
+          properties: {
+            width: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_width
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_height
+            },
+            max_width: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_max_width
+            },
+            max_height: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_max_height
+            },
+            padding: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_padding
+            },
+            background: {
+              type: 'string',
+              default: DEFAULTS.fullscreen_background
+            },
+            show_close: {
+              type: 'boolean',
+              default: true
+            },
+            close_on_escape: {
+              type: 'boolean',
+              default: true
+            }
+          }
+        },
         header: {
-          ...slotSchema,
-          description: 'Header region configuration.'
+          type: 'object',
+          description: 'Header region configuration.',
+          properties: {
+            cards: cardCollectionSchema,
+            sticky: {
+              type: 'boolean',
+              default: false
+            },
+            clickable: {
+              type: 'boolean',
+              default: true
+            },
+            layout: {
+              type: 'object',
+              properties: {
+                variant: {
+                  type: 'string',
+                  enum: VALID_HEADER_LAYOUT_VARIANTS,
+                  default: DEFAULTS.header_layout_variant
+                },
+                gap: {
+                  type: 'string',
+                  default: DEFAULTS.header_gap
+                },
+                content_gap: {
+                  type: 'string',
+                  default: DEFAULTS.header_content_gap
+                },
+                align: {
+                  type: 'string',
+                  enum: VALID_HEADER_CONTENT_ALIGNMENTS,
+                  default: DEFAULTS.header_content_align
+                },
+                badges_position: {
+                  type: 'string',
+                  enum: VALID_HEADER_BADGES_POSITIONS,
+                  default: DEFAULTS.header_badges_position
+                }
+              }
+            }
+          }
         },
         header_left: {
           ...slotSchema,
@@ -2571,6 +3497,75 @@ export class ConfigManager {
               icon: { type: 'string' },
               cards: cardCollectionSchema
             }
+          }
+        },
+        tabs_config: {
+          type: 'object',
+          description: 'Tabs body mode UI controls.',
+          properties: {
+            position: {
+              type: 'string',
+              default: 'top'
+            },
+            show_icons: {
+              type: 'boolean',
+              default: true
+            },
+            show_labels: {
+              type: 'boolean',
+              default: true
+            },
+            content_padding: {
+              type: 'string',
+              default: DEFAULTS.tabs_content_padding
+            },
+            tab_min_width: {
+              type: 'string',
+              default: DEFAULTS.tabs_tab_min_width
+            },
+            tab_alignment: {
+              type: 'string',
+              enum: VALID_TAB_ALIGNMENTS,
+              default: DEFAULTS.tabs_tab_alignment
+            }
+          }
+        },
+        carousel_options: {
+          type: 'object',
+          description: 'Carousel body mode layout and control options.',
+          properties: {
+            show_arrows: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_show_arrows
+            },
+            show_indicators: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_show_indicators
+            },
+            loop: {
+              type: 'boolean',
+              default: DEFAULTS.carousel_loop
+            },
+            swipe_threshold: {
+              type: 'number',
+              minimum: 0,
+              maximum: LIMITS.SWIPE_MAX_THRESHOLD_PX,
+              default: DEFAULTS.swipe_threshold
+            },
+            height: {
+              type: 'string',
+              default: DEFAULTS.carousel_height
+            }
+          }
+        },
+        subview: {
+          type: 'object',
+          description: 'Subview navigation settings used by subview body mode.',
+          properties: {
+            path: { type: 'string' },
+            navigation_path: { type: 'string' },
+            replace_state: { type: 'boolean', default: false },
+            return_on_close: { type: 'boolean', default: false }
           }
         },
         carousel_autoplay: {

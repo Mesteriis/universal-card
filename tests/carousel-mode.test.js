@@ -51,7 +51,15 @@ describe('CarouselMode', () => {
 
   it('opens, loads slides, and reports the current index', async () => {
     const onSlideChange = vi.fn();
-    const mode = new CarouselMode(createCarouselConfig(), { onSlideChange });
+    const mode = new CarouselMode(createCarouselConfig({
+      carousel_options: {
+        show_arrows: false,
+        show_indicators: false,
+        loop: false,
+        swipe_threshold: 80,
+        height: '22rem'
+      }
+    }), { onSlideChange });
     attachMockHelpers(mode);
 
     document.body.appendChild(mode.render());
@@ -59,6 +67,16 @@ describe('CarouselMode', () => {
 
     expect(mode._track.querySelectorAll('.carousel-slide')).toHaveLength(2);
     expect(onSlideChange).toHaveBeenCalledWith(0);
+    expect(mode._container.dataset.ucRole).toBe('mode-root');
+    expect(mode._container.dataset.ucMode).toBe('carousel');
+    expect(mode._container.querySelector('.carousel-viewport').dataset.ucRole).toBe('viewport');
+    expect(mode._container.querySelector('.carousel-track-wrapper').dataset.ucRole).toBe('track-wrapper');
+    expect(mode._track.dataset.ucRole).toBe('track');
+    expect(mode._container.querySelector('.carousel-arrow')).toBeNull();
+    expect(mode._indicators).toBeNull();
+    expect(mode._loop).toBe(false);
+    expect(mode._swipeThreshold).toBe(80);
+    expect(mode._container.querySelector('.carousel-viewport').style.height).toBe('22rem');
   });
 
   it('retains loaded slides after close and reopen without duplicating content', async () => {
@@ -102,5 +120,25 @@ describe('CarouselMode', () => {
 
     await mode.open();
     expect(mode._autoplayTimer).not.toBeNull();
+  });
+
+  it('returns carousel mode styles string', () => {
+    const css = CarouselMode.getStyles();
+    expect(css).toContain('.carousel-mode');
+    expect(css).toContain('.carousel-viewport');
+  });
+
+  it('adds stable hooks for arrows and indicators when enabled', async () => {
+    const mode = new CarouselMode(createCarouselConfig());
+    attachMockHelpers(mode);
+
+    document.body.appendChild(mode.render());
+    await mode.open();
+
+    expect(mode._container.querySelector('.carousel-arrow-prev').dataset.ucRole).toBe('carousel-arrow');
+    expect(mode._container.querySelector('.carousel-arrow-prev').dataset.ucDirection).toBe('prev');
+    expect(mode._container.querySelector('.carousel-arrow-next').dataset.ucDirection).toBe('next');
+    expect(mode._container.querySelector('.carousel-indicators').dataset.ucRole).toBe('indicators');
+    expect(mode._container.querySelector('.carousel-indicator').dataset.ucRole).toBe('indicator');
   });
 });

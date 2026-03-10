@@ -52,6 +52,179 @@ describe('ConfigManager', () => {
     expect(normalized.carousel_interval).toBe(8000);
   });
 
+  it('normalizes and validates modal sizing config', () => {
+    const normalized = ConfigManager.normalize({
+      body_mode: 'modal',
+      body: { cards: [] },
+      icon_color: ' var(--accent-color) ',
+      modal: {
+        width: ' auto ',
+        height: ' 32rem ',
+        max_width: ' 72rem ',
+        max_height: ' 90vh ',
+        loading_strategy: 'preload',
+        backdrop_blur: false
+      }
+    });
+
+    expect(normalized.modal.width).toBe('auto');
+    expect(normalized.modal.height).toBe('32rem');
+    expect(normalized.modal.max_width).toBe('72rem');
+    expect(normalized.modal.max_height).toBe('90vh');
+    expect(normalized.modal.loading_strategy).toBe('preload');
+    expect(normalized.modal.backdrop_blur).toBe(false);
+    expect(normalized.icon_color).toBe('var(--accent-color)');
+
+    expect(() => {
+      ConfigManager.validate({
+        body_mode: 'modal',
+        body: { cards: [] },
+        modal: {
+          height: 420
+        }
+      });
+    }).toThrow(/modal\.height/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body_mode: 'modal',
+        body: { cards: [] },
+        modal: {
+          loading_strategy: 'eager'
+        }
+      });
+    }).toThrow(/modal\.loading_strategy/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        icon_color: 42
+      });
+    }).toThrow(/icon_color/);
+  });
+
+  it('normalizes and validates fullscreen tabs carousel and subview configs', () => {
+    const normalized = ConfigManager.normalize({
+      body_mode: 'fullscreen',
+      body: { cards: [] },
+      fullscreen: {
+        width: ' 88rem ',
+        height: ' 90vh ',
+        max_width: ' 96rem ',
+        max_height: ' 95vh ',
+        padding: ' 24px ',
+        background: ' var(--lovelace-background) ',
+        show_close: false
+      },
+      tabs_config: {
+        position: ' bottom ',
+        content_padding: ' 12px ',
+        tab_min_width: ' 96px ',
+        tab_alignment: 'center',
+        show_icons: false
+      },
+      carousel_options: {
+        show_arrows: false,
+        show_indicators: false,
+        loop: false,
+        swipe_threshold: 80,
+        height: ' 22rem '
+      },
+      subview: {
+        path: ' /lovelace/details ',
+        return_on_close: true
+      }
+    });
+
+    expect(normalized.fullscreen).toMatchObject({
+      width: '88rem',
+      height: '90vh',
+      max_width: '96rem',
+      max_height: '95vh',
+      padding: '24px',
+      background: 'var(--lovelace-background)',
+      show_close: false,
+      close_on_escape: true
+    });
+    expect(normalized.tabs_config).toMatchObject({
+      position: 'bottom',
+      content_padding: '12px',
+      tab_min_width: '96px',
+      tab_alignment: 'center',
+      show_icons: false,
+      show_labels: true
+    });
+    expect(normalized.carousel_options).toMatchObject({
+      show_arrows: false,
+      show_indicators: false,
+      loop: false,
+      swipe_threshold: 80,
+      height: '22rem'
+    });
+    expect(normalized.subview).toEqual({
+      path: '/lovelace/details',
+      navigation_path: undefined,
+      replace_state: false,
+      return_on_close: true
+    });
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        tabs_config: {
+          tab_alignment: 'end'
+        }
+      });
+    }).toThrow(/tabs_config\.tab_alignment/);
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        carousel_options: {
+          swipe_threshold: LIMITS.SWIPE_MAX_THRESHOLD_PX + 1
+        }
+      });
+    }).toThrow(/carousel_options\.swipe_threshold/);
+  });
+
+  it('normalizes and validates header layout config', () => {
+    const normalized = ConfigManager.normalize({
+      body: { cards: [] },
+      header: {
+        sticky: true,
+        clickable: false,
+        layout: {
+          variant: 'stacked',
+          gap: ' 18px ',
+          content_gap: ' 6px ',
+          align: 'center',
+          badges_position: 'below_content'
+        }
+      }
+    });
+
+    expect(normalized.header.sticky).toBe(true);
+    expect(normalized.header.clickable).toBe(false);
+    expect(normalized.header.layout).toEqual({
+      variant: 'stacked',
+      gap: '18px',
+      content_gap: '6px',
+      align: 'center',
+      badges_position: 'below_content'
+    });
+
+    expect(() => {
+      ConfigManager.validate({
+        body: { cards: [] },
+        header: {
+          layout: {
+            variant: 'grid'
+          }
+        }
+      });
+    }).toThrow(/header\.layout\.variant/);
+  });
+
   it('accepts grid template columns as string', () => {
     expect(() => {
       ConfigManager.validate({
@@ -205,10 +378,14 @@ describe('ConfigManager', () => {
             entity: 'sensor.temperature',
             attribute: 'temperature',
             precision: 1,
+            icon_only: true,
             show_progress: true,
             min: 0,
             max: 100,
-            thresholds: [{ value: 30, color: '#f44336' }]
+            thresholds: [{ value: 30, color: '#f44336' }],
+            visibility: [{ operator: '>=', value: 20 }],
+            color_rules: [{ operator: '==', value: 20, color: '#ff9800' }],
+            icon_tap_action: { action: 'more-info' }
           },
           {
             type: 'counter',
@@ -306,11 +483,25 @@ describe('ConfigManager', () => {
     expect(props.pool_max_entries.maximum).toBe(LIMITS.POOL_MAX_MAX_ENTRIES);
     expect(props.carousel_interval.maximum).toBe(LIMITS.CAROUSEL_MAX_INTERVAL_MS);
     expect(props.attribute.type).toBe('string');
+    expect(props.icon_color.type).toBe('string');
+    expect(props.modal.properties.height.default).toBe(DEFAULTS.modal_height);
+    expect(props.modal.properties.max_height.default).toBe(DEFAULTS.modal_max_height);
+    expect(props.modal.properties.loading_strategy.default).toBe(DEFAULTS.modal_loading_strategy);
+    expect(props.fullscreen.properties.max_width.default).toBe(DEFAULTS.fullscreen_max_width);
+    expect(props.header.properties.layout.properties.variant.default).toBe(DEFAULTS.header_layout_variant);
+    expect(props.header.properties.layout.properties.badges_position.enum).toContain('below_content');
+    expect(props.tabs_config.properties.content_padding.default).toBe(DEFAULTS.tabs_content_padding);
+    expect(props.tabs_config.properties.tab_alignment.enum).toContain('stretch');
+    expect(props.carousel_options.properties.show_arrows.default).toBe(DEFAULTS.carousel_show_arrows);
+    expect(props.carousel_options.properties.swipe_threshold.maximum).toBe(LIMITS.SWIPE_MAX_THRESHOLD_PX);
+    expect(props.subview.properties.return_on_close.type).toBe('boolean');
     expect(props.visibility.items.properties.conditions.items).toBe(props.visibility.items);
     expect(props.state_styles.type).toBe('object');
     expect(props.swipe.properties.left.properties.action.enum).toContain('next');
     expect(props.badges.items.properties.type.enum).toContain('counter');
     expect(props.badges.items.properties.thresholds.items.properties.color.type).toBe('string');
+    expect(props.badges.items.properties.visibility.items.properties.operator.enum).toContain('>=');
+    expect(props.badges.items.properties.color_rules.items.properties.color.type).toBe('string');
   });
 
   it('normalizes nested conditions and state style classes', () => {
@@ -374,7 +565,13 @@ describe('ConfigManager', () => {
       badges: [
         {
           type: 'counter',
-          entities: [' light.kitchen ', 'switch.hall ', '', 'light.kitchen']
+          entities: [' light.kitchen ', 'switch.hall ', '', 'light.kitchen'],
+          visibility: [
+            { operator: '==', value: 'on', entity: ' light.kitchen ' }
+          ],
+          color_rules: [
+            { operator: '!=', value: 'off', color: ' #ff0 ' }
+          ]
         }
       ]
     });
@@ -382,6 +579,12 @@ describe('ConfigManager', () => {
     expect(normalized.swipe.direction).toBe(DEFAULTS.swipe_direction);
     expect(normalized.swipe.threshold).toBe(DEFAULTS.swipe_threshold);
     expect(normalized.badges[0].entities).toEqual(['light.kitchen', 'switch.hall']);
+    expect(normalized.badges[0].visibility).toEqual([
+      { operator: '==', value: 'on', entity: 'light.kitchen' }
+    ]);
+    expect(normalized.badges[0].color_rules).toEqual([
+      { operator: '!=', value: 'off', color: '#ff0' }
+    ]);
   });
 
   it('hasChanged reflects deep changes', () => {

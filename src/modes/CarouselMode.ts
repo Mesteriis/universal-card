@@ -26,6 +26,13 @@ interface CarouselConfig extends UnknownRecord {
   cards?: ModeCardConfig[];
   carousel_autoplay?: boolean;
   carousel_interval?: number;
+  carousel_options?: {
+    show_arrows?: boolean;
+    show_indicators?: boolean;
+    loop?: boolean;
+    swipe_threshold?: number;
+    height?: string;
+  } & UnknownRecord;
 }
 
 interface CarouselModeOptions extends UnknownRecord {
@@ -53,6 +60,7 @@ export class CarouselMode extends BaseMode {
   _showArrows: boolean;
   _loop: boolean;
   _swipeThreshold: number;
+  _height: string;
 
   constructor(config: CarouselConfig, options: CarouselModeOptions = {}) {
     super(config, options);
@@ -72,19 +80,29 @@ export class CarouselMode extends BaseMode {
     this._interval = typeof config.carousel_interval === 'number' && config.carousel_interval > 0
       ? config.carousel_interval
       : 5000;
-    this._showIndicators = true;
-    this._showArrows = true;
-    this._loop = true;
-    this._swipeThreshold = 50;
+    const carouselOptions = config.carousel_options || {};
+    this._showIndicators = carouselOptions.show_indicators !== false;
+    this._showArrows = carouselOptions.show_arrows !== false;
+    this._loop = carouselOptions.loop !== false;
+    this._swipeThreshold = typeof carouselOptions.swipe_threshold === 'number' && carouselOptions.swipe_threshold >= 0
+      ? carouselOptions.swipe_threshold
+      : 50;
+    this._height = typeof carouselOptions.height === 'string' && carouselOptions.height
+      ? carouselOptions.height
+      : 'auto';
   }
 
   override render(): HTMLElement {
     this._container = document.createElement('div');
     this._container.className = 'carousel-mode';
     this._container.dataset.state = this.active ? 'expanded' : 'collapsed';
+    this._container.dataset.ucRole = 'mode-root';
+    this._container.dataset.ucMode = 'carousel';
 
     const viewport = document.createElement('div');
     viewport.className = 'carousel-viewport';
+    viewport.dataset.ucRole = 'viewport';
+    viewport.style.height = this._height;
 
     if (this._showArrows) {
       viewport.appendChild(this._createArrowButton('carousel-arrow carousel-arrow-prev', 'mdi:chevron-left', () => {
@@ -94,9 +112,11 @@ export class CarouselMode extends BaseMode {
 
     const trackWrapper = document.createElement('div');
     trackWrapper.className = 'carousel-track-wrapper';
+    trackWrapper.dataset.ucRole = 'track-wrapper';
 
     this._track = document.createElement('div');
     this._track.className = 'carousel-track';
+    this._track.dataset.ucRole = 'track';
 
     trackWrapper.appendChild(this._track);
     viewport.appendChild(trackWrapper);
@@ -121,6 +141,8 @@ export class CarouselMode extends BaseMode {
   _createArrowButton(className: string, iconName: string, onClick: () => void): HTMLButtonElement {
     const button = document.createElement('button');
     button.className = className;
+    button.dataset.ucRole = 'carousel-arrow';
+    button.dataset.ucDirection = className.includes('prev') ? 'prev' : 'next';
 
     const icon = document.createElement('ha-icon');
     icon.setAttribute('icon', iconName);
@@ -144,6 +166,7 @@ export class CarouselMode extends BaseMode {
   _renderIndicators(): HTMLElement {
     const container = document.createElement('div');
     container.className = 'carousel-indicators';
+    container.dataset.ucRole = 'indicators';
     return container;
   }
 
@@ -158,6 +181,7 @@ export class CarouselMode extends BaseMode {
     this._cards.forEach((_, index) => {
       const button = document.createElement('button');
       button.className = 'carousel-indicator';
+      button.dataset.ucRole = 'indicator';
       if (index === this._currentIndex) {
         button.classList.add('active');
       }
@@ -487,6 +511,7 @@ export class CarouselMode extends BaseMode {
         position: relative;
         display: flex;
         align-items: stretch;
+        height: auto;
       }
       
       .carousel-track-wrapper {

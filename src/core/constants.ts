@@ -47,6 +47,45 @@ export const BODY_MODES = Object.freeze({
 export const VALID_BODY_MODES = Object.values(BODY_MODES);
 
 // =============================================================================
+// TABS UI
+// =============================================================================
+
+export const TAB_ALIGNMENTS = Object.freeze({
+  START: 'start',
+  CENTER: 'center',
+  STRETCH: 'stretch'
+});
+
+export const VALID_TAB_ALIGNMENTS = Object.values(TAB_ALIGNMENTS);
+
+// =============================================================================
+// HEADER LAYOUT
+// =============================================================================
+
+export const HEADER_LAYOUT_VARIANTS = Object.freeze({
+  DEFAULT: 'default',
+  STACKED: 'stacked',
+  CENTERED: 'centered'
+});
+
+export const VALID_HEADER_LAYOUT_VARIANTS = Object.values(HEADER_LAYOUT_VARIANTS);
+
+export const HEADER_CONTENT_ALIGNMENTS = Object.freeze({
+  START: 'start',
+  CENTER: 'center',
+  END: 'end'
+});
+
+export const VALID_HEADER_CONTENT_ALIGNMENTS = Object.values(HEADER_CONTENT_ALIGNMENTS);
+
+export const HEADER_BADGES_POSITIONS = Object.freeze({
+  RIGHT: 'right',
+  BELOW_CONTENT: 'below_content'
+});
+
+export const VALID_HEADER_BADGES_POSITIONS = Object.values(HEADER_BADGES_POSITIONS);
+
+// =============================================================================
 // EXPAND TRIGGERS
 // =============================================================================
 
@@ -392,6 +431,26 @@ export const BADGE_TYPES = Object.freeze({
 export const VALID_BADGE_TYPES = Object.values(BADGE_TYPES);
 
 /**
+ * Badge comparison operators.
+ * @readonly
+ * @enum {string}
+ */
+export const BADGE_OPERATORS = Object.freeze({
+  EQUALS: '==',
+  NOT_EQUALS: '!=',
+  GREATER_THAN: '>',
+  LESS_THAN: '<',
+  GREATER_THAN_OR_EQUALS: '>=',
+  LESS_THAN_OR_EQUALS: '<='
+});
+
+/**
+ * Array of currently supported badge comparison operators.
+ * @type {string[]}
+ */
+export const VALID_BADGE_OPERATORS = Object.values(BADGE_OPERATORS);
+
+/**
  * Badge value formatting modes.
  * @readonly
  * @enum {string}
@@ -408,6 +467,22 @@ export const BADGE_FORMATS = Object.freeze({
  * @type {string[]}
  */
 export const VALID_BADGE_FORMATS = Object.values(BADGE_FORMATS);
+
+/**
+ * Modal content loading strategies.
+ * @readonly
+ * @enum {string}
+ */
+export const MODAL_LOADING_STRATEGIES = Object.freeze({
+  LAZY: 'lazy',
+  PRELOAD: 'preload'
+});
+
+/**
+ * Array of valid modal loading strategies.
+ * @type {string[]}
+ */
+export const VALID_MODAL_LOADING_STRATEGIES = Object.values(MODAL_LOADING_STRATEGIES);
 
 // =============================================================================
 // EVENTS
@@ -488,8 +563,37 @@ export const DEFAULTS = Object.freeze({
   
   // Modal
   modal_width: '90%',
+  modal_height: 'auto',
   modal_max_width: '600px',
+  modal_max_height: '85vh',
+  modal_loading_strategy: MODAL_LOADING_STRATEGIES.LAZY,
   backdrop_color: 'rgba(0, 0, 0, 0.6)',
+
+  // Fullscreen
+  fullscreen_width: '100%',
+  fullscreen_height: '100%',
+  fullscreen_max_width: '1200px',
+  fullscreen_max_height: '100vh',
+  fullscreen_padding: '16px',
+  fullscreen_background: 'var(--primary-background-color, #fafafa)',
+
+  // Tabs
+  tabs_content_padding: '16px',
+  tabs_tab_min_width: '72px',
+  tabs_tab_alignment: TAB_ALIGNMENTS.START,
+
+  // Header layout
+  header_layout_variant: HEADER_LAYOUT_VARIANTS.DEFAULT,
+  header_gap: '12px',
+  header_content_gap: '2px',
+  header_content_align: HEADER_CONTENT_ALIGNMENTS.START,
+  header_badges_position: HEADER_BADGES_POSITIONS.RIGHT,
+
+  // Carousel options
+  carousel_show_arrows: true,
+  carousel_show_indicators: true,
+  carousel_loop: true,
+  carousel_height: 'auto',
   
   // Features
   lazy_load: true,

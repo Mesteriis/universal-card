@@ -13,6 +13,10 @@ import { BaseMode, type GridConfig, type ModeConfig, type ModeOptions } from './
 import { acquireBodyScrollLock, releaseBodyScrollLock } from '../utils/overlay.js';
 
 interface FullscreenSettings {
+  width?: string;
+  height?: string;
+  max_height?: string;
+  padding?: string;
   background?: string;
   show_close?: boolean;
   close_on_escape?: boolean;
@@ -32,7 +36,11 @@ export class FullscreenMode extends BaseMode {
   _background: string;
   _showClose: boolean;
   _closeOnEscape: boolean;
+  _width: string;
+  _height: string;
   _maxWidth: string;
+  _maxHeight: string;
+  _padding: string;
 
   constructor(config: FullscreenModeConfig, options: ModeOptions = {}) {
     super(config, options);
@@ -41,47 +49,51 @@ export class FullscreenMode extends BaseMode {
     this._escapeHandler = this._handleEscape.bind(this);
 
     const fullscreen = config.fullscreen || {};
+    this._width = fullscreen.width || '100%';
+    this._height = fullscreen.height || '100%';
     this._background = fullscreen.background || 'var(--primary-background-color, #fafafa)';
     this._showClose = fullscreen.show_close !== false;
     this._closeOnEscape = fullscreen.close_on_escape !== false;
     this._maxWidth = fullscreen.max_width || '1200px';
+    this._maxHeight = fullscreen.max_height || '100vh';
+    this._padding = fullscreen.padding || '16px';
   }
 
   override render(): HTMLElement {
     this._container = document.createElement('div');
     this._container.className = 'fullscreen-mode-placeholder';
     this._container.style.display = 'none';
+    this._container.dataset.ucRole = 'mode-placeholder';
+    this._container.dataset.ucMode = 'fullscreen';
     return this._container;
   }
 
   _renderFullscreen(): HTMLElement {
     this._overlay = document.createElement('div');
     this._overlay.className = 'uc-fullscreen-overlay';
+    this._overlay.dataset.ucRole = 'overlay';
+    this._overlay.dataset.ucMode = 'fullscreen';
     this._overlay.style.setProperty('--fullscreen-bg', this._background);
 
     const inner = document.createElement('div');
     inner.className = 'uc-fullscreen-inner';
-    inner.style.setProperty('--fullscreen-max-width', this._maxWidth);
+    inner.dataset.ucRole = 'dialog';
+    inner.dataset.ucMode = 'fullscreen';
+    inner.style.width = this._width;
+    inner.style.height = this._height;
+    inner.style.maxWidth = this._maxWidth;
+    inner.style.maxHeight = this._maxHeight;
 
     const header = this._renderHeader();
     const content = document.createElement('div');
     content.className = 'uc-fullscreen-content';
+    content.dataset.ucRole = 'content';
+    content.style.padding = this._padding;
 
     const grid = document.createElement('div');
     grid.className = 'uc-fullscreen-grid';
-
-    if (this._config.grid) {
-      const { columns = 1, gap = '16px' } = this._config.grid;
-      if (typeof columns === 'string' && columns.trim()) {
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = columns;
-        grid.style.gap = gap;
-      } else if (typeof columns === 'number' && columns > 1) {
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        grid.style.gap = gap;
-      }
-    }
+    grid.dataset.ucRole = 'grid';
+    this._applyGridConfig(grid, this._config.grid, { columns: 1, gap: '16px' });
 
     if (!this._loaded) {
       grid.innerHTML = this._renderSkeleton();
@@ -105,11 +117,13 @@ export class FullscreenMode extends BaseMode {
   _renderHeader(): HTMLElement {
     const header = document.createElement('div');
     header.className = 'uc-fullscreen-header';
+    header.dataset.ucRole = 'header';
 
     if (this._showClose) {
       const closeBtn = document.createElement('button');
       closeBtn.type = 'button';
       closeBtn.className = 'uc-fullscreen-back';
+      closeBtn.dataset.ucRole = 'close';
       closeBtn.innerHTML = '<ha-icon icon="mdi:arrow-left"></ha-icon>';
       closeBtn.addEventListener('click', () => {
         void this.close();
@@ -119,11 +133,13 @@ export class FullscreenMode extends BaseMode {
 
     const title = document.createElement('div');
     title.className = 'uc-fullscreen-title';
+    title.dataset.ucRole = 'title';
     title.textContent = this._config.title || '';
     header.appendChild(title);
 
     const spacer = document.createElement('div');
     spacer.className = 'uc-fullscreen-spacer';
+    spacer.dataset.ucRole = 'spacer';
     header.appendChild(spacer);
 
     return header;
@@ -244,7 +260,8 @@ export class FullscreenMode extends BaseMode {
       .uc-fullscreen-inner {
         width: 100%;
         height: 100%;
-        max-width: var(--fullscreen-max-width, 1200px);
+        max-width: 1200px;
+        max-height: 100vh;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
@@ -304,11 +321,12 @@ export class FullscreenMode extends BaseMode {
         flex: 1;
         overflow-y: auto;
         padding: 16px;
+        min-height: 0;
       }
-      
+
       .uc-fullscreen-grid {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: 16px;
       }
       

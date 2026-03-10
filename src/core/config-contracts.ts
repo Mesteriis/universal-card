@@ -9,14 +9,20 @@
 
 import {
   BADGE_FORMATS,
+  BADGE_OPERATORS,
   BADGE_TYPES,
   BODY_MODES,
   CARD_DIRECTIONS,
   CONDITION_TYPES,
   EXPAND_TRIGGERS,
+  HEADER_BADGES_POSITIONS,
+  HEADER_CONTENT_ALIGNMENTS,
+  HEADER_LAYOUT_VARIANTS,
+  MODAL_LOADING_STRATEGIES,
   POOL_SCOPES,
   SWIPE_ACTIONS,
   SWIPE_DIRECTIONS,
+  TAB_ALIGNMENTS,
   WEEKDAYS
 } from './constants.js';
 import type { ActionConfig } from './action-hooks.js';
@@ -29,8 +35,14 @@ export type PoolScope = (typeof POOL_SCOPES)[keyof typeof POOL_SCOPES];
 export type CardsDirection = (typeof CARD_DIRECTIONS)[keyof typeof CARD_DIRECTIONS];
 export type SwipeAxis = (typeof SWIPE_DIRECTIONS)[keyof typeof SWIPE_DIRECTIONS];
 export type SwipeActionType = (typeof SWIPE_ACTIONS)[keyof typeof SWIPE_ACTIONS];
+export type TabAlignment = (typeof TAB_ALIGNMENTS)[keyof typeof TAB_ALIGNMENTS];
+export type HeaderLayoutVariant = (typeof HEADER_LAYOUT_VARIANTS)[keyof typeof HEADER_LAYOUT_VARIANTS];
+export type HeaderContentAlignment = (typeof HEADER_CONTENT_ALIGNMENTS)[keyof typeof HEADER_CONTENT_ALIGNMENTS];
+export type HeaderBadgesPosition = (typeof HEADER_BADGES_POSITIONS)[keyof typeof HEADER_BADGES_POSITIONS];
 export type BadgeType = (typeof BADGE_TYPES)[keyof typeof BADGE_TYPES];
 export type BadgeFormat = (typeof BADGE_FORMATS)[keyof typeof BADGE_FORMATS];
+export type BadgeComparisonOperator = (typeof BADGE_OPERATORS)[keyof typeof BADGE_OPERATORS];
+export type ModalLoadingStrategy = (typeof MODAL_LOADING_STRATEGIES)[keyof typeof MODAL_LOADING_STRATEGIES];
 export type VisibilityConditionType = (typeof CONDITION_TYPES)[keyof typeof CONDITION_TYPES];
 export type VisibilityWeekday = (typeof WEEKDAYS)[keyof typeof WEEKDAYS];
 
@@ -58,6 +70,43 @@ export interface TabsUiConfig {
   position?: string;
   show_icons?: boolean;
   show_labels?: boolean;
+  content_padding?: string;
+  tab_min_width?: string;
+  tab_alignment?: TabAlignment;
+}
+
+export interface FullscreenConfig {
+  width?: string;
+  height?: string;
+  max_width?: string;
+  max_height?: string;
+  padding?: string;
+  background?: string;
+  show_close?: boolean;
+  close_on_escape?: boolean;
+}
+
+export interface CarouselOptionsConfig {
+  show_arrows?: boolean;
+  show_indicators?: boolean;
+  loop?: boolean;
+  swipe_threshold?: number;
+  height?: string;
+}
+
+export interface SubviewConfig {
+  path?: string;
+  navigation_path?: string;
+  replace_state?: boolean;
+  return_on_close?: boolean;
+}
+
+export interface HeaderLayoutConfig {
+  variant?: HeaderLayoutVariant;
+  gap?: string;
+  content_gap?: string;
+  align?: HeaderContentAlignment;
+  badges_position?: HeaderBadgesPosition;
 }
 
 export interface TabConfig {
@@ -68,8 +117,34 @@ export interface TabConfig {
   grid?: GridConfig;
 }
 
+export interface ModalConfig {
+  width?: string;
+  height?: string;
+  max_width?: string;
+  max_height?: string;
+  loading_strategy?: ModalLoadingStrategy;
+  backdrop_blur?: boolean;
+  backdrop_color?: string;
+  close_on_backdrop?: boolean;
+  close_on_escape?: boolean;
+  show_close?: boolean;
+}
+
 export interface BadgeThreshold {
   value: number;
+  color: string;
+}
+
+export type BadgeRuleValue = string | number | boolean;
+
+export interface BadgeConditionRule {
+  operator: BadgeComparisonOperator;
+  value: BadgeRuleValue;
+  entity?: string;
+  attribute?: string;
+}
+
+export interface BadgeColorRule extends BadgeConditionRule {
   color: string;
 }
 
@@ -93,7 +168,11 @@ export interface HeaderBadgeConfig {
   state?: string;
   count_state?: string;
   thresholds?: BadgeThreshold[];
+  visibility?: BadgeConditionRule[];
+  color_rules?: BadgeColorRule[];
+  icon_only?: boolean;
   tap_action?: ActionConfig;
+  icon_tap_action?: ActionConfig;
 }
 
 export type ContextMenuHandlerContext = Record<string, unknown>;
@@ -134,6 +213,7 @@ export interface HeaderConfig extends CardSlotSection {
   sticky_header?: boolean;
   sticky?: boolean;
   clickable?: boolean;
+  layout?: HeaderLayoutConfig;
   expand_trigger?: ExpandTrigger;
   header_left?: CardSlotSection;
   header_right?: CardSlotSection;
@@ -270,6 +350,7 @@ export interface UniversalCardConfig {
   title?: string;
   subtitle?: string;
   icon?: string;
+  icon_color?: string;
   entity?: string;
   attribute?: string;
   theme?: string;
@@ -309,8 +390,12 @@ export interface UniversalCardConfig {
   body?: CardSlotSection;
   footer?: FooterConfig;
   grid?: GridConfig;
+  modal?: ModalConfig;
   tabs?: TabConfig[];
   tabs_config?: TabsUiConfig;
+  fullscreen?: FullscreenConfig;
+  carousel_options?: CarouselOptionsConfig;
+  subview?: SubviewConfig;
   badges?: HeaderBadgeConfig[];
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;

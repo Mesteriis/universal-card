@@ -18,6 +18,7 @@ import {
   CARD_VERSION, 
   DEFAULTS, 
   BODY_MODES, 
+  MODAL_LOADING_STRATEGIES,
   EVENTS,
   LIMITS 
 } from './constants.js';
@@ -809,6 +810,8 @@ export class UniversalCard extends HTMLElement {
         debug('[UC] body cards loaded');
       }
 
+      void this._preloadModalModeContent();
+
       if (isStale()) return;
       
       // Bind events
@@ -863,6 +866,7 @@ export class UniversalCard extends HTMLElement {
       sticky_header: this._config.sticky_header,
       sticky: headerOverrides.sticky,
       clickable: headerOverrides.clickable,
+      layout: headerOverrides.layout,
       expand_trigger: this._config.expand_trigger,
       badges: this._config.badges,
       tap_action: this._config.tap_action,
@@ -928,6 +932,37 @@ export class UniversalCard extends HTMLElement {
     }
 
     this._subviewMode = bodyMode === BODY_MODES.SUBVIEW ? this._mode : null;
+  }
+
+  _getModalLoadingStrategy() {
+    return this._config.modal?.loading_strategy === MODAL_LOADING_STRATEGIES.PRELOAD
+      ? MODAL_LOADING_STRATEGIES.PRELOAD
+      : MODAL_LOADING_STRATEGIES.LAZY;
+  }
+
+  async _preloadModalModeContent() {
+    if (this._config.body_mode !== BODY_MODES.MODAL) {
+      return;
+    }
+
+    if (this._getModalLoadingStrategy() !== MODAL_LOADING_STRATEGIES.PRELOAD) {
+      return;
+    }
+
+    if (!this._mode || this._mode.loaded) {
+      return;
+    }
+
+    const cards = this._config.body?.cards || [];
+    if (cards.length === 0) {
+      return;
+    }
+
+    try {
+      await this._mode.loadCards(cards);
+    } catch (error) {
+      console.error('[UniversalCard] Failed to preload modal content:', error);
+    }
   }
   
   /**
@@ -1150,6 +1185,8 @@ export class UniversalCard extends HTMLElement {
     const cardContainer = document.createElement('div');
     cardContainer.className = cardClasses.join(' ');
     cardContainer.dataset.cardId = this._config.card_id;
+    cardContainer.dataset.ucRole = 'card';
+    cardContainer.dataset.ucBodyMode = this._config.body_mode || BODY_MODES.EXPAND;
     
     // Render Header using component
     if (this._header && showHeader) {
@@ -1269,6 +1306,8 @@ export class UniversalCard extends HTMLElement {
     body.dataset.collapseAnimation = config.collapse_animation || 'slide';
     body.dataset.cardsAnimation = config.cards_animation || 'fadeUp';
     body.dataset.cardsDirection = config.cards_direction || 'sequential';
+    body.dataset.ucRole = 'body';
+    body.dataset.ucMode = mode;
     
     // Set animation duration and stagger
     const duration = config.animation_duration || 300;
@@ -1302,6 +1341,7 @@ export class UniversalCard extends HTMLElement {
     // Standard expand mode - use body-content container
     const content = document.createElement('div');
     content.className = 'body-content';
+    content.dataset.ucRole = 'body-content';
     
     // Apply grid styles
     const gridStyles = this._getGridStyles();
@@ -1707,6 +1747,7 @@ export class UniversalCard extends HTMLElement {
       const absoluteIndex = startIndex + localIndex;
       const wrapper = document.createElement('div');
       wrapper.className = 'card-wrapper';
+      wrapper.dataset.ucRole = 'card-wrapper';
 
       const animIndex = animationIndices[absoluteIndex];
       wrapper.style.setProperty('--card-index', String(animIndex));
@@ -2084,6 +2125,7 @@ export class UniversalCard extends HTMLElement {
         --uc-transition-duration: ${this._config.animation_duration}ms;
         --uc-border-radius: ${this._config.border_radius};
         --uc-padding: ${this._config.padding};
+        ${this._config.icon_color ? `--uc-icon-color: ${this._config.icon_color};` : ''}
         ${this._getThemeTokenDeclarations()}
       }
       
