@@ -28,6 +28,10 @@ This page answers three practical questions:
     <h3>Configuration</h3>
     <p>Start here for structure, starter templates, and field groups.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/yaml-block-reference/' | relative_url }}">
+    <h3>YAML Block Reference</h3>
+    <p>Block-by-block reference for root fields, badges, body mode blocks, styling, actions, and runtime settings.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/modal-layout/' | relative_url }}">
     <h3>Modal Layout</h3>
     <p>Overlay sizing, spacing, mobile behavior, and modal-specific loading.</p>
@@ -60,6 +64,7 @@ This page answers three practical questions:
 | --- | --- |
 | Basic card setup | [Configuration]({{ '/configuration/' | relative_url }}) |
 | Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
+| Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
 | Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
 | Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |

@@ -122,6 +122,7 @@ YAML remains the better tool for:
 ## Related docs
 
 - [Examples Gallery]({{ '/examples/' | relative_url }})
+- [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
 - [Modal Layout]({{ '/features/modal-layout/' | relative_url }})
 - [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }})
 - [Header Layout]({{ '/features/header-layout/' | relative_url }})

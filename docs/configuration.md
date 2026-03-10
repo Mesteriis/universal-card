@@ -176,12 +176,12 @@ Use these groups for visual tuning and performance:
     <h3>Capability Reference</h3>
     <p>The complete user-facing field map grouped by feature area.</p>
   </a>
+  <a class="docs-link-card" href="{{ '/features/yaml-block-reference/' | relative_url }}">
+    <h3>YAML Block Reference</h3>
+    <p>Block-by-block YAML guidance for root fields, badges, grid, body modes, styling, actions, and runtime settings.</p>
+  </a>
   <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>
     <p>What is supported in the visual editor and when YAML remains the better fit.</p>
-  </a>
-  <a class="docs-link-card" href="{{ '/release-notes/' | relative_url }}">
-    <h3>Release Notes</h3>
-    <p>User-facing highlights by version with short notes about what changed.</p>
   </a>
 </div>

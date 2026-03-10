@@ -8,7 +8,7 @@ permalink: /release-notes/
 # Release Notes
 
 This page tracks user-facing changes.
-Detailed implementation notes stay in repository history and development docs.
+Detailed engineering notes stay in repository history.
 
 ## 1.0.4
 
@@ -23,7 +23,7 @@ Highlights:
 
 Configuration note:
 
-- configuration cleanup and migration support for older setups shipped in this version
+- this version includes configuration cleanup for older setups
 - if you maintain older YAML, re-save and test after updating
 
 ## Older releases

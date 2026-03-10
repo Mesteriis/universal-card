@@ -28,6 +28,8 @@ This page includes examples for:
 - nested cards
 - editor usage
 
+For a block-by-block field lookup, use [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}).
+
 ## 1. Basic expandable card
 
 <div class="docs-showcase">
