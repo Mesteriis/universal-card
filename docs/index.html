@@ -10,7 +10,9 @@
     <meta property="og:description" content="Продвинутая карточка Lovelace для Home Assistant">
     <meta property="og:image" content="img/body-modes-demo.gif">
     <meta property="og:type" content="website">
-    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta name="theme-color" content="#0b1512">
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="apple-touch-icon" href="assets/icon.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -128,6 +130,39 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.12em;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 1.1rem;
+            padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(124, 231, 167, 0.16);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .hero-kicker__icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(124, 231, 167, 0.22),
+                0 0 36px rgba(60, 212, 139, 0.2);
+        }
+
+        .hero-kicker__icon img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .nav-links {
@@ -625,12 +660,14 @@
         }
 
         .footer-brand__logo {
-            width: 3.2rem;
-            height: 2.2rem;
+            width: 3rem;
+            height: 3rem;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 999px;
             border: 1px solid rgba(124, 231, 167, 0.16);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+                0 0 32px rgba(60, 212, 139, 0.16);
         }
 
         .footer-brand p {
@@ -733,6 +770,11 @@
                 display: none;
             }
 
+            .hero-kicker {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
             .hero-content h1 {
                 font-size: 2.5rem;
             }
@@ -818,6 +860,12 @@
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
+                <div class="hero-kicker">
+                    <span class="hero-kicker__icon" aria-hidden="true">
+                        <img src="assets/icon.png" alt="">
+                    </span>
+                    <span>Universal Card System</span>
+                </div>
                 <h1>Universal Card для Home Assistant</h1>
                 <p>Мощная Lovelace карточка с 7 режимами отображения, CSS Grid layout, 21 темой и визуальным редактором.</p>
                 
@@ -1320,7 +1368,7 @@ body:
             <div class="footer-top">
                 <div class="footer-brand">
                     <h3>
-                        <img class="footer-brand__logo" src="assets/logo.png" alt="">
+                        <img class="footer-brand__logo" src="assets/icon.png" alt="">
                         <span>Universal Card</span>
                     </h3>
                     <p>Продвинутая карточка Lovelace для создания красивых и функциональных dashboard в Home Assistant.</p>
