@@ -32,6 +32,10 @@ This page answers three practical questions:
     <h3>YAML Block Reference</h3>
     <p>Block-by-block reference for root fields, badges, body mode blocks, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/recipes-by-use-case/' | relative_url }}">
+    <h3>Recipes by Use Case</h3>
+    <p>Starter configurations grouped by real dashboard needs such as climate, security, media, wall panels, and admin tools.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/modal-layout/' | relative_url }}">
     <h3>Modal Layout</h3>
     <p>Overlay sizing, spacing, mobile behavior, and modal-specific loading.</p>
@@ -65,6 +69,7 @@ This page answers three practical questions:
 | Basic card setup | [Configuration]({{ '/configuration/' | relative_url }}) |
 | Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
 | Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
+| Room or dashboard scenario recipes | [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}) |
 | Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
 | Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |

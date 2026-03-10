@@ -55,6 +55,7 @@
 - [Configuration](docs/configuration.md)
 - [Examples Gallery](docs/examples.md)
 - [YAML Block Reference](docs/features/yaml-block-reference.md)
+- [Recipes by Use Case](docs/features/recipes-by-use-case.md)
 - [Modal Layout](docs/features/modal-layout.md)
 - [Body Modes Layout](docs/features/body-modes-layout.md)
 - [Header Layout](docs/features/header-layout.md)
@@ -196,6 +197,21 @@ body:
         - entity: input_boolean.kitchen_light
 ```
 
+## Top 10 Recipes
+
+Самые полезные стартовые точки:
+
+1. [Basic expandable card](docs/examples.md#recipe-basic-expandable-card)
+2. [Modal detail card](docs/examples.md#recipe-modal-with-responsive-sizing)
+3. [Fullscreen media card](docs/examples.md#recipe-fullscreen-mode)
+4. [Tabs card](docs/examples.md#recipe-tabs-mode)
+5. [Badge status row](docs/examples.md#recipe-badge-rules-and-icon-only-mode)
+6. [Conditional UI](docs/examples.md#recipe-visibility-and-section-visibility)
+7. [Theme override card](docs/examples.md#recipe-themes-tokens-and-state-styles)
+8. [Stable wall panel](docs/examples.md#recipe-loading-strategy-and-stable-wall-panel-setup)
+9. [Security dashboard recipe](docs/features/recipes-by-use-case.md#use-case-security-dashboard)
+10. [Mobile dashboard recipe](docs/features/recipes-by-use-case.md#use-case-mobile-dashboard)
+
 ---
 
 ## Основные возможности
@@ -237,6 +253,42 @@ body:
 - `theme_tokens`
 - `state_styles`
 - `custom_css`
+
+### CSS overrides
+
+Да, можно точечно переопределять стили элементов через `custom_css`.
+
+Рабочие scope:
+
+- `card`
+- `header`
+- `body`
+- `footer`
+- `global`
+
+Типичный пример:
+
+```yaml
+type: custom:universal-card
+title: Styled Header
+custom_css:
+  - scope: header
+    css: |
+      .header-title {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .header-subtitle {
+        color: #7cd6ff;
+      }
+```
+
+Что важно:
+
+- стили санитизируются
+- запрещены селекторы `body`, `html`, `:root`, `head`, `script`
+- запрещены опасные свойства вроде `behavior`, `expression`, `-moz-binding`
+- лучше таргетить внутренние классы карточки, а не пытаться ломать весь документ
 
 ### Runtime and editor
 

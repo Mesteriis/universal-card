@@ -180,6 +180,10 @@ Use these groups for visual tuning and performance:
     <h3>YAML Block Reference</h3>
     <p>Block-by-block YAML guidance for root fields, badges, grid, body modes, styling, actions, and runtime settings.</p>
   </a>
+  <a class="docs-link-card" href="{{ '/features/recipes-by-use-case/' | relative_url }}">
+    <h3>Recipes by Use Case</h3>
+    <p>Starter recipes for climate, security, media, mobile dashboards, wall panels, and admin tools.</p>
+  </a>
   <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>
     <p>What is supported in the visual editor and when YAML remains the better fit.</p>

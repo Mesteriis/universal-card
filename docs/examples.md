@@ -18,6 +18,8 @@ Use this page in two ways:
 1. jump to a use case and copy the closest recipe
 2. use [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) when you already know which config block you need
 
+If you want starter configs grouped by real dashboard scenarios, use [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}).
+
 ## Recipe Index
 
 | Use case | Best recipe |

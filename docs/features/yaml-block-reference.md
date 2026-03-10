@@ -608,6 +608,45 @@ state_styles:
 | `mode` | string | append/replace style semantics | Advanced use |
 | `priority` | number | `0`, `10` | Ordering helper |
 
+Element-level CSS overrides are supported.
+The practical approach is to target the card's internal classes inside the chosen scope.
+
+Useful selectors include:
+
+- `.universal-card`
+- `.header-title`
+- `.header-subtitle`
+- `.header-content`
+- `.header-badges`
+- `.header-content-badges`
+- `.header-right`
+
+Safety limits:
+
+- selectors `body`, `html`, `:root`, `head`, and `script` are blocked
+- properties `behavior`, `expression`, and `-moz-binding` are blocked
+- `@import` is stripped
+
+Example:
+
+```yaml
+custom_css:
+  - scope: header
+    css: |
+      .header-title {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .header-subtitle {
+        color: #7cd6ff;
+      }
+  - scope: card
+    css: |
+      .universal-card {
+        border: 1px solid rgba(124, 214, 255, 0.28);
+      }
+```
+
 Example:
 
 ```yaml
