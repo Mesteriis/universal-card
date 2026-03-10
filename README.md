@@ -220,308 +220,70 @@ body:
 
 ---
 
-## Основные возможности
+## Быстрый docs map
 
-### Body modes
+Что открывать в зависимости от задачи:
 
-| Mode | Назначение |
-| --- | --- |
-| `expand` | inline detail under the header |
-| `modal` | overlay without leaving the dashboard |
-| `fullscreen` | large media or immersive layouts |
-| `tabs` | grouped content inside one card |
-| `carousel` | slide-based navigation |
-| `subview` | jump to a dedicated route |
-| `none` | header-only card |
+- нужен старт и структура: [Configuration](docs/configuration.md)
+- нужен копируемый пример: [Examples Gallery](docs/examples.md)
+- нужен быстрый lookup по полям: [Field Matrix](docs/features/field-matrix.md)
+- нужен полный блочный reference: [YAML Block Reference](docs/features/yaml-block-reference.md)
+- нужен layout guide: [Grid Layout](docs/features/grid-layout.md), [Header Layout](docs/features/header-layout.md), [Footer](docs/features/footer.md)
+- нужны body modes: [Modal Layout](docs/features/modal-layout.md), [Body Modes Layout](docs/features/body-modes-layout.md)
+- нужны rules/actions: [Badges](docs/features/badges.md), [Visibility](docs/features/visibility.md), [Actions And Gestures](docs/features/interactions.md)
+- нужен styling guide: [Theming Guide](docs/features/theming-guide.md), [Custom CSS Recipes](docs/features/custom-css-recipes.md), [Selector Catalog](docs/features/selector-catalog.md)
+- нужен editor coverage: [Editor](docs/features/editor.md)
 
-### Layout
+## Что есть в карточке
 
-- `grid.columns`, `gap`, `row_gap`, `column_gap`
-- `colspan` / `rowspan`
-- `header_left`, `header`, `header_right`
-- `footer_left`, `footer`, `footer_right`
-- modal and fullscreen sizing controls
+- 7 body modes: `expand`, `modal`, `fullscreen`, `tabs`, `carousel`, `subview`, `none`
+- grid layout с `colspan` и `rowspan`
+- configurable header layouts и badges
+- footer slots и action rows
+- visibility, section visibility, context menu и swipe
+- themes, `theme_tokens`, `state_styles`, `custom_css`
+- visual editor для основных сценариев
 
-### Rules and interaction
+## CSS overrides
 
-- `tap_action`, `hold_action`, `double_tap_action`
-- badge `visibility`
-- badge `color_rules`
-- `icon_only`
-- `visibility` and `section_visibility`
-- `swipe.*`
-- `context_menu.items[]`
+Да, `custom_css` поддерживается.
 
-### Styling
+Практический маршрут:
 
-- built-in themes
-- `icon_color`
-- `theme_tokens`
-- `state_styles`
-- `custom_css`
+1. сначала `theme`
+2. потом `theme_tokens`
+3. потом `state_styles`
+4. `custom_css` только для точечных override
 
-Для выбора правильного styling layer см. [Theming Guide](docs/features/theming-guide.md).
-
-### CSS overrides
-
-Да, можно точечно переопределять стили элементов через `custom_css`.
 Для новых override-сценариев лучше опираться на стабильные `data-uc-*` hooks из [Selector Catalog](docs/features/selector-catalog.md).
 
-Рабочие scope:
+Подробнее:
 
-- `card`
-- `header`
-- `body`
-- `footer`
-- `global`
-
-Типичный пример:
-
-```yaml
-type: custom:universal-card
-title: Styled Header
-custom_css:
-  - scope: header
-    css: |
-      .header-title {
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .header-subtitle {
-        color: #7cd6ff;
-      }
-```
-
-Что важно:
-
-- стили санитизируются
-- запрещены селекторы `body`, `html`, `:root`, `head`, `script`
-- запрещены опасные свойства вроде `behavior`, `expression`, `-moz-binding`
-- лучше таргетить внутренние классы карточки, а не пытаться ломать весь документ
-
-### Runtime and editor
-
-- inline lazy loading
-- modal `loading_strategy: lazy | preload`
-- persistence and stability settings
-- visual editor for common card flows
-
----
-
-## Готовые сценарии
-
-### Grid layout
-
-```yaml
-type: custom:universal-card
-title: Energy Grid
-grid:
-  columns: 2
-  gap: 12px
-body:
-  cards:
-    - type: gauge
-      entity: sensor.demo_temperature
-    - type: gauge
-      entity: sensor.demo_humidity
-    - type: entities
-      colspan: 2
-      entities:
-        - entity: sensor.security_status
-        - entity: sensor.network_health_sensor
-```
-
-### Fullscreen mode
-
-```yaml
-type: custom:universal-card
-title: Camera Wall
-body_mode: fullscreen
-fullscreen:
-  width: 92vw
-  max_width: 96rem
-  max_height: 94vh
-  padding: 20px
-body:
-  cards:
-    - type: picture-entity
-      entity: camera.garden
-```
-
-### Carousel mode
-
-```yaml
-type: custom:universal-card
-title: Daily Overview
-body_mode: carousel
-carousel_autoplay: true
-carousel_interval: 4500
-carousel_options:
-  show_arrows: true
-  show_indicators: true
-  loop: true
-  height: 20rem
-body:
-  cards:
-    - type: entities
-      title: Status
-      entities:
-        - entity: sensor.network_health_sensor
-        - entity: sensor.house_mode_sensor
-    - type: entities
-      title: Comfort
-      entities:
-        - entity: sensor.demo_temperature
-        - entity: sensor.demo_humidity
-```
-
-### Visibility rules
-
-```yaml
-type: custom:universal-card
-title: Admin Controls
-visibility:
-  - condition: screen
-    min_width: 768
-section_visibility:
-  footer:
-    - condition: user
-      is_admin: true
-body:
-  cards:
-    - type: entities
-      entities:
-        - entity: input_boolean.security_armed
-        - entity: sensor.security_status
-footer:
-  text: Admin-only footer actions
-```
-
-### Swipe gestures
-
-```yaml
-type: custom:universal-card
-title: Gesture Card
-body_mode: carousel
-swipe:
-  enabled: true
-  direction: horizontal
-  threshold: 60
-  velocityThreshold: 0.35
-  preventScroll: true
-  left:
-    action: next
-  right:
-    action: prev
-body:
-  cards:
-    - type: entities
-      entities:
-        - entity: sensor.demo_temperature
-    - type: entities
-      entities:
-        - entity: sensor.demo_humidity
-```
-
-### Themes and styling
-
-```yaml
-type: custom:universal-card
-title: Styled Card
-entity: input_boolean.kitchen_light
-theme: midnight
-icon_color: '#7cd6ff'
-theme_tokens:
-  --uc-background-color: "linear-gradient(145deg, rgba(9,16,27,.96), rgba(23,42,59,.92))"
-  --uc-border-color: "rgba(117, 204, 255, 0.36)"
-state_styles:
-  'on':
-    border_color: '#f4b400'
-  'off':
-    opacity: 0.72
-custom_css:
-  - scope: header
-    css: |
-      .header-title {
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-```
-
-### Footer actions
-
-```yaml
-type: custom:universal-card
-title: Security Summary
-footer:
-  text: Last check 2 min ago
-  actions:
-    - label: Arm
-      icon: mdi:shield-lock
-      action:
-        action: call-service
-        service: input_boolean.turn_on
-        entity: input_boolean.security_armed
-    - label: Cameras
-      icon: mdi:cctv
-      action:
-        action: navigate
-        navigation_path: /lovelace/cameras
-body:
-  cards:
-    - type: entities
-      entities:
-        - entity: input_boolean.security_armed
-        - entity: sensor.security_status
-```
-
----
-
-## Структура конфигурации
-
-Основные блоки YAML:
-
-- root shell: `title`, `subtitle`, `icon`, `entity`, `theme`
-- header: `header`, `header_left`, `header_right`
-- badges: `badges[]`
-- body: `body.cards`
-- body mode blocks: `modal`, `fullscreen`, `tabs`, `tabs_config`, `carousel_options`, `subview`
-- layout: `grid`
-- footer: `footer`, `footer_left`, `footer_right`
-- interaction: `tap_action`, `hold_action`, `double_tap_action`, `context_menu`, `swipe`
-- rules: `visibility`, `section_visibility`
-- styling: `theme_tokens`, `state_styles`, `custom_css`
-- runtime: `lazy_load`, modal loading strategy, persistence, stability
-
-Подробный reference по YAML блокам:
-
-- [YAML Block Reference](docs/features/yaml-block-reference.md)
-
----
+- [Theming Guide](docs/features/theming-guide.md)
+- [Custom CSS Recipes](docs/features/custom-css-recipes.md)
+- [Selector Catalog](docs/features/selector-catalog.md)
 
 ## Визуальный редактор
 
-Визуальный editor покрывает:
+Editor лучше всего покрывает:
 
 - shell fields
 - header layout
-- badges `visibility` и `color_rules`
 - modal/fullscreen/tabs/carousel/subview settings
-- visibility and section visibility
-- swipe settings
+- badge `visibility` и `color_rules`
+- `visibility` и `section_visibility`
+- `swipe`
 - `theme_tokens`
 - `state_styles`
 
-YAML по-прежнему удобнее для:
+YAML остаётся лучшим вариантом для:
 
 - сложных `grid.columns` строк
 - advanced `custom_css`
 - крупных action payloads
 - badge `tap_action` и `icon_tap_action`
 
-Подробнее:
-
-- [Editor](docs/features/editor.md)
+Подробнее: [Editor](docs/features/editor.md)
 
 ---
 
