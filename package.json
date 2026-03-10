@@ -19,6 +19,7 @@
     "ha:fixture:down": "node scripts/ha-fixture-down.mjs",
     "ha:fixture:reset": "node scripts/ha-fixture-reset.mjs",
     "screenshots:ha": "playwright test -c playwright.screenshots.config.ts",
+    "docs:assets:refresh": "node scripts/export-docs-assets.mjs",
     "smoke:themes-modes": "node scripts/smoke-theme-mode-matrix.js",
     "smoke:runtime": "node scripts/smoke-runtime-optimizations.js",
     "test": "npm run test:config && npm run test:unit && npm run typecheck && npm run build && npm run smoke:themes-modes && npm run smoke:runtime",

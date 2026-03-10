@@ -5,7 +5,7 @@ const root = process.cwd();
 const sourceBundle = resolve(root, 'universal-card.js');
 const sourceLazy = resolve(root, 'lazy');
 const templateConfig = resolve(root, 'tests/ha-fixture/config');
-const runtimeConfig = resolve(root, 'tests/ha-fixture/runtime/config');
+const runtimeConfig = process.env.HA_FIXTURE_RUNTIME_DIR || '/tmp/universal-card-ha-fixture-config';
 const targetWww = resolve(runtimeConfig, 'www');
 
 if (!existsSync(sourceBundle)) {
@@ -33,4 +33,4 @@ mkdirSync(targetWww, { recursive: true });
 cpSync(sourceBundle, resolve(targetWww, 'universal-card.js'));
 cpSync(sourceLazy, resolve(targetWww, 'lazy'), { recursive: true, force: true });
 
-console.log('[ha-fixture] prepared runtime config and synced bundle into tests/ha-fixture/runtime/config/www');
+console.log(`[ha-fixture] prepared runtime config and synced bundle into ${targetWww}`);

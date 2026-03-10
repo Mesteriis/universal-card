@@ -8,4 +8,4 @@ services:
     environment:
       TZ: ${TZ:-Europe/Madrid}
     volumes:
-      - ./runtime/config:/config
+      - ${HA_FIXTURE_RUNTIME_DIR:-/tmp/universal-card-ha-fixture-config}:/config
