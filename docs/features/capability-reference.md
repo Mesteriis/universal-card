@@ -124,6 +124,8 @@ YAML remains the better tool for:
 - [Examples Gallery]({{ '/examples/' | relative_url }})
 - [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
 - [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }})
+- [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }})
+- [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }})
 - [Modal Layout]({{ '/features/modal-layout/' | relative_url }})
 - [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }})
 - [Header Layout]({{ '/features/header-layout/' | relative_url }})

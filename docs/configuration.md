@@ -184,6 +184,10 @@ Use these groups for visual tuning and performance:
     <h3>Recipes by Use Case</h3>
     <p>Starter recipes for climate, security, media, mobile dashboards, wall panels, and admin tools.</p>
   </a>
+  <a class="docs-link-card" href="{{ '/features/custom-css-recipes/' | relative_url }}">
+    <h3>Custom CSS Recipes</h3>
+    <p>Ready-made styling overrides for header, badges, body, modal, fullscreen, and footer.</p>
+  </a>
   <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>
     <p>What is supported in the visual editor and when YAML remains the better fit.</p>

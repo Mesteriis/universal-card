@@ -36,6 +36,14 @@ This page answers three practical questions:
     <h3>Recipes by Use Case</h3>
     <p>Starter configurations grouped by real dashboard needs such as climate, security, media, wall panels, and admin tools.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/custom-css-recipes/' | relative_url }}">
+    <h3>Custom CSS Recipes</h3>
+    <p>Ready-to-use styling snippets for shell, header, badges, footer, tabs, modal, and fullscreen surfaces.</p>
+  </a>
+  <a class="docs-card" href="{{ '/features/selector-catalog/' | relative_url }}">
+    <h3>Selector Catalog</h3>
+    <p>Stable internal selectors you can target with custom_css without guessing class names.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/modal-layout/' | relative_url }}">
     <h3>Modal Layout</h3>
     <p>Overlay sizing, spacing, mobile behavior, and modal-specific loading.</p>
@@ -70,6 +78,8 @@ This page answers three practical questions:
 | Ready-to-copy YAML | [Examples Gallery]({{ '/examples/' | relative_url }}) |
 | Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
 | Room or dashboard scenario recipes | [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}) |
+| Styling recipes | [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }}) |
+| Stable CSS selectors | [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }}) |
 | Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
 | Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |
