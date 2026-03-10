@@ -63,16 +63,22 @@ export class FullscreenMode extends BaseMode {
     this._container = document.createElement('div');
     this._container.className = 'fullscreen-mode-placeholder';
     this._container.style.display = 'none';
+    this._container.dataset.ucRole = 'mode-placeholder';
+    this._container.dataset.ucMode = 'fullscreen';
     return this._container;
   }
 
   _renderFullscreen(): HTMLElement {
     this._overlay = document.createElement('div');
     this._overlay.className = 'uc-fullscreen-overlay';
+    this._overlay.dataset.ucRole = 'overlay';
+    this._overlay.dataset.ucMode = 'fullscreen';
     this._overlay.style.setProperty('--fullscreen-bg', this._background);
 
     const inner = document.createElement('div');
     inner.className = 'uc-fullscreen-inner';
+    inner.dataset.ucRole = 'dialog';
+    inner.dataset.ucMode = 'fullscreen';
     inner.style.width = this._width;
     inner.style.height = this._height;
     inner.style.maxWidth = this._maxWidth;
@@ -81,10 +87,12 @@ export class FullscreenMode extends BaseMode {
     const header = this._renderHeader();
     const content = document.createElement('div');
     content.className = 'uc-fullscreen-content';
+    content.dataset.ucRole = 'content';
     content.style.padding = this._padding;
 
     const grid = document.createElement('div');
     grid.className = 'uc-fullscreen-grid';
+    grid.dataset.ucRole = 'grid';
     this._applyGridConfig(grid, this._config.grid, { columns: 1, gap: '16px' });
 
     if (!this._loaded) {
@@ -109,11 +117,13 @@ export class FullscreenMode extends BaseMode {
   _renderHeader(): HTMLElement {
     const header = document.createElement('div');
     header.className = 'uc-fullscreen-header';
+    header.dataset.ucRole = 'header';
 
     if (this._showClose) {
       const closeBtn = document.createElement('button');
       closeBtn.type = 'button';
       closeBtn.className = 'uc-fullscreen-back';
+      closeBtn.dataset.ucRole = 'close';
       closeBtn.innerHTML = '<ha-icon icon="mdi:arrow-left"></ha-icon>';
       closeBtn.addEventListener('click', () => {
         void this.close();
@@ -123,11 +133,13 @@ export class FullscreenMode extends BaseMode {
 
     const title = document.createElement('div');
     title.className = 'uc-fullscreen-title';
+    title.dataset.ucRole = 'title';
     title.textContent = this._config.title || '';
     header.appendChild(title);
 
     const spacer = document.createElement('div');
     spacer.className = 'uc-fullscreen-spacer';
+    spacer.dataset.ucRole = 'spacer';
     header.appendChild(spacer);
 
     return header;

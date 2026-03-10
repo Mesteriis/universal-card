@@ -196,24 +196,25 @@ export class Header {
     this._element.dataset.layoutVariant = layout.variant;
     this._element.dataset.contentAlign = layout.align;
     this._element.dataset.badgesPosition = layout.badges_position;
+    this._element.dataset.ucRole = 'header';
     this._element.style.setProperty('--uc-header-gap', layout.gap);
     this._element.style.setProperty('--uc-header-content-gap', layout.content_gap);
     
     // Build inner HTML
     this._element.innerHTML = `
-      <div class="header-left">
+      <div class="header-left" data-uc-region="left">
         ${this._renderIcon()}
-        <div class="header-left-slot"></div>
+        <div class="header-left-slot" data-uc-slot="left"></div>
       </div>
-      <div class="header-content">
+      <div class="header-content" data-uc-region="content">
         ${this._renderTitle()}
         ${this._renderSubtitle()}
-        <div class="header-cards-slot"></div>
+        <div class="header-cards-slot" data-uc-slot="content"></div>
         ${badgesBelowContent ? this._renderBadgesContainer('header-content-badges') : ''}
       </div>
-      <div class="header-right">
+      <div class="header-right" data-uc-region="right">
         ${badgesBelowContent ? '' : this._renderBadges()}
-        <div class="header-right-slot"></div>
+        <div class="header-right-slot" data-uc-slot="right"></div>
         ${this._renderExpandIcon()}
       </div>
     `;
@@ -255,7 +256,7 @@ export class Header {
     if (!iconName) return '';
     
     return `
-      <ha-icon class="header-icon" icon="${iconName}"></ha-icon>
+      <ha-icon class="header-icon" data-uc-role="icon" icon="${iconName}"></ha-icon>
     `;
   }
   
@@ -271,7 +272,7 @@ export class Header {
     const titleText = title || this._getEntityName(entity) || '';
     if (!titleText) return '';
     
-    return `<div class="header-title">${titleText}</div>`;
+    return `<div class="header-title" data-uc-role="title">${titleText}</div>`;
   }
   
   /**
@@ -297,7 +298,7 @@ export class Header {
     
     if (!subtitleText) return '';
     
-    return `<div class="header-subtitle">${subtitleText}</div>`;
+    return `<div class="header-subtitle" data-uc-role="subtitle">${subtitleText}</div>`;
   }
   
   /**
@@ -315,7 +316,7 @@ export class Header {
 
     const badgesHtml = this._renderVisibleBadgesHtml();
 
-    return `<div class="header-badges">${badgesHtml}</div>`;
+    return `<div class="header-badges" data-uc-role="badges" data-uc-position="right">${badgesHtml}</div>`;
   }
 
   _renderBadgesContainer(className: string) {
@@ -326,7 +327,7 @@ export class Header {
     }
 
     const badgesHtml = this._renderVisibleBadgesHtml();
-    return `<div class="${className}">${badgesHtml}</div>`;
+    return `<div class="${className}" data-uc-role="badges" data-uc-position="below-content">${badgesHtml}</div>`;
   }
 
   _renderVisibleBadgesHtml() {
@@ -363,25 +364,26 @@ export class Header {
               type="button"
               class="badge-icon-action clickable"
               data-badge-index="${index}"
+              data-uc-role="badge-icon-action"
               aria-label="Badge icon action"
             >
               <ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon>
             </button>
           `
-          : `<span class="badge-icon"><ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon></span>`
+          : `<span class="badge-icon" data-uc-role="badge-icon"><ha-icon class="badge-icon" icon="${badge.icon}"></ha-icon></span>`
       )
       : '';
     const badgeLabel = this._getBadgeLabel(badge);
-    const labelHtml = !iconOnly && badgeLabel ? `<span class="badge-label">${badgeLabel}</span>` : '';
+    const labelHtml = !iconOnly && badgeLabel ? `<span class="badge-label" data-uc-role="badge-label">${badgeLabel}</span>` : '';
     const valueHtml = !iconOnly && displayValue !== null && displayValue !== undefined && displayValue !== ''
-      ? `<span class="badge-value">${displayValue}</span>${badge.unit ? `<span class="badge-unit">${badge.unit}</span>` : ''}`
+      ? `<span class="badge-value" data-uc-role="badge-value">${displayValue}</span>${badge.unit ? `<span class="badge-unit" data-uc-role="badge-unit">${badge.unit}</span>` : ''}`
       : '';
     const progressHtml = !iconOnly ? this._renderBadgeProgress(badge, rawValue) : '';
     const clickable = badge.tap_action?.action && badge.tap_action.action !== 'none' ? ' clickable' : '';
     const iconOnlyClass = iconOnly ? ' icon-only' : '';
 
     return `
-      <div class="badge${clickable}${iconOnlyClass}" data-badge-index="${index}" style="--badge-color: ${badgeColor}">
+      <div class="badge${clickable}${iconOnlyClass}" data-badge-index="${index}" data-uc-role="badge" data-uc-badge-type="${badge.type || 'custom'}" data-uc-icon-only="${iconOnly ? 'true' : 'false'}" style="--badge-color: ${badgeColor}">
         ${iconHtml}${labelHtml}${valueHtml}${progressHtml}
       </div>
     `;
@@ -406,7 +408,7 @@ export class Header {
     const expandedClass = this._expanded ? 'expanded' : '';
     
     return `
-      <ha-icon class="expand-icon ${expandedClass}" icon="${iconName}"></ha-icon>
+      <ha-icon class="expand-icon ${expandedClass}" data-uc-role="expand-icon" icon="${iconName}"></ha-icon>
     `;
   }
   
@@ -1272,8 +1274,8 @@ export class Header {
     }
 
     return `
-      <div class="badge-progress">
-        <div class="badge-progress-bar" style="width: ${percentage}%"></div>
+      <div class="badge-progress" data-uc-role="badge-progress">
+        <div class="badge-progress-bar" data-uc-role="badge-progress-bar" style="width: ${percentage}%"></div>
       </div>
     `;
   }

@@ -361,6 +361,7 @@ export class BaseMode {
     this._cards.forEach((card, index) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'card-wrapper';
+      wrapper.dataset.ucRole = 'card-wrapper';
 
       const config = configs[index];
       if (config) {

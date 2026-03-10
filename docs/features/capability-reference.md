@@ -88,6 +88,8 @@ Supported visibility condition families:
 | State-based card styling | `state_styles` |
 | Free-form styling | `custom_css` |
 
+Start with [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) if you are deciding which of these layers to use.
+
 ## Runtime and performance
 
 | Area | Main fields |
@@ -125,6 +127,7 @@ YAML remains the better tool for:
 - [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }})
 - [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }})
 - [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }})
+- [Theming Guide]({{ '/features/theming-guide/' | relative_url }})
 - [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }})
 - [Modal Layout]({{ '/features/modal-layout/' | relative_url }})
 - [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }})

@@ -138,18 +138,19 @@ export class Footer {
     // Create footer element
     this._element = document.createElement('div');
     this._element.className = this._getFooterClasses();
+    this._element.dataset.ucRole = 'footer';
     
     // Build inner HTML
     this._element.innerHTML = `
-      <div class="footer-left">
-        <div class="footer-left-slot"></div>
+      <div class="footer-left" data-uc-region="left">
+        <div class="footer-left-slot" data-uc-slot="left"></div>
       </div>
-      <div class="footer-content">
+      <div class="footer-content" data-uc-region="content">
         ${this._renderText()}
-        <div class="footer-cards-slot"></div>
+        <div class="footer-cards-slot" data-uc-slot="content"></div>
       </div>
-      <div class="footer-right">
-        <div class="footer-right-slot"></div>
+      <div class="footer-right" data-uc-region="right">
+        <div class="footer-right-slot" data-uc-slot="right"></div>
         ${this._renderActions()}
       </div>
     `;
@@ -183,12 +184,10 @@ export class Footer {
     
     if (!text) return '';
     
-    const iconHtml = icon ? `<ha-icon icon="${icon}"></ha-icon>` : '';
-    
     return `
-      <div class="footer-text">
-        ${iconHtml}
-        <span>${text}</span>
+      <div class="footer-text" data-uc-role="text">
+        ${icon ? `<ha-icon data-uc-role="text-icon" icon="${icon}"></ha-icon>` : ''}
+        <span data-uc-role="text-label">${text}</span>
       </div>
     `;
   }
@@ -205,7 +204,7 @@ export class Footer {
     if (!actions || !Array.isArray(actions)) return '';
     
     return actions.map((action, index) => `
-      <button class="footer-action-btn" data-action-index="${index}">
+      <button class="footer-action-btn" data-action-index="${index}" data-uc-role="action" data-uc-action-index="${index}">
         ${action.icon ? `<ha-icon icon="${action.icon}"></ha-icon>` : ''}
         ${action.label || ''}
       </button>

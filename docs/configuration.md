@@ -165,6 +165,8 @@ Use these groups for visual tuning and performance:
 - `modal.loading_strategy`
 - persistence, pooling, animation, and stability settings
 
+Use [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) if you are deciding which styling layer to use.
+
 ## Where to go next
 
 <div class="docs-link-grid">
@@ -187,6 +189,10 @@ Use these groups for visual tuning and performance:
   <a class="docs-link-card" href="{{ '/features/custom-css-recipes/' | relative_url }}">
     <h3>Custom CSS Recipes</h3>
     <p>Ready-made styling overrides for header, badges, body, modal, fullscreen, and footer.</p>
+  </a>
+  <a class="docs-link-card" href="{{ '/features/theming-guide/' | relative_url }}">
+    <h3>Theming Guide</h3>
+    <p>Choose the right styling tool before reaching for custom CSS.</p>
   </a>
   <a class="docs-link-card" href="{{ '/features/editor/' | relative_url }}">
     <h3>Editor</h3>

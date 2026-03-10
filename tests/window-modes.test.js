@@ -110,6 +110,10 @@ describe('window body modes', () => {
     const dialog = overlay.querySelector('.uc-modal-dialog');
     const grid = overlay.querySelector('.uc-modal-grid');
 
+    expect(overlay.dataset.ucRole).toBe('overlay');
+    expect(overlay.dataset.ucMode).toBe('modal');
+    expect(dialog.dataset.ucRole).toBe('dialog');
+    expect(dialog.dataset.ucMode).toBe('modal');
     expect(dialog.dataset.widthMode).toBe('auto');
     expect(dialog.dataset.heightMode).toBe('manual');
     expect(mode._height).toBe('32rem');
@@ -117,6 +121,8 @@ describe('window body modes', () => {
     expect(mode._maxHeight).toBe('90vh');
     expect(overlay.querySelector('.uc-modal-header')).toBeNull();
 
+    expect(overlay.querySelector('.uc-modal-content').dataset.ucRole).toBe('content');
+    expect(grid.dataset.ucRole).toBe('grid');
     expect(grid.style.display).toBe('grid');
     expect(grid.style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))');
     expect(grid.style.gap).toBe('12px');
@@ -151,12 +157,18 @@ describe('window body modes', () => {
     const content = overlay.querySelector('.uc-fullscreen-content');
     const grid = overlay.querySelector('.uc-fullscreen-grid');
 
+    expect(overlay.dataset.ucRole).toBe('overlay');
+    expect(overlay.dataset.ucMode).toBe('fullscreen');
+    expect(inner.dataset.ucRole).toBe('dialog');
+    expect(inner.dataset.ucMode).toBe('fullscreen');
     expect(inner.style.width).toBe('88rem');
     expect(inner.style.height).toBe('90vh');
     expect(inner.style.maxWidth).toBe('96rem');
     expect(inner.style.maxHeight).toBe('95vh');
     expect(content.style.padding).toBe('24px');
+    expect(content.dataset.ucRole).toBe('content');
     expect(overlay.querySelector('.uc-fullscreen-back')).toBeNull();
+    expect(grid.dataset.ucRole).toBe('grid');
     expect(grid.style.display).toBe('grid');
     expect(grid.style.gridTemplateColumns).toBe('1fr 2fr');
     expect(grid.style.gap).toBe('14px');

@@ -125,12 +125,15 @@ export class TabsMode extends BaseMode {
     this._container.dataset.state = this.active ? 'expanded' : 'collapsed';
     this._container.dataset.tabPosition = this._tabPosition;
     this._container.dataset.tabAlignment = this._tabAlignment;
+    this._container.dataset.ucRole = 'mode-root';
+    this._container.dataset.ucMode = 'tabs';
     this._container.style.setProperty('--uc-tabs-content-padding', this._contentPadding);
     this._container.style.setProperty('--uc-tabs-tab-min-width', this._tabMinWidth);
 
     this._tabBar = this._renderTabBar();
     this._tabContent = document.createElement('div');
     this._tabContent.className = 'tabs-content';
+    this._tabContent.dataset.ucRole = 'content';
 
     this._tabs.forEach((tab, index) => {
       const panel = this._renderTabPanel(tab, index);
@@ -152,6 +155,7 @@ export class TabsMode extends BaseMode {
     const tabBar = document.createElement('div');
     tabBar.className = 'tabs-bar';
     tabBar.setAttribute('role', 'tablist');
+    tabBar.dataset.ucRole = 'tab-bar';
 
     this._tabs.forEach((tab, index) => {
       const tabBtn = document.createElement('button');
@@ -159,6 +163,7 @@ export class TabsMode extends BaseMode {
       tabBtn.setAttribute('role', 'tab');
       tabBtn.setAttribute('aria-selected', index === this._activeTab ? 'true' : 'false');
       tabBtn.dataset.index = String(index);
+      tabBtn.dataset.ucRole = 'tab';
 
       if (index === this._activeTab) {
         tabBtn.classList.add('active');
@@ -174,6 +179,7 @@ export class TabsMode extends BaseMode {
       if (this._showLabels && typeof tabLabel === 'string' && tabLabel) {
         const label = document.createElement('span');
         label.className = 'tab-label';
+        label.dataset.ucRole = 'tab-label';
         label.textContent = tabLabel;
         tabBtn.appendChild(label);
       }
@@ -187,6 +193,7 @@ export class TabsMode extends BaseMode {
 
     const indicator = document.createElement('div');
     indicator.className = 'tab-indicator';
+    indicator.dataset.ucRole = 'tab-indicator';
     tabBar.appendChild(indicator);
 
     return tabBar;
@@ -197,6 +204,7 @@ export class TabsMode extends BaseMode {
     panel.className = 'tab-panel';
     panel.setAttribute('role', 'tabpanel');
     panel.dataset.index = String(index);
+    panel.dataset.ucRole = 'tab-panel';
 
     if (index === this._activeTab) {
       panel.classList.add('active');
@@ -204,6 +212,7 @@ export class TabsMode extends BaseMode {
 
     const grid = document.createElement('div');
     grid.className = 'tab-grid';
+    grid.dataset.ucRole = 'grid';
 
     const gridConfig = tab.grid || this._config.grid || {};
     this._applyGridConfig(grid, gridConfig, { columns: 1, gap: '16px' });

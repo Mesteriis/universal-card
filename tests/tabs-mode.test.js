@@ -72,7 +72,16 @@ describe('TabsMode', () => {
     expect(container.querySelectorAll('.tab-panel')).toHaveLength(2);
     expect(container.querySelector('.tab-panel.active')).not.toBeNull();
     expect(container.querySelector('.skeleton-container')).not.toBeNull();
+    expect(container.dataset.ucRole).toBe('mode-root');
+    expect(container.dataset.ucMode).toBe('tabs');
     expect(container.dataset.tabAlignment).toBe('center');
+    expect(container.querySelector('.tabs-bar').dataset.ucRole).toBe('tab-bar');
+    expect(container.querySelector('.tabs-content').dataset.ucRole).toBe('content');
+    expect(container.querySelector('.tab-button').dataset.ucRole).toBe('tab');
+    expect(container.querySelector('.tab-label').dataset.ucRole).toBe('tab-label');
+    expect(container.querySelector('.tab-indicator').dataset.ucRole).toBe('tab-indicator');
+    expect(container.querySelector('.tab-panel').dataset.ucRole).toBe('tab-panel');
+    expect(container.querySelector('.tab-grid').dataset.ucRole).toBe('grid');
     expect(container.style['--uc-tabs-content-padding']).toBe('20px');
     expect(container.style['--uc-tabs-tab-min-width']).toBe('96px');
   });

@@ -14,6 +14,10 @@ Use it to restyle the card's own internal elements.
   <strong>Scope note.</strong> `custom_css` styles are injected into the card's shadow root. The practical target is the card itself and its internal elements. Treat `global` as unprefixed shadow-root CSS, not as a whole-page stylesheet.
 </div>
 
+<div class="docs-callout">
+  <strong>Hook preference.</strong> For new overrides, prefer the stable <code>data-uc-*</code> hooks documented in <a href="{{ '/features/selector-catalog/' | relative_url }}">Selector Catalog</a> instead of relying only on class names.
+</div>
+
 ## Scope Quick Reference
 
 | Scope | Best for |
@@ -54,6 +58,18 @@ custom_css:
   - scope: header
     css: |
       .header-title {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+```
+
+## Recipe: Uppercase header title with stable hooks
+
+```yaml
+custom_css:
+  - scope: header
+    css: |
+      [data-uc-role="title"] {
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }

@@ -96,9 +96,12 @@ export class CarouselMode extends BaseMode {
     this._container = document.createElement('div');
     this._container.className = 'carousel-mode';
     this._container.dataset.state = this.active ? 'expanded' : 'collapsed';
+    this._container.dataset.ucRole = 'mode-root';
+    this._container.dataset.ucMode = 'carousel';
 
     const viewport = document.createElement('div');
     viewport.className = 'carousel-viewport';
+    viewport.dataset.ucRole = 'viewport';
     viewport.style.height = this._height;
 
     if (this._showArrows) {
@@ -109,9 +112,11 @@ export class CarouselMode extends BaseMode {
 
     const trackWrapper = document.createElement('div');
     trackWrapper.className = 'carousel-track-wrapper';
+    trackWrapper.dataset.ucRole = 'track-wrapper';
 
     this._track = document.createElement('div');
     this._track.className = 'carousel-track';
+    this._track.dataset.ucRole = 'track';
 
     trackWrapper.appendChild(this._track);
     viewport.appendChild(trackWrapper);
@@ -136,6 +141,8 @@ export class CarouselMode extends BaseMode {
   _createArrowButton(className: string, iconName: string, onClick: () => void): HTMLButtonElement {
     const button = document.createElement('button');
     button.className = className;
+    button.dataset.ucRole = 'carousel-arrow';
+    button.dataset.ucDirection = className.includes('prev') ? 'prev' : 'next';
 
     const icon = document.createElement('ha-icon');
     icon.setAttribute('icon', iconName);
@@ -159,6 +166,7 @@ export class CarouselMode extends BaseMode {
   _renderIndicators(): HTMLElement {
     const container = document.createElement('div');
     container.className = 'carousel-indicators';
+    container.dataset.ucRole = 'indicators';
     return container;
   }
 
@@ -173,6 +181,7 @@ export class CarouselMode extends BaseMode {
     this._cards.forEach((_, index) => {
       const button = document.createElement('button');
       button.className = 'carousel-indicator';
+      button.dataset.ucRole = 'indicator';
       if (index === this._currentIndex) {
         button.classList.add('active');
       }

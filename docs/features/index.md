@@ -40,9 +40,13 @@ This page answers three practical questions:
     <h3>Custom CSS Recipes</h3>
     <p>Ready-to-use styling snippets for shell, header, badges, footer, tabs, modal, and fullscreen surfaces.</p>
   </a>
+  <a class="docs-card" href="{{ '/features/theming-guide/' | relative_url }}">
+    <h3>Theming Guide</h3>
+    <p>How to choose between theme, icon_color, theme_tokens, state_styles, and custom_css without overengineering the config.</p>
+  </a>
   <a class="docs-card" href="{{ '/features/selector-catalog/' | relative_url }}">
     <h3>Selector Catalog</h3>
-    <p>Stable internal selectors you can target with custom_css without guessing class names.</p>
+    <p>Official CSS hooks and stable selectors you can target with custom_css without guessing the DOM.</p>
   </a>
   <a class="docs-card" href="{{ '/features/modal-layout/' | relative_url }}">
     <h3>Modal Layout</h3>
@@ -79,7 +83,8 @@ This page answers three practical questions:
 | Block-by-block field lookup | [YAML Block Reference]({{ '/features/yaml-block-reference/' | relative_url }}) |
 | Room or dashboard scenario recipes | [Recipes by Use Case]({{ '/features/recipes-by-use-case/' | relative_url }}) |
 | Styling recipes | [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }}) |
-| Stable CSS selectors | [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }}) |
+| Styling decision guide | [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) |
+| Stable CSS hooks and selectors | [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }}) |
 | Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
 | Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |

@@ -1185,6 +1185,8 @@ export class UniversalCard extends HTMLElement {
     const cardContainer = document.createElement('div');
     cardContainer.className = cardClasses.join(' ');
     cardContainer.dataset.cardId = this._config.card_id;
+    cardContainer.dataset.ucRole = 'card';
+    cardContainer.dataset.ucBodyMode = this._config.body_mode || BODY_MODES.EXPAND;
     
     // Render Header using component
     if (this._header && showHeader) {
@@ -1304,6 +1306,8 @@ export class UniversalCard extends HTMLElement {
     body.dataset.collapseAnimation = config.collapse_animation || 'slide';
     body.dataset.cardsAnimation = config.cards_animation || 'fadeUp';
     body.dataset.cardsDirection = config.cards_direction || 'sequential';
+    body.dataset.ucRole = 'body';
+    body.dataset.ucMode = mode;
     
     // Set animation duration and stagger
     const duration = config.animation_duration || 300;
@@ -1337,6 +1341,7 @@ export class UniversalCard extends HTMLElement {
     // Standard expand mode - use body-content container
     const content = document.createElement('div');
     content.className = 'body-content';
+    content.dataset.ucRole = 'body-content';
     
     // Apply grid styles
     const gridStyles = this._getGridStyles();
@@ -1742,6 +1747,7 @@ export class UniversalCard extends HTMLElement {
       const absoluteIndex = startIndex + localIndex;
       const wrapper = document.createElement('div');
       wrapper.className = 'card-wrapper';
+      wrapper.dataset.ucRole = 'card-wrapper';
 
       const animIndex = animationIndices[absoluteIndex];
       wrapper.style.setProperty('--card-index', String(animIndex));

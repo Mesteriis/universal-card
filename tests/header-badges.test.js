@@ -101,13 +101,21 @@ describe('Header badges', () => {
     });
 
     const element = header.render();
+    document.body.appendChild(element);
 
     expect(element.dataset.layoutVariant).toBe('stacked');
     expect(element.dataset.contentAlign).toBe('center');
     expect(element.dataset.badgesPosition).toBe('below_content');
+    expect(element.dataset.ucRole).toBe('header');
     expect(element.style['--uc-header-gap']).toBe('18px');
     expect(element.style['--uc-header-content-gap']).toBe('6px');
     expect(element.innerHTML).toContain('header-content-badges');
+    expect(element.innerHTML).toContain('data-uc-position="below-content"');
+    expect(element.innerHTML).toContain('class="header-left" data-uc-region="left"');
+    expect(element.innerHTML).toContain('class="header-content" data-uc-region="content"');
+    expect(element.innerHTML).toContain('class="header-right" data-uc-region="right"');
+    expect(element.innerHTML).toContain('class="header-title" data-uc-role="title"');
+    expect(element.innerHTML).toContain('class="header-subtitle" data-uc-role="subtitle"');
     expect(element.innerHTML).not.toContain('header-right">\n        <div class="header-badges">');
   });
 });

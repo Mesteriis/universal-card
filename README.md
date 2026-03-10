@@ -60,6 +60,7 @@
 - [Body Modes Layout](docs/features/body-modes-layout.md)
 - [Header Layout](docs/features/header-layout.md)
 - [Badges](docs/features/badges.md)
+- [Theming Guide](docs/features/theming-guide.md)
 - [Loading Strategy](docs/features/loading-strategy.md)
 - [Editor](docs/features/editor.md)
 - [Release Notes](docs/release-notes.md)
@@ -254,9 +255,12 @@ body:
 - `state_styles`
 - `custom_css`
 
+Для выбора правильного styling layer см. [Theming Guide](docs/features/theming-guide.md).
+
 ### CSS overrides
 
 Да, можно точечно переопределять стили элементов через `custom_css`.
+Для новых override-сценариев лучше опираться на стабильные `data-uc-*` hooks из [Selector Catalog](docs/features/selector-catalog.md).
 
 Рабочие scope:
 

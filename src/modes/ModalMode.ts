@@ -60,12 +60,16 @@ export class ModalMode extends BaseMode {
     this._container = document.createElement('div');
     this._container.className = 'modal-mode-placeholder';
     this._container.style.display = 'none';
+    this._container.dataset.ucRole = 'mode-placeholder';
+    this._container.dataset.ucMode = 'modal';
     return this._container;
   }
 
   _renderModal(): HTMLElement {
     this._overlay = document.createElement('div');
     this._overlay.className = 'uc-modal-overlay';
+    this._overlay.dataset.ucRole = 'overlay';
+    this._overlay.dataset.ucMode = 'modal';
     this._overlay.style.setProperty('--modal-backdrop-color', this._backdropColor);
 
     if (this._backdropBlur) {
@@ -74,6 +78,8 @@ export class ModalMode extends BaseMode {
 
     this._dialog = document.createElement('div');
     this._dialog.className = 'uc-modal-dialog';
+    this._dialog.dataset.ucRole = 'dialog';
+    this._dialog.dataset.ucMode = 'modal';
     this._dialog.style.setProperty('--modal-width', this._width);
     this._dialog.style.setProperty('--modal-height', this._height);
     this._dialog.style.setProperty('--modal-max-width', this._maxWidth);
@@ -87,9 +93,11 @@ export class ModalMode extends BaseMode {
     const header = this._renderHeader();
     const content = document.createElement('div');
     content.className = 'uc-modal-content';
+    content.dataset.ucRole = 'content';
 
     const grid = document.createElement('div');
     grid.className = 'uc-modal-grid';
+    grid.dataset.ucRole = 'grid';
     this._applyGridConfig(grid, this._config.grid, { columns: 1, gap: '12px' });
 
     if (!this._loaded) {
@@ -121,9 +129,11 @@ export class ModalMode extends BaseMode {
 
     const header = document.createElement('div');
     header.className = 'uc-modal-header';
+    header.dataset.ucRole = 'header';
 
     const title = document.createElement('div');
     title.className = 'uc-modal-title';
+    title.dataset.ucRole = 'title';
     title.textContent = titleText;
     header.appendChild(title);
 
@@ -131,6 +141,7 @@ export class ModalMode extends BaseMode {
       const closeBtn = document.createElement('button');
       closeBtn.type = 'button';
       closeBtn.className = 'uc-modal-close';
+      closeBtn.dataset.ucRole = 'close';
       closeBtn.innerHTML = '<ha-icon icon="mdi:close"></ha-icon>';
       closeBtn.addEventListener('click', () => {
         void this.close();

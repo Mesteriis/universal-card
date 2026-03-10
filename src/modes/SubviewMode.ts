@@ -41,6 +41,8 @@ export class SubviewMode extends BaseMode {
     this._container = document.createElement('div');
     this._container.className = 'subview-mode-placeholder';
     this._container.style.display = 'none';
+    this._container.dataset.ucRole = 'mode-placeholder';
+    this._container.dataset.ucMode = 'subview';
     return this._container;
   }
 
