@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  detectPreferredBundleBaseUrl,
   getLazyBundleFileName,
   getLazyBundleImportUrls,
   getLazyBundleRelativePaths
@@ -38,5 +39,20 @@ describe('lazy bundle path resolution', () => {
     ]);
 
     expect(getLazyBundleFileName('cardEditor')).toBe('uc-lazy-card-editor.js');
+  });
+
+  it('prefers HACS base URL over stale legacy static resources', () => {
+    expect(
+      detectPreferredBundleBaseUrl([
+        'http://192.168.1.4:8123/universal_card_static/universal-card.js?v=1.0.3',
+        'http://192.168.1.4:8123/hacsfiles/universal-card/universal-card.js?hacstag=1132232658107'
+      ])
+    ).toBe('http://192.168.1.4:8123/hacsfiles/universal-card/');
+
+    expect(
+      detectPreferredBundleBaseUrl([
+        'http://192.168.1.4:8123/universal_card_static/universal-card.js?v=1.0.3'
+      ])
+    ).toBe('http://192.168.1.4:8123/universal_card_static/');
   });
 });

@@ -43,3 +43,43 @@ export function getLazyBundleImportUrls(bundleName: LazyBundleName, baseUrl: str
   return getLazyBundleRelativePaths(bundleName, normalizedBaseUrl)
     .map((relPath) => `${normalizedBaseUrl}${relPath}`);
 }
+
+function getBundleBaseUrlPriority(scriptUrl: string) {
+  if (scriptUrl.includes('/hacsfiles/universal-card/')) {
+    return 40;
+  }
+
+  if (scriptUrl.includes('/hacsfiles/')) {
+    return 30;
+  }
+
+  if (scriptUrl.includes('/local/')) {
+    return 20;
+  }
+
+  if (scriptUrl.includes('/universal_card_static/')) {
+    return 0;
+  }
+
+  return 10;
+}
+
+export function detectPreferredBundleBaseUrl(scriptUrls: string[]) {
+  const candidates = scriptUrls
+    .map((scriptUrl, index) => ({ scriptUrl, index }))
+    .filter(({ scriptUrl }) => scriptUrl.includes('universal-card.js'))
+    .map(({ scriptUrl, index }) => ({
+      baseUrl: normalizeBaseUrl(scriptUrl.slice(0, scriptUrl.lastIndexOf('/') + 1)),
+      priority: getBundleBaseUrlPriority(scriptUrl),
+      index
+    }))
+    .sort((left, right) => {
+      if (left.priority !== right.priority) {
+        return right.priority - left.priority;
+      }
+
+      return right.index - left.index;
+    });
+
+  return candidates[0]?.baseUrl || '/local/';
+}

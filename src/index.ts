@@ -143,6 +143,7 @@ import { createUniversalCardPlatformApi } from './public-api-policy.js';
 debug('[UC] 18.1 Public API policy loaded');
 
 import {
+  detectPreferredBundleBaseUrl,
   getLazyBundleImportUrls,
   type LazyBundleName
 } from './lazy/paths.js';
@@ -247,18 +248,12 @@ function scheduleMicrotask(task: () => void) {
 function detectBundleBaseUrl() {
   const scripts = Array.from(document.scripts || []);
   const current = document.currentScript as HTMLScriptElement | null;
-  const candidates = current ? [current, ...scripts] : scripts;
+  const candidates = [
+    ...scripts.map((script) => script?.src || '').filter(Boolean),
+    current?.src || ''
+  ].filter(Boolean);
 
-  for (const script of candidates) {
-    const src = script?.src || '';
-    if (!src) continue;
-
-    if (src.includes('universal-card.js')) {
-      return src.slice(0, src.lastIndexOf('/') + 1);
-    }
-  }
-
-  return '/local/';
+  return detectPreferredBundleBaseUrl(candidates);
 }
 
 async function loadOptionalBundle(bundleName: LazyBundleName) {
