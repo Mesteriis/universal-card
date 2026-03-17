@@ -142,6 +142,12 @@ debug('[UC] 18. Extensibility loaded');
 import { createUniversalCardPlatformApi } from './public-api-policy.js';
 debug('[UC] 18.1 Public API policy loaded');
 
+import {
+  getLazyBundleImportUrls,
+  type LazyBundleName
+} from './lazy/paths.js';
+debug('[UC] 18.2 Lazy bundle paths loaded');
+
 type UniversalCardPlatformApi = ReturnType<typeof createUniversalCardPlatformApi>;
 type CustomCardRegistration = {
   type?: string;
@@ -227,15 +233,6 @@ if (!window.customCards.some(c => c.type === 'universal-card')) {
 // LAZY OPTIONAL BUNDLES
 // =============================================================================
 
-const UC_LAZY_BUNDLES = Object.freeze({
-  advanced: 'lazy/uc-lazy-advanced.js',
-  editor: 'lazy/uc-lazy-editor.js',
-  cardEditor: 'lazy/uc-lazy-card-editor.js',
-  devtools: 'lazy/uc-lazy-devtools.js'
-});
-
-type LazyBundleName = keyof typeof UC_LAZY_BUNDLES;
-
 const _lazyBundleCache = new Map<LazyBundleName, Promise<unknown>>();
 
 function scheduleMicrotask(task: () => void) {
@@ -269,17 +266,22 @@ async function loadOptionalBundle(bundleName: LazyBundleName) {
     return _lazyBundleCache.get(bundleName)!;
   }
 
-  const relPath = UC_LAZY_BUNDLES[bundleName];
-  if (!relPath) {
-    throw new Error(`Unknown lazy bundle: ${bundleName}`);
-  }
-
   const baseUrl = detectBundleBaseUrl();
-  const importUrl = `${baseUrl}${relPath}`;
-  const promise = import(importUrl).catch((error) => {
+  const importUrls = getLazyBundleImportUrls(bundleName, baseUrl);
+  const promise = (async () => {
+    let lastError: unknown = null;
+
+    for (const importUrl of importUrls) {
+      try {
+        return await import(importUrl);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
     _lazyBundleCache.delete(bundleName);
-    throw error;
-  });
+    throw lastError;
+  })();
 
   _lazyBundleCache.set(bundleName, promise);
   return promise;

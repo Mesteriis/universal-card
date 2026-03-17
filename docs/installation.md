@@ -19,7 +19,8 @@ permalink: /installation/
 2. Open the Frontend section.
 3. Add this repository as a custom repository if needed.
 4. Install `Universal Card`.
-5. Refresh the browser cache.
+5. Optional lazy bundles are resolved automatically from the HACS install directory.
+6. Refresh the browser cache.
 
 ## Manual
 
