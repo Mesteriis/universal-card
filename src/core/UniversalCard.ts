@@ -1518,8 +1518,18 @@ export class UniversalCard extends HTMLElement {
 
     this._isLoading = true;
     this._bodyLoadPromise = (async () => {
-      // For tabs/carousel/subview, loading is handled by mode implementations
-      if (mode === BODY_MODES.TABS || mode === BODY_MODES.CAROUSEL || mode === BODY_MODES.SUBVIEW) {
+      // Initially expanded inline modes must be opened as well as marked loaded.
+      // Otherwise their containers stay collapsed and only the skeleton exists.
+      if (mode === BODY_MODES.TABS || mode === BODY_MODES.CAROUSEL) {
+        const inlineMode = mode === BODY_MODES.TABS ? this._tabsMode : this._carouselMode;
+        await inlineMode?.open();
+        if (isStale()) return;
+        this._bodyCardsLoaded = true;
+        return;
+      }
+
+      // Subview content is opened through its navigation action.
+      if (mode === BODY_MODES.SUBVIEW) {
         this._bodyCardsLoaded = true;
         return;
       }

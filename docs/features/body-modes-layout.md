@@ -84,6 +84,10 @@ body:
 
 `tabs` groups related content without opening a separate overlay.
 
+Set `expanded: true` to show the initial tab immediately. With `lazy_load: true`,
+the initial content is loaded when the card enters the viewport. The same initial
+expansion behavior applies to `carousel`; a subview still waits for navigation.
+
 Main fields:
 
 - `tabs[]`
