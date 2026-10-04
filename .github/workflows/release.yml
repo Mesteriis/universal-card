@@ -79,6 +79,8 @@ jobs:
           set -euo pipefail
           TAG_NAME="${{ steps.release_meta.outputs.tag_name }}"
 
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
           git push origin "$TAG_NAME"
 
