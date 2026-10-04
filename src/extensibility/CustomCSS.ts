@@ -240,7 +240,10 @@ export class CustomCSS {
 
     // Проверяем на заблокированные свойства
     for (const prop of this._config.blockedProperties) {
-      const regex = new RegExp(`${prop}\\s*:`, 'gi');
+      // Match a complete property name. "behavior" must not match the
+      // suffix of the standard, safe "overscroll-behavior" property.
+      const escaped = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(^|[^\\w-])${escaped}\\s*:`, 'gi');
       if (regex.test(sanitized)) {
         console.warn(`[CustomCSS] Blocked property detected: ${prop}`);
         return null;

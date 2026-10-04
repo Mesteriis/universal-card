@@ -63,7 +63,7 @@ export interface CardSlotSection {
 
 export interface GridConfig {
   columns?: number | string;
-  gap?: string;
+  gap?: string | number;
 }
 
 export interface TabsUiConfig {

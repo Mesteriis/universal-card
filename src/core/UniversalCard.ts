@@ -38,6 +38,7 @@ import {
   type PluginPayload
 } from '../extensibility/PluginSystem.js';
 import { fireEvent, deepClone, debug } from '../utils/helpers.js';
+import { normalizeGridGap } from '../utils/grid.js';
 import { debounce, throttle, whenIdle, cancelIdle } from '../utils/performance.js';
 import { 
   type CardConfigLike,
@@ -2537,16 +2538,12 @@ export class UniversalCard extends HTMLElement {
   _getGridStyles() {
     const grid: GridConfig = this._config.grid || {};
     const columns = grid.columns || DEFAULTS.grid_columns;
-    const gap = grid.gap || DEFAULTS.grid_gap;
+    const gap = normalizeGridGap(grid.gap, DEFAULTS.grid_gap);
     
     if (typeof columns === 'number') {
-      if (columns <= 1) {
-        return '';
-      }
-
       return `
         display: grid;
-        grid-template-columns: repeat(${columns}, 1fr);
+        grid-template-columns: ${columns <= 1 ? 'minmax(0, 1fr)' : `repeat(${columns}, minmax(0, 1fr))`};
         gap: ${gap};
       `.replace(/\s+/g, ' ').trim();
     }
