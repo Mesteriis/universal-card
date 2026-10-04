@@ -45,6 +45,10 @@ Safe defaults:
 ## Grid and stacks inside modal
 
 Modal mode respects the same `grid` rules as the regular body.
+Spacing applies in both one-column and multi-column layouts. `grid.gap` accepts
+a CSS length or a non-negative number of pixels; `0` explicitly disables spacing.
+Modal content stays within the nearest Home Assistant dashboard shadow root so
+nested cards retain dashboard templates, actions and inherited theme context.
 That means:
 
 - numeric columns work well for 2-column overlays

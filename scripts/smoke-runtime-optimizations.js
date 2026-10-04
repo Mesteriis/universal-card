@@ -41,6 +41,7 @@ function main() {
   const constants = read('src/core/constants.ts');
   const buildScript = read('build.js');
   const entry = readModule('src/index');
+  const lazyPaths = readModule('src/lazy/paths');
   const publicApiPolicy = read('src/public-api-policy.ts');
   const extensibility = readModule('src/extensibility/index');
 
@@ -85,7 +86,7 @@ function main() {
   requirePattern(buildScript, /uc-lazy-advanced/, 'Build script is missing lazy bundle entries', errors);
   requirePattern(buildScript, /uc-lazy-card-editor/, 'Build script is missing lazy card editor bundle entry', errors);
   requirePattern(entry, /loadOptionalBundle\(/, 'Entry point does not use optional lazy bundle loader', errors);
-  requirePattern(entry, /cardEditor:\s*'lazy\/uc-lazy-card-editor\.js'/, 'Entry point does not map lazy card editor bundle', errors);
+  requirePattern(lazyPaths, /cardEditor:\s*'uc-lazy-card-editor\.js'/, 'Lazy path resolver does not map card editor bundle', errors);
   requirePattern(entry, /class UniversalCardEditorProxy/, 'Entry point does not define lazy editor proxy element', errors);
   requirePattern(entry, /loadCardEditorClass\(/, 'Entry point does not expose lazy card editor class loader', errors);
   requirePattern(entry, /createUniversalCardPlatformApi\(/, 'Entry point does not build the global API from the public API policy', errors);

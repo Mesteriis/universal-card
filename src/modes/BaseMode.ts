@@ -11,6 +11,7 @@
 
 import { DEFAULTS, LIMITS } from '../core/constants.js';
 import { cardPool } from '../core/runtime.js';
+import { normalizeGridGap } from '../utils/grid.js';
 
 export type UnknownRecord = Record<string, any>;
 export type HomeAssistantLike = UnknownRecord;
@@ -33,13 +34,13 @@ export interface ModeSectionConfig extends UnknownRecord {
 
 export interface GridConfig extends UnknownRecord {
   columns?: number | string;
-  gap?: string;
+  gap?: string | number;
   rows?: number | string;
   display?: string;
   auto_rows?: string;
   auto_columns?: string;
-  row_gap?: string;
-  column_gap?: string;
+  row_gap?: string | number;
+  column_gap?: string | number;
   align_items?: string;
   justify_items?: string;
   place_items?: string;
@@ -319,14 +320,12 @@ export class BaseMode {
     const display = typeof grid?.display === 'string' && grid.display.trim()
       ? grid.display.trim()
       : (typeof defaults.display === 'string' && defaults.display.trim() ? defaults.display.trim() : 'grid');
-    const gap = typeof grid?.gap === 'string' && grid.gap.trim()
-      ? grid.gap.trim()
-      : (typeof defaults.gap === 'string' && defaults.gap.trim() ? defaults.gap.trim() : '16px');
+    const gap = normalizeGridGap(grid?.gap, normalizeGridGap(defaults.gap, '16px'));
     const valueMap = {
       gridAutoRows: grid?.auto_rows,
       gridAutoColumns: grid?.auto_columns,
-      rowGap: grid?.row_gap,
-      columnGap: grid?.column_gap,
+      rowGap: grid?.row_gap === undefined ? undefined : normalizeGridGap(grid.row_gap, gap),
+      columnGap: grid?.column_gap === undefined ? undefined : normalizeGridGap(grid.column_gap, gap),
       alignItems: grid?.align_items,
       justifyItems: grid?.justify_items,
       placeItems: grid?.place_items,

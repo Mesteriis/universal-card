@@ -24,7 +24,7 @@ export class ModalMode extends BaseMode {
 
   _overlay: HTMLElement | null;
   _dialog: HTMLElement | null;
-  _portalTarget: HTMLElement;
+  _portalTarget: HTMLElement | ShadowRoot;
   _escapeHandler: (event: KeyboardEvent) => void;
   _width: string;
   _height: string;
@@ -168,12 +168,29 @@ export class ModalMode extends BaseMode {
     `;
   }
 
+  _resolvePortalTarget(): HTMLElement | ShadowRoot {
+    let node: Node | null = this._options.card instanceof HTMLElement ? this._options.card : null;
+    while (node) {
+      if (node instanceof HTMLElement && node.tagName === 'HUI-ROOT') {
+        return node.shadowRoot || node;
+      }
+      if (node.parentNode) {
+        node = node.parentNode;
+      } else {
+        const root = node.getRootNode?.();
+        node = root && 'host' in root ? (root as ShadowRoot).host : null;
+      }
+    }
+    return document.body;
+  }
+
   override async open(): Promise<void> {
     if (this._active) return;
 
     this._active = true;
 
     const modal = this._renderModal();
+    this._portalTarget = this._resolvePortalTarget();
     this._portalTarget.appendChild(modal);
     acquireBodyScrollLock();
 

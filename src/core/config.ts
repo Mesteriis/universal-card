@@ -40,6 +40,7 @@ import {
   VALID_TAB_ALIGNMENTS,
   LIMITS
 } from './constants.js';
+import { normalizeGridGap } from '../utils/grid.js';
 
 import { 
   isObject, 
@@ -2235,7 +2236,7 @@ export class ConfigManager {
     
     return {
       columns: grid.columns || DEFAULTS.grid_columns,
-      gap: grid.gap || DEFAULTS.grid_gap,
+      gap: normalizeGridGap(grid.gap, DEFAULTS.grid_gap),
       responsive: grid.responsive || null
     };
   }
@@ -3332,9 +3333,9 @@ export class ConfigManager {
               description: 'Column count or CSS grid-template-columns string.'
             },
             gap: {
-              type: 'string',
+              type: ['string', 'number'],
               default: DEFAULTS.grid_gap,
-              description: 'Gap between grid items.'
+              description: 'Gap between grid items: CSS length or non-negative pixels.'
             }
           }
         },

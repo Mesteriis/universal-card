@@ -30,6 +30,10 @@ Use it to restyle the card's own internal elements.
 
 ## Recipe: Sharper card border
 
+Standard scrolling properties such as `overscroll-behavior: contain` are accepted.
+The sanitizer blocks complete dangerous property names (`behavior`, `expression`,
+`-moz-binding`), not suffixes of safe property names.
+
 ```yaml
 custom_css:
   - scope: card
