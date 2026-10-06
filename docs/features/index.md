@@ -110,6 +110,7 @@ This page answers three practical questions:
 | Styling recipes | [Custom CSS Recipes]({{ '/features/custom-css-recipes/' | relative_url }}) |
 | Styling decision guide | [Theming Guide]({{ '/features/theming-guide/' | relative_url }}) |
 | Stable CSS hooks and selectors | [Selector Catalog]({{ '/features/selector-catalog/' | relative_url }}) |
+| Drawer panels | [Drawer Layout]({{ '/features/drawer-layout/' | relative_url }}) |
 | Modal overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
 | Fullscreen, tabs, carousel, subview | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | Header arrangement | [Header Layout]({{ '/features/header-layout/' | relative_url }}) |

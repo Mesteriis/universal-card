@@ -111,7 +111,7 @@ export class ModalMode extends BaseMode {
     this._dialog.appendChild(content);
 
     const style = document.createElement('style');
-    style.textContent = ModalMode.getStyles();
+    style.textContent = ModalMode.getStyles() + (typeof this._config.modal?.custom_css === 'string' ? '\n' + this._config.modal.custom_css : '');
     this._overlay.appendChild(style);
     this._overlay.appendChild(this._dialog);
 

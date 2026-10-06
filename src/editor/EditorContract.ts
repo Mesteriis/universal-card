@@ -112,6 +112,7 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     optionLabels: {
       [BODY_MODES.EXPAND]: 'Раскрытие (expand)',
       [BODY_MODES.MODAL]: 'Модальное окно (modal)',
+      [BODY_MODES.DRAWER]: 'Выдвижная панель (drawer)',
       [BODY_MODES.FULLSCREEN]: 'Полноэкранный (fullscreen)',
       [BODY_MODES.TABS]: 'Вкладки (tabs)',
       [BODY_MODES.CAROUSEL]: 'Карусель (carousel)',
@@ -141,6 +142,14 @@ const FIELD_METADATA: Record<string, FieldMetadata> = {
     label: 'Отступы',
     placeholder: '16px'
   },
+  'drawer.side': { label: 'Сторона раскрытия', optionLabels: { left: 'Слева', right: 'Справа', top: 'Сверху', bottom: 'Снизу' } },
+  'drawer.size': { label: 'Доля экрана', control: 'text', placeholder: 'full, 1/2, 1/3, 1/4, 50%', helper: 'Доля ширины для боковых панелей или высоты для верхней/нижней.' },
+  'drawer.loading_strategy': { label: 'Загрузка панели', optionLabels: { lazy: 'При открытии', preload: 'Заранее' } },
+  'drawer.backdrop_blur': { label: 'Размытие фона' },
+  'drawer.backdrop_color': { label: 'Затемнение фона' },
+  'drawer.show_close': { label: 'Кнопка закрытия' },
+  'drawer.close_on_escape': { label: 'Закрыть по Escape' },
+  'drawer.close_on_backdrop': { label: 'Закрыть по клику снаружи' },
   'modal.width': {
     label: 'Ширина modal',
     placeholder: 'auto, 90%, 32rem'

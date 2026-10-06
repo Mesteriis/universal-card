@@ -44,6 +44,7 @@ const TRANSLATIONS = {
     // Body modes
     'body_mode.label': 'Body Mode',
     'body_mode.expand': 'Expand',
+    'body_mode.drawer': 'Drawer',
     'body_mode.modal': 'Modal',
     'body_mode.fullscreen': 'Fullscreen',
     'body_mode.tabs': 'Tabs',
@@ -130,6 +131,7 @@ const TRANSLATIONS = {
     // Body modes
     'body_mode.label': 'Режим тела',
     'body_mode.expand': 'Раскрытие',
+    'body_mode.drawer': 'Drawer',
     'body_mode.modal': 'Модальное окно',
     'body_mode.fullscreen': 'Полный экран',
     'body_mode.tabs': 'Вкладки',
@@ -211,6 +213,7 @@ const TRANSLATIONS = {
     'header.entity': 'Entidad',
     'body_mode.label': 'Modo del cuerpo',
     'body_mode.expand': 'Expandir',
+    'body_mode.drawer': 'Drawer',
     'body_mode.modal': 'Modal',
     'body_mode.fullscreen': 'Pantalla completa',
     'body_mode.tabs': 'Pestañas',
@@ -233,6 +236,7 @@ const TRANSLATIONS = {
     'header.entity': 'Entität',
     'body_mode.label': 'Körpermodus',
     'body_mode.expand': 'Erweitern',
+    'body_mode.drawer': 'Drawer',
     'body_mode.modal': 'Modal',
     'body_mode.fullscreen': 'Vollbild',
     'body_mode.tabs': 'Tabs',

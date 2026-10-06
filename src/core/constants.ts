@@ -12,14 +12,14 @@
 // =============================================================================
 
 /** @type {string} Card version */
-export const CARD_VERSION = '1.0.10';
+export const CARD_VERSION = '1.1.0';
 
 /** @type {string} Card name for display */
 export const CARD_NAME = 'Universal Card';
 
 /** @type {string} Card description */
 export const CARD_DESCRIPTION = 
-  'Продвинутая карточка с 7 режимами body, grid layout, lazy loading и расширенной настройкой';
+  'Продвинутая карточка с 8 режимами body, grid layout, lazy loading и расширенной настройкой';
 
 // =============================================================================
 // BODY MODES
@@ -33,6 +33,7 @@ export const CARD_DESCRIPTION =
 export const BODY_MODES = Object.freeze({
   EXPAND: 'expand',
   MODAL: 'modal',
+  DRAWER: 'drawer',
   FULLSCREEN: 'fullscreen',
   TABS: 'tabs',
   CAROUSEL: 'carousel',
@@ -45,6 +46,9 @@ export const BODY_MODES = Object.freeze({
  * @type {string[]}
  */
 export const VALID_BODY_MODES = Object.values(BODY_MODES);
+
+export const DRAWER_SIDES = Object.freeze({ LEFT: 'left', RIGHT: 'right', TOP: 'top', BOTTOM: 'bottom' });
+export const VALID_DRAWER_SIDES = Object.values(DRAWER_SIDES);
 
 // =============================================================================
 // TABS UI
@@ -562,6 +566,8 @@ export const DEFAULTS = Object.freeze({
   grid_gap: '16px',
   
   // Modal
+  drawer_side: DRAWER_SIDES.RIGHT,
+  drawer_size: '1/3',
   modal_width: '90%',
   modal_height: 'auto',
   modal_max_width: '600px',

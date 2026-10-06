@@ -7,13 +7,14 @@ permalink: /features/body-modes-layout/
 
 # Body Mode Layouts
 
-Universal Card supports seven body modes.
+Universal Card supports eight body modes.
 Use the mode that matches how the content should feel in the dashboard.
 
 | Mode | Best for |
 | --- | --- |
 | `expand` | inline details under the card header |
 | `modal` | focused overlays without leaving the current view |
+| `drawer` | side panels sized as a fraction of the viewport |
 | `fullscreen` | cameras, media, and large layouts |
 | `tabs` | grouped content inside one card |
 | `carousel` | swipe or slide-based navigation |
@@ -49,6 +50,13 @@ body:
         - entity: sensor.network_health_sensor
         - entity: input_select.house_mode
 ```
+
+## Drawer
+
+Use `body_mode: drawer` to slide a panel in from `left`, `right`, `top`, or `bottom`.
+Set `drawer.size` to `full`, a fraction such as `1/3`, a percentage such as `40%`,
+or a numeric fraction such as `0.5`. See [Drawer Layout](../features/drawer-layout.md)
+for sizing, loading, and close options.
 
 ## Fullscreen
 
@@ -206,6 +214,7 @@ tap_action:
 
 The visual editor covers:
 
+- `drawer.*`
 - `fullscreen.*`
 - `tabs[]` and `tabs_config.*`
 - `carousel_autoplay`, `carousel_interval`, and `carousel_options.*`

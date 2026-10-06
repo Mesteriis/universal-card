@@ -61,6 +61,7 @@ body:
 | --- | --- | --- |
 | `expand` | inline drill-down | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | `modal` | focused detail overlays | [Modal Layout]({{ '/features/modal-layout/' | relative_url }}) |
+| `drawer` | edge panel with viewport fraction sizing | [Drawer Layout]({{ '/features/drawer-layout/' | relative_url }}) |
 | `fullscreen` | large media and immersive dashboards | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | `tabs` | grouped content inside one card | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |
 | `carousel` | slide-based navigation | [Body Modes Layout]({{ '/features/body-modes-layout/' | relative_url }}) |

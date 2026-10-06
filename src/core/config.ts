@@ -12,6 +12,7 @@ import {
   DEFAULTS, 
   BODY_MODES, 
   VALID_BODY_MODES,
+  VALID_DRAWER_SIDES,
   VALID_EXPAND_TRIGGERS,
   VALID_POOL_SCOPES,
   VALID_EXPAND_ANIMATIONS,
@@ -41,6 +42,7 @@ import {
   LIMITS
 } from './constants.js';
 import { normalizeGridGap } from '../utils/grid.js';
+import { drawerSizePercent } from '../utils/drawer.js';
 
 import { 
   isObject, 
@@ -289,6 +291,10 @@ export class ConfigManager {
           'grid.columns'
         );
       }
+    }
+
+    if (config.drawer !== undefined) {
+      this._validateDrawer(config.drawer, 'drawer');
     }
 
     if (config.modal !== undefined) {
@@ -1612,12 +1618,26 @@ export class ConfigManager {
    * @param {*} modal
    * @param {string} path
    */
+  static _validateDrawer(drawer, path) {
+    this._validateModal(drawer, path);
+    if (drawer.side !== undefined && !VALID_DRAWER_SIDES.includes(drawer.side)) {
+      throw new ConfigValidationError('drawer.side must be left, right, top or bottom', `${path}.side`);
+    }
+    if (drawer.size !== undefined && drawerSizePercent(drawer.size) === null) {
+      throw new ConfigValidationError('drawer.size must be full, a fraction such as 1/3, a percentage, or a number in (0, 1]', `${path}.size`);
+    }
+  }
+
   static _validateModal(modal, path) {
     if (!isObject(modal)) {
       throw new ConfigValidationError(
         'modal must be an object',
         path
       );
+    }
+
+    if (modal.custom_css !== undefined && typeof modal.custom_css !== 'string') {
+      throw new ConfigValidationError('custom_css must be a string', `${path}.custom_css`);
     }
 
     ['width', 'height', 'max_width', 'max_height', 'backdrop_color'].forEach((field) => {
@@ -2079,6 +2099,12 @@ export class ConfigManager {
     // Normalize grid
     normalized.grid = this._normalizeGrid(config.grid);
     normalized.modal = this._normalizeModal(config.modal);
+    const drawer = isObject(config.drawer) ? config.drawer : {};
+    normalized.drawer = {
+      ...this._normalizeModal(drawer),
+      side: VALID_DRAWER_SIDES.includes(drawer.side) ? drawer.side : DEFAULTS.drawer_side,
+      size: drawerSizePercent(drawer.size) !== null ? drawer.size : DEFAULTS.drawer_size
+    };
     normalized.fullscreen = this._normalizeFullscreen(config.fullscreen);
     normalized.tabs_config = this._normalizeTabsConfig(config.tabs_config);
     normalized.carousel_options = this._normalizeCarouselOptions(config.carousel_options);
@@ -2273,7 +2299,8 @@ export class ConfigManager {
       backdrop_color: normalizeString(source.backdrop_color, DEFAULTS.backdrop_color),
       close_on_backdrop: source.close_on_backdrop !== false,
       close_on_escape: source.close_on_escape !== false,
-      show_close: source.show_close !== false
+      show_close: source.show_close !== false,
+      custom_css: typeof source.custom_css === 'string' ? source.custom_css : ''
     };
   }
 
@@ -3339,6 +3366,21 @@ export class ConfigManager {
             }
           }
         },
+        drawer: {
+          type: 'object',
+          description: 'Edge drawer. Size is the viewport fraction along its opening axis.',
+          properties: {
+            side: { type: 'string', enum: VALID_DRAWER_SIDES, default: DEFAULTS.drawer_side },
+            size: { type: ['string', 'number'], default: DEFAULTS.drawer_size, description: 'full, 1/2, 1/3, 1/4, 50%, or numeric fraction (0, 1].' },
+            loading_strategy: { type: 'string', enum: VALID_MODAL_LOADING_STRATEGIES, default: DEFAULTS.modal_loading_strategy },
+            backdrop_blur: { type: 'boolean', default: true },
+            backdrop_color: { type: 'string', default: DEFAULTS.backdrop_color },
+            close_on_backdrop: { type: 'boolean', default: true },
+            close_on_escape: { type: 'boolean', default: true },
+            show_close: { type: 'boolean', default: true },
+            custom_css: { type: 'string', description: 'Optional CSS scoped to this drawer portal.' }
+          }
+        },
         modal: {
           type: 'object',
           description: 'Modal body mode sizing and overlay behavior.',
@@ -3388,6 +3430,10 @@ export class ConfigManager {
             show_close: {
               type: 'boolean',
               default: true
+            },
+            custom_css: {
+              type: 'string',
+              description: 'Optional CSS scoped to this modal portal.'
             }
           }
         },

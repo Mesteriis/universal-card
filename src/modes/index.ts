@@ -9,6 +9,7 @@
 import { BaseMode, type ModeConfig, type ModeOptions } from './BaseMode.js';
 import { ExpandMode } from './ExpandMode.js';
 import { ModalMode } from './ModalMode.js';
+import { DrawerMode } from './DrawerMode.js';
 import { FullscreenMode } from './FullscreenMode.js';
 import { TabsMode } from './TabsMode.js';
 import { CarouselMode } from './CarouselMode.js';
@@ -17,6 +18,7 @@ import { SubviewMode } from './SubviewMode.js';
 export { BaseMode } from './BaseMode.js';
 export { ExpandMode } from './ExpandMode.js';
 export { ModalMode } from './ModalMode.js';
+export { DrawerMode } from './DrawerMode.js';
 export { FullscreenMode } from './FullscreenMode.js';
 export { TabsMode } from './TabsMode.js';
 export { CarouselMode } from './CarouselMode.js';
@@ -25,6 +27,7 @@ export { SubviewMode } from './SubviewMode.js';
 type SupportedModeClass =
   | typeof ExpandMode
   | typeof ModalMode
+  | typeof DrawerMode
   | typeof FullscreenMode
   | typeof TabsMode
   | typeof CarouselMode
@@ -33,6 +36,7 @@ type SupportedModeClass =
 const MODE_CLASSES = {
   expand: ExpandMode,
   modal: ModalMode,
+  drawer: DrawerMode,
   fullscreen: FullscreenMode,
   tabs: TabsMode,
   carousel: CarouselMode,
@@ -54,6 +58,7 @@ export function getAllModeStyles(): string {
   return [
     ExpandMode.getStyles(),
     ModalMode.getStyles(),
+    DrawerMode.getStyles(),
     FullscreenMode.getStyles(),
     TabsMode.getStyles(),
     CarouselMode.getStyles(),
