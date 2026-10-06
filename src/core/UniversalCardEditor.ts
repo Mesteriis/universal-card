@@ -249,6 +249,7 @@ type EditorConfig = CardConfigLike & {
   expand_trigger?: string;
   header?: EditorHeaderConfig;
   body?: EditorCardSection;
+  drawer?: EditorModalConfig & { side?: string; size?: string | number };
   modal?: EditorModalConfig;
   fullscreen?: EditorFullscreenConfig;
   tabs_config?: EditorTabsUiConfig;
@@ -1092,6 +1093,7 @@ export class UniversalCardEditor extends HTMLElement {
    * @returns {string} HTML string
    */
   _renderBodySection() {
+    const showDrawerSettings = this._config.body_mode === BODY_MODES.DRAWER;
     const showModalSettings = this._config.body_mode === BODY_MODES.MODAL;
     const showFullscreenSettings = this._config.body_mode === BODY_MODES.FULLSCREEN;
     const showTabsSettings = this._config.body_mode === BODY_MODES.TABS;
@@ -1107,6 +1109,20 @@ export class UniversalCardEditor extends HTMLElement {
 
           ${this._renderSchemaFields([EDITOR_FIELD_GROUPS.body])}
         </div>
+
+        ${showDrawerSettings ? `
+          <div class="subsection">
+            <h4>Выдвижная панель</h4>
+            <p class="hint">Размер: <code>full</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code> или процент. Слева/справа — ширина, сверху/снизу — высота.</p>
+            ${this._renderSchemaFields([
+              ['drawer.side', 'drawer.size'],
+              'drawer.loading_strategy',
+              ['drawer.backdrop_blur', 'drawer.backdrop_color'],
+              ['drawer.show_close', 'drawer.close_on_escape'],
+              'drawer.close_on_backdrop'
+            ])}
+          </div>
+        ` : ''}
 
         ${showModalSettings ? `
           <div class="subsection">
@@ -3205,6 +3221,7 @@ export class UniversalCardEditor extends HTMLElement {
     const labels = {
       [BODY_MODES.EXPAND]: 'Раскрытие (expand)',
       [BODY_MODES.MODAL]: 'Модальное окно (modal)',
+      [BODY_MODES.DRAWER]: 'Выдвижная панель (drawer)',
       [BODY_MODES.FULLSCREEN]: 'Полноэкранный (fullscreen)',
       [BODY_MODES.TABS]: 'Вкладки (tabs)',
       [BODY_MODES.CAROUSEL]: 'Карусель (carousel)',

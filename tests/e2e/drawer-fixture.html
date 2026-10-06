@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Universal Card — Drawer verification</title>
+<style>
+:root{font-family:system-ui;color:#deedf1;background:#10232c;--primary-text-color:#deedf1;--secondary-text-color:#a6bbc5;--ha-card-background:#1c3642;--card-background-color:#1c3642;--primary-color:#56bbd9;--divider-color:#37515c}
+body{margin:0;padding:32px} main{max-width:760px}label{display:inline-grid;margin:8px 16px 8px 0;gap:8px}button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid #526b78;background:#1c3642;color:inherit}button{cursor:pointer}#card{margin-top:24px}#editor{margin-top:24px} ha-icon{display:inline-block;width:24px;height:24px}ha-icon[icon="mdi:close"]::after{content:'×';font-size:24px}
+</style>
+<main><h1>Drawer verification</h1><p>Production bundle, synthetic child card. No Home Assistant devices or services.</p>
+<label>Side<select id="side"><option>right</option><option>left</option><option>top</option><option>bottom</option></select></label>
+<label>Size<input id="size" value="1/3"></label>
+<button id="apply">Apply configuration</button><button id="open">Open drawer</button><button id="show-editor">Show visual editor</button>
+<p id="status" role="status"></p><div id="card"></div><div id="editor"></div></main>
+<script src="/universal-card.js"></script>
+<script>
+const hass={states:{},locale:{language:'en'},themes:{darkMode:true}};
+class DrawerTestContent extends HTMLElement {
+ setConfig(){this.innerHTML='<h2>Panel content</h2><p>Keyboard focus and scrolling stay inside this panel.</p><button>First action</button><p>'+ 'Scrollable content<br>'.repeat(70)+'</p><button>Last action</button>';}
+}
+customElements.define('drawer-test-content',DrawerTestContent);
+window.loadCardHelpers=async()=>({createCardElement(config){const child=document.createElement('drawer-test-content');child.setConfig(config);return child;}});
+let card,configuration;
+function apply(){
+ configuration={type:'custom:universal-card',title:'Drawer details',body_mode:'drawer',drawer:{side:document.querySelector('#side').value,size:document.querySelector('#size').value},body:{cards:[{type:'custom:drawer-test-content'}]}};
+ const next=document.createElement('universal-card');
+ try{next.setConfig(configuration);next.hass=hass;document.querySelector('#card').replaceChildren(next);card=next;document.querySelector('#status').textContent='Ready: '+configuration.drawer.side+' / '+configuration.drawer.size;}catch(e){document.querySelector('#status').textContent=e.message;}
+}
+document.querySelector('#apply').onclick=apply;
+document.querySelector('#open').onclick=()=>card.shadowRoot.querySelector('.header').click();
+document.querySelector('#show-editor').onclick=async()=>{const editor=await customElements.get('universal-card').getConfigElement();editor.hass=hass;editor.setConfig(configuration);document.querySelector('#editor').replaceChildren(editor);};
+apply();
+</script></html>

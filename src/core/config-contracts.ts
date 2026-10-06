@@ -118,6 +118,7 @@ export interface TabConfig {
 }
 
 export interface ModalConfig {
+  custom_css?: string;
   width?: string;
   height?: string;
   max_width?: string;
@@ -128,6 +129,13 @@ export interface ModalConfig {
   close_on_backdrop?: boolean;
   close_on_escape?: boolean;
   show_close?: boolean;
+}
+
+export type DrawerSide = 'left' | 'right' | 'top' | 'bottom';
+export type DrawerSize = string | number;
+export interface DrawerConfig extends ModalConfig {
+  side?: DrawerSide;
+  size?: DrawerSize;
 }
 
 export interface BadgeThreshold {
@@ -391,6 +399,7 @@ export interface UniversalCardConfig {
   footer?: FooterConfig;
   grid?: GridConfig;
   modal?: ModalConfig;
+  drawer?: DrawerConfig;
   tabs?: TabConfig[];
   tabs_config?: TabsUiConfig;
   fullscreen?: FullscreenConfig;

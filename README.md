@@ -21,7 +21,7 @@
 
 <p align="center">
   <b>Продвинутая Lovelace-карточка для Home Assistant</b><br>
-  7 body modes • Grid layout • Header layouts • Badges • Footer • Lazy loading • Visual editor
+  8 body modes • Grid layout • Header layouts • Badges • Footer • Lazy loading • Visual editor
 </p>
 
 ---
@@ -62,6 +62,7 @@
 - [Actions And Gestures](docs/features/interactions.md)
 - [Recipes by Use Case](docs/features/recipes-by-use-case.md)
 - [Modal Layout](docs/features/modal-layout.md)
+- [Drawer Layout](docs/features/drawer-layout.md)
 - [Body Modes Layout](docs/features/body-modes-layout.md)
 - [Header Layout](docs/features/header-layout.md)
 - [Badges](docs/features/badges.md)
@@ -237,7 +238,7 @@ body:
 
 ## Что есть в карточке
 
-- 7 body modes: `expand`, `modal`, `fullscreen`, `tabs`, `carousel`, `subview`, `none`
+- 8 body modes: `expand`, `modal`, `drawer`, `fullscreen`, `tabs`, `carousel`, `subview`, `none`
 - grid layout с `colspan` и `rowspan`
 - configurable header layouts и badges
 - footer slots и action rows
@@ -270,7 +271,7 @@ Editor лучше всего покрывает:
 
 - shell fields
 - header layout
-- modal/fullscreen/tabs/carousel/subview settings
+- modal/drawer/fullscreen/tabs/carousel/subview settings
 - badge `visibility` и `color_rules`
 - `visibility` и `section_visibility`
 - `swipe`

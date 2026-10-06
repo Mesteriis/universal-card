@@ -2,7 +2,7 @@
  * Universal Card - Main Component
  * 
  * The main Lovelace card component implementing all features:
- * - 7 body modes (expand, modal, fullscreen, tabs, carousel, subview, none)
+ * - 8 body modes (expand, modal, drawer, fullscreen, tabs, carousel, subview, none)
  * - CSS Grid layout with colspan/rowspan
  * - Lazy loading with skeleton placeholders
  * - Visibility conditions
@@ -458,7 +458,7 @@ export class UniversalCard extends HTMLElement {
     this._destroySwipeGestures();
 
     // Close active portal mode overlay/listeners
-    if (this._mode && (this._config.body_mode === 'modal' || this._config.body_mode === 'fullscreen' || this._config.body_mode === 'subview')) {
+    if (this._mode && (this._config.body_mode === 'modal' || this._config.body_mode === 'drawer' || this._config.body_mode === 'fullscreen' || this._config.body_mode === 'subview')) {
       try {
         void this._mode.close();
       } catch {
@@ -936,13 +936,14 @@ export class UniversalCard extends HTMLElement {
   }
 
   _getModalLoadingStrategy() {
-    return this._config.modal?.loading_strategy === MODAL_LOADING_STRATEGIES.PRELOAD
+    const overlay = this._config.body_mode === BODY_MODES.DRAWER ? this._config.drawer : this._config.modal;
+    return overlay?.loading_strategy === MODAL_LOADING_STRATEGIES.PRELOAD
       ? MODAL_LOADING_STRATEGIES.PRELOAD
       : MODAL_LOADING_STRATEGIES.LAZY;
   }
 
   async _preloadModalModeContent() {
-    if (this._config.body_mode !== BODY_MODES.MODAL) {
+    if (this._config.body_mode !== BODY_MODES.MODAL && this._config.body_mode !== BODY_MODES.DRAWER) {
       return;
     }
 
@@ -1295,7 +1296,7 @@ export class UniversalCard extends HTMLElement {
     }
     
     // No body for modes that render outside/away from the card body
-    if (mode === 'none' || mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
+    if (mode === 'none' || mode === 'modal' || mode === 'drawer' || mode === 'fullscreen' || mode === 'subview') {
       return null;
     }
     
@@ -2824,7 +2825,7 @@ export class UniversalCard extends HTMLElement {
 
     // Handle different modes
     
-    if (mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
+    if (mode === 'modal' || mode === 'drawer' || mode === 'fullscreen' || mode === 'subview') {
       if (!this._mode) {
         throw new Error(`Mode "${mode}" is not initialized`);
       }
@@ -2899,7 +2900,7 @@ export class UniversalCard extends HTMLElement {
     // Handle different modes
     const mode = this._config.body_mode || 'expand';
     
-    if (mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
+    if (mode === 'modal' || mode === 'drawer' || mode === 'fullscreen' || mode === 'subview') {
       if (!this._mode) {
         throw new Error(`Mode "${mode}" is not initialized`);
       }
@@ -3185,7 +3186,7 @@ export class UniversalCard extends HTMLElement {
     
     // For modal/fullscreen/subview - body is not shown in place
     const mode = this._config.body_mode || 'expand';
-    if (mode === 'modal' || mode === 'fullscreen' || mode === 'subview') {
+    if (mode === 'modal' || mode === 'drawer' || mode === 'fullscreen' || mode === 'subview') {
       return; // Don't show body content - it's in overlay
     }
     

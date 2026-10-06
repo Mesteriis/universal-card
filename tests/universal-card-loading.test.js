@@ -27,16 +27,16 @@ describe('UniversalCard modal loading strategy', () => {
     UniversalCard = null;
   });
 
-  it('preloads modal content when configured', async () => {
+  it.each(['modal', 'drawer'])('preloads %s content when configured', async (bodyMode) => {
     const mode = {
       loaded: false,
       loadCards: vi.fn().mockResolvedValue(undefined)
     };
     const cards = [{ type: 'markdown', content: 'Modal body' }];
     const card = await createCard({
-      body_mode: 'modal',
+      body_mode: bodyMode,
       body: { cards },
-      modal: { loading_strategy: 'preload' }
+      [bodyMode]: { loading_strategy: 'preload' }
     }, mode);
 
     await card._preloadModalModeContent();
@@ -45,15 +45,15 @@ describe('UniversalCard modal loading strategy', () => {
     expect(mode.loadCards).toHaveBeenCalledWith(cards);
   });
 
-  it('keeps modal content lazy by default', async () => {
+  it.each(['modal', 'drawer'])('keeps %s content lazy by default', async (bodyMode) => {
     const mode = {
       loaded: false,
       loadCards: vi.fn().mockResolvedValue(undefined)
     };
     const card = await createCard({
-      body_mode: 'modal',
+      body_mode: bodyMode,
       body: { cards: [{ type: 'markdown', content: 'Modal body' }] },
-      modal: { loading_strategy: 'lazy' }
+      [bodyMode]: { loading_strategy: 'lazy' }
     }, mode);
 
     await card._preloadModalModeContent();

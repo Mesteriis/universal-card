@@ -7,6 +7,8 @@ const expandedCoverageInclude = [
   'src/modes/BaseMode.ts',
   'src/modes/ExpandMode.ts',
   'src/modes/ModalMode.ts',
+  'src/modes/DrawerMode.ts',
+  'src/utils/drawer.ts',
   'src/modes/FullscreenMode.ts',
   'src/modes/SubviewMode.ts',
   'src/modes/TabsMode.ts',

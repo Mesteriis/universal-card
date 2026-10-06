@@ -286,6 +286,16 @@ describe('UniversalCardEditor helper paths and bind flows', () => {
     });
   });
 
+  it('renders drawer sizing and close controls without modal dimensions', async () => {
+    const editor = await createEditor({body_mode: 'drawer', drawer: {side: 'left', size: '1/4'}});
+    const body = editor._renderBodySection();
+    for (const field of ['side', 'size', 'loading_strategy', 'backdrop_blur', 'backdrop_color', 'show_close', 'close_on_escape', 'close_on_backdrop']) {
+      expect(body).toContain(`name="drawer.${field}"`);
+    }
+    expect(body).not.toContain('name="modal.width"');
+    expect(body).toContain('1/4');
+  });
+
   it('renders modal editor fields and icon color from shared schema descriptors', async () => {
     const editor = await createEditor({
       body_mode: 'modal'
